@@ -156,6 +156,13 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI','Helvetica Neue',sa
   </div>
   <div class="nsep"></div>
   <div class="ns">
+    <div class="nsl">문서</div>
+    <div class="ni" id="ni-weekly" onclick="nav('weekly',this)"><div class="nd" style="background:#D85A30"></div>주간업무보고</div>
+    <div class="ni" id="ni-reports" onclick="nav('reports',this)"><div class="nd" style="background:#1D9E75"></div>게첨보고서</div>
+    <div class="ni" id="ni-intro" onclick="nav('intro',this)"><div class="nd" style="background:#7F77DD"></div>본부 소개서</div>
+  </div>
+  <div class="nsep"></div>
+  <div class="ns">
     <div class="nsl">데이터</div>
     <div class="ni" id="ni-sales" onclick="nav('sales',this)"><div class="nd" style="background:#EF9F27"></div>영업사원별 실적</div>
     <div class="ni" id="ni-adv" onclick="nav('adv',this)"><div class="nd" style="background:#D85A30"></div>누적 광고 데이터</div>
@@ -220,14 +227,14 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI','Helvetica Neue',sa
           <span style="font-size:10px;font-weight:400;color:#6B6A67;">· 억원</span>
         </div>
         <div style="display:flex;gap:12px;flex-wrap:wrap;margin-bottom:8px;" id="annual-legend-sale"></div>
-        <div style="position:relative;height:220px;"><canvas id="chart-annual-sale"></canvas></div>
+        <div id="annual-wrap-sale" style="position:relative;height:300px;"><canvas id="chart-annual-sale"></canvas></div>
       </div>
       <div class="card" style="border-top:3px solid #1D9E75;">
         <div style="font-size:12px;font-weight:600;margin-bottom:8px;">순매출
           <span style="font-size:10px;font-weight:400;color:#6B6A67;">· 억원</span>
         </div>
         <div style="display:flex;gap:12px;flex-wrap:wrap;margin-bottom:8px;" id="annual-legend-net"></div>
-        <div style="position:relative;height:220px;"><canvas id="chart-annual-net"></canvas></div>
+        <div id="annual-wrap-net" style="position:relative;height:300px;"><canvas id="chart-annual-net"></canvas></div>
       </div>
     </div>
 
@@ -296,7 +303,242 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI','Helvetica Neue',sa
   </div>
 
   <!-- 광고주 리스트 뷰 -->
-  <!-- 영업사원별 실적 뷰 -->
+  <!-- 주간업무보고 뷰 -->
+  <div id="vweekly" style="display:none;">
+    <div id="weekly-load-bar" style="background:#E6F1FB;border:0.5px solid #B8D4F0;border-radius:8px;padding:9px 14px;margin-bottom:14px;font-size:11px;color:#185FA5;display:none;"></div>
+    <div class="kpi-section" style="border-top:3px solid #D85A30;margin-bottom:16px;"><div class="kg kg3" id="weekly-kpi"></div></div>
+    <div class="card" style="border-top:3px solid #D85A30;">
+      <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;margin-bottom:14px;">
+        <div style="font-size:12px;font-weight:600;">주간업무보고 목록
+          <span style="font-size:10px;font-weight:400;color:#6B6A67;">· Google Drive 연동 · 최신순</span>
+        </div>
+        <button class="ub" style="padding:5px 12px;font-size:11px;" onclick="loadWeekly()">새로고침</button>
+      </div>
+      <div id="weekly-list" style="min-height:120px;">
+        <div style="text-align:center;color:#aaa;font-size:12px;padding:40px 0;">파일 목록 불러오는 중...</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 게첨보고서 뷰 -->
+  <div id="vreports" style="display:none;">
+    <div id="reports-load-bar" style="background:#E6F1FB;border:0.5px solid #B8D4F0;border-radius:8px;padding:9px 14px;margin-bottom:14px;font-size:11px;color:#185FA5;display:none;"></div>
+    <!-- KPI -->
+    <div class="kpi-section" style="border-top:3px solid #1D9E75;margin-bottom:16px;"><div class="kg kg3" id="reports-kpi"></div></div>
+    <!-- 검색/필터 -->
+    <div class="card" style="border-top:3px solid #1D9E75;">
+      <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;margin-bottom:12px;">
+        <div style="font-size:12px;font-weight:600;">게첨보고서 목록
+          <span style="font-size:10px;font-weight:400;color:#6B6A67;">· Google Drive 연동 · 폴더 클릭시 열림</span>
+        </div>
+        <button class="ub" style="padding:5px 12px;font-size:11px;" onclick="loadReports()">새로고침</button>
+      </div>
+      <!-- 검색 + 필터 -->
+      <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:12px;">
+        <input class="si" id="reports-q" style="min-width:200px;" placeholder="브랜드명, 캠페인명, 매체 검색..."
+          oninput="renderReports()"/>
+        <select class="fsel" id="reports-month" onchange="renderReports()"><option value="">전체 월</option></select>
+        <select class="fsel" id="reports-media" onchange="renderReports()"><option value="">전체 매체</option></select>
+      </div>
+      <!-- 결과 -->
+      <div id="reports-list" style="min-height:120px;">
+        <div style="text-align:center;color:#aaa;font-size:12px;padding:40px 0;">폴더 목록 불러오는 중...</div>
+      </div>
+      <div class="sm" id="reports-sum"></div>
+    </div>
+  </div>
+
+  <!-- 본부 소개서 뷰 -->
+  <div id="vintro" style="display:none;">
+    <div class="card" style="border-top:3px solid #7F77DD;">
+      <div style="font-size:13px;font-weight:600;margin-bottom:18px;">본부 소개서
+        <span style="font-size:10px;font-weight:400;color:#6B6A67;">· Dropbox / Google Drive 링크 연결</span>
+      </div>
+      <div style="margin-bottom:20px;">
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px;">
+          <div style="width:3px;height:15px;background:#185FA5;border-radius:2px;"></div>
+          <span style="font-size:12px;font-weight:700;color:#185FA5;">비즈솔루션본부</span>
+        </div>
+        <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:12px;">
+          <div style="border:0.5px solid #E5E4E0;border-radius:10px;overflow:hidden;">
+          <div style="background:#185FA5;padding:12px 16px;">
+            <div style="font-size:12px;font-weight:700;color:#fff;">2026 비즈솔루션본부 소개서</div>
+            <div style="font-size:10px;color:rgba(255,255,255,0.75);margin-top:2px;">4월 14일 버전</div>
+          </div>
+          <div style="padding:12px 14px;display:flex;flex-direction:column;gap:6px;">
+            <a href="https://www.dropbox.com/scl/fi/b1x5xno1z81rpv77tuyvd/260414-_.pdf?rlkey=jhhplgop5mseiaz1pntvf043p&e=1&st=3lbldt39&dl=0" target="_blank"
+              style="display:flex;align-items:center;gap:8px;padding:8px 12px;border:0.5px solid #E5E4E0;border-radius:7px;text-decoration:none;color:#1a1917;font-size:12px;font-weight:500;background:#fff;transition:background .12s;"
+              onmouseover="this.style.background='#F2F1ED'" onmouseout="this.style.background='#fff'">
+              <span style="font-size:14px;">📄</span>PDF
+            </a>
+<a href="https://www.dropbox.com/scl/fi/z6as674m4lhhaevlwa3il/260414-_.pptx?rlkey=buiqa5pjx55dh746jkdigip75&e=1&st=bawh0yeo&dl=0" target="_blank"
+              style="display:flex;align-items:center;gap:8px;padding:8px 12px;border:0.5px solid #E5E4E0;border-radius:7px;text-decoration:none;color:#1a1917;font-size:12px;font-weight:500;background:#fff;transition:background .12s;"
+              onmouseover="this.style.background='#F2F1ED'" onmouseout="this.style.background='#fff'">
+              <span style="font-size:14px;">📊</span>PPT
+            </a>
+          </div>
+        </div>
+<div style="border:0.5px solid #E5E4E0;border-radius:10px;overflow:hidden;">
+          <div style="background:#378ADD;padding:12px 16px;">
+            <div style="font-size:12px;font-weight:700;color:#fff;">The JoongAng 통합 소개서</div>
+            <div style="font-size:10px;color:rgba(255,255,255,0.75);margin-top:2px;">4월 16일 버전</div>
+          </div>
+          <div style="padding:12px 14px;display:flex;flex-direction:column;gap:6px;">
+            <a href="https://www.dropbox.com/scl/fi/e1b17n6snce1fert5q746/260416-The-JoongAng-_V1.pdf?rlkey=33eiqh2ija5befnoid41f7h5v&e=1&st=o6ma99p9&dl=0" target="_blank"
+              style="display:flex;align-items:center;gap:8px;padding:8px 12px;border:0.5px solid #E5E4E0;border-radius:7px;text-decoration:none;color:#1a1917;font-size:12px;font-weight:500;background:#fff;transition:background .12s;"
+              onmouseover="this.style.background='#F2F1ED'" onmouseout="this.style.background='#fff'">
+              <span style="font-size:14px;">📄</span>PDF
+            </a>
+<a href="https://www.dropbox.com/scl/fi/j0qvnxcly2cs9mlgacddw/260416-The-JoongAng-_V1.pptx?rlkey=ehjwvm0pcchgehzqeddkiuqjp&e=1&st=uxc7pqm5&dl=0" target="_blank"
+              style="display:flex;align-items:center;gap:8px;padding:8px 12px;border:0.5px solid #E5E4E0;border-radius:7px;text-decoration:none;color:#1a1917;font-size:12px;font-weight:500;background:#fff;transition:background .12s;"
+              onmouseover="this.style.background='#F2F1ED'" onmouseout="this.style.background='#fff'">
+              <span style="font-size:14px;">📊</span>PPT
+            </a>
+          </div>
+        </div>
+        </div>
+      </div>
+      <div style="margin-bottom:20px;">
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px;">
+          <div style="width:3px;height:15px;background:#7F77DD;border-radius:2px;"></div>
+          <span style="font-size:12px;font-weight:700;color:#7F77DD;">더중앙 OOH</span>
+        </div>
+        <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:12px;">
+          <div style="border:0.5px solid #E5E4E0;border-radius:10px;overflow:hidden;">
+          <div style="background:#7F77DD;padding:12px 16px;">
+            <div style="font-size:12px;font-weight:700;color:#fff;">OOH 상품 소개서</div>
+            <div style="font-size:10px;color:rgba(255,255,255,0.75);margin-top:2px;">4월 14일 버전</div>
+          </div>
+          <div style="padding:12px 14px;display:flex;flex-direction:column;gap:6px;">
+            <a href="https://www.dropbox.com/scl/fi/rky42uoj9fv1ay6rnzevp/260414-2026-OOH.pdf?rlkey=6v1q3u3mreu2gmuto6ccjmo0y&e=1&st=d2kgribj&dl=0" target="_blank"
+              style="display:flex;align-items:center;gap:8px;padding:8px 12px;border:0.5px solid #E5E4E0;border-radius:7px;text-decoration:none;color:#1a1917;font-size:12px;font-weight:500;background:#fff;transition:background .12s;"
+              onmouseover="this.style.background='#F2F1ED'" onmouseout="this.style.background='#fff'">
+              <span style="font-size:14px;">📄</span>PDF
+            </a>
+<a href="https://www.dropbox.com/scl/fi/h4mtj3dkedktxwivwow3s/260414-2026-OOH.pptx?rlkey=p52r6db2zush6l7hz3ct8103h&e=1&st=2thqxdci&dl=0" target="_blank"
+              style="display:flex;align-items:center;gap:8px;padding:8px 12px;border:0.5px solid #E5E4E0;border-radius:7px;text-decoration:none;color:#1a1917;font-size:12px;font-weight:500;background:#fff;transition:background .12s;"
+              onmouseover="this.style.background='#F2F1ED'" onmouseout="this.style.background='#fff'">
+              <span style="font-size:14px;">📊</span>PPT
+            </a>
+          </div>
+        </div>
+<div style="border:0.5px solid #E5E4E0;border-radius:10px;overflow:hidden;">
+          <div style="background:#7F77DD;padding:12px 16px;">
+            <div style="font-size:12px;font-weight:700;color:#fff;">OOH 소개서 영문</div>
+            <div style="font-size:10px;color:rgba(255,255,255,0.75);margin-top:2px;">4월 14일 버전 (English)</div>
+          </div>
+          <div style="padding:12px 14px;display:flex;flex-direction:column;gap:6px;">
+            <a href="https://www.dropbox.com/scl/fi/mnrris5brzgs3a1jmpiif/260414-The-JoongAng-OOH-Introduction.pdf?rlkey=xlamdnbqmzkeln3z7veqhedlz&e=1&st=2k82qdyt&dl=0" target="_blank"
+              style="display:flex;align-items:center;gap:8px;padding:8px 12px;border:0.5px solid #E5E4E0;border-radius:7px;text-decoration:none;color:#1a1917;font-size:12px;font-weight:500;background:#fff;transition:background .12s;"
+              onmouseover="this.style.background='#F2F1ED'" onmouseout="this.style.background='#fff'">
+              <span style="font-size:14px;">📄</span>PDF
+            </a>
+<a href="https://www.dropbox.com/scl/fi/tq4lk29atmrb31knducqk/260414-The-JoongAng-OOH-Introduction.pptx?rlkey=j964ajv60734n95a50u1q3yzd&e=1&st=ugha2clt&dl=0" target="_blank"
+              style="display:flex;align-items:center;gap:8px;padding:8px 12px;border:0.5px solid #E5E4E0;border-radius:7px;text-decoration:none;color:#1a1917;font-size:12px;font-weight:500;background:#fff;transition:background .12s;"
+              onmouseover="this.style.background='#F2F1ED'" onmouseout="this.style.background='#fff'">
+              <span style="font-size:14px;">📊</span>PPT
+            </a>
+          </div>
+        </div>
+<div style="border:0.5px solid #E5E4E0;border-radius:10px;overflow:hidden;">
+          <div style="background:#9F97E7;padding:12px 16px;">
+            <div style="font-size:12px;font-weight:700;color:#fff;">OOH 상품 정책서</div>
+            <div style="font-size:10px;color:rgba(255,255,255,0.75);margin-top:2px;">3월 10일 버전</div>
+          </div>
+          <div style="padding:12px 14px;display:flex;flex-direction:column;gap:6px;">
+            <a href="https://www.dropbox.com/scl/fi/4wyc1zphdbfhhuh41n0mf/260310-2026-OOH.pdf?rlkey=8rm4nue0e40gfics39zzlopd9&e=1&st=678mrjxa&dl=0" target="_blank"
+              style="display:flex;align-items:center;gap:8px;padding:8px 12px;border:0.5px solid #E5E4E0;border-radius:7px;text-decoration:none;color:#1a1917;font-size:12px;font-weight:500;background:#fff;transition:background .12s;"
+              onmouseover="this.style.background='#F2F1ED'" onmouseout="this.style.background='#fff'">
+              <span style="font-size:14px;">📄</span>PDF
+            </a>
+<a href="https://www.dropbox.com/scl/fi/kvlvxkxcevzhzasjatkaa/260310-2026-OOH.pptx?rlkey=m6dfjjjf0nkjd3lhtqfr8oy8k&e=1&st=2n61a98q&dl=0" target="_blank"
+              style="display:flex;align-items:center;gap:8px;padding:8px 12px;border:0.5px solid #E5E4E0;border-radius:7px;text-decoration:none;color:#1a1917;font-size:12px;font-weight:500;background:#fff;transition:background .12s;"
+              onmouseover="this.style.background='#F2F1ED'" onmouseout="this.style.background='#fff'">
+              <span style="font-size:14px;">📊</span>PPT
+            </a>
+          </div>
+        </div>
+<div style="border:0.5px solid #E5E4E0;border-radius:10px;overflow:hidden;">
+          <div style="background:#9F97E7;padding:12px 16px;">
+            <div style="font-size:12px;font-weight:700;color:#fff;">OOH 소개 영상</div>
+            <div style="font-size:10px;color:rgba(255,255,255,0.75);margin-top:2px;">25년 12월 버전</div>
+          </div>
+          <div style="padding:12px 14px;display:flex;flex-direction:column;gap:6px;">
+            <a href="https://www.dropbox.com/scl/fi/z04jlk7kddehwet0ww8ed/25-OOH-_251201.mp4?rlkey=8wse2zrtafh61aiins9rhwty7&e=1&st=sh50kxd2&dl=0" target="_blank"
+              style="display:flex;align-items:center;gap:8px;padding:8px 12px;border:0.5px solid #E5E4E0;border-radius:7px;text-decoration:none;color:#1a1917;font-size:12px;font-weight:500;background:#fff;transition:background .12s;"
+              onmouseover="this.style.background='#F2F1ED'" onmouseout="this.style.background='#fff'">
+              <span style="font-size:14px;">🎬</span>영상 보기
+            </a>
+          </div>
+        </div>
+<div style="border:0.5px solid #E5E4E0;border-radius:10px;overflow:hidden;">
+          <div style="background:#AFA9EC;padding:12px 16px;">
+            <div style="font-size:12px;font-weight:700;color:#fff;">미러미디어 개별 소개서</div>
+            <div style="font-size:10px;color:rgba(255,255,255,0.75);margin-top:2px;">4월 21일 버전</div>
+          </div>
+          <div style="padding:12px 14px;display:flex;flex-direction:column;gap:6px;">
+            <a href="https://drive.google.com/file/d/1tkWhCfXObbPaiySMRHtpGLdN6ix8rfZy/view" target="_blank"
+              style="display:flex;align-items:center;gap:8px;padding:8px 12px;border:0.5px solid #E5E4E0;border-radius:7px;text-decoration:none;color:#1a1917;font-size:12px;font-weight:500;background:#fff;transition:background .12s;"
+              onmouseover="this.style.background='#F2F1ED'" onmouseout="this.style.background='#fff'">
+              <span style="font-size:14px;">📄</span>PDF
+            </a>
+<a href="https://docs.google.com/presentation/d/1-G3TzOtMtLCkQlIXzBrOkigWlUWodBDM/edit?slide=id.p1#slide=id.p1" target="_blank"
+              style="display:flex;align-items:center;gap:8px;padding:8px 12px;border:0.5px solid #E5E4E0;border-radius:7px;text-decoration:none;color:#1a1917;font-size:12px;font-weight:500;background:#fff;transition:background .12s;"
+              onmouseover="this.style.background='#F2F1ED'" onmouseout="this.style.background='#fff'">
+              <span style="font-size:14px;">📊</span>PPT
+            </a>
+          </div>
+        </div>
+        </div>
+      </div>
+      <div style="margin-bottom:20px;">
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px;">
+          <div style="width:3px;height:15px;background:#EF9F27;border-radius:2px;"></div>
+          <span style="font-size:12px;font-weight:700;color:#EF9F27;">타운보드</span>
+        </div>
+        <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:12px;">
+          <div style="border:0.5px solid #E5E4E0;border-radius:10px;overflow:hidden;">
+          <div style="background:#EF9F27;padding:12px 16px;">
+            <div style="font-size:12px;font-weight:700;color:#fff;">타운보드 미디어킷</div>
+            <div style="font-size:10px;color:rgba(255,255,255,0.75);margin-top:2px;">3월 17일 버전</div>
+          </div>
+          <div style="padding:12px 14px;display:flex;flex-direction:column;gap:6px;">
+            <a href="https://www.dropbox.com/scl/fi/zajjhewjo9v30g3nylnlu/260317-2026-Media-kit.pdf?rlkey=z5blf9fuy3ups7274m5zbt4io&e=1&st=5oojpxhq&dl=0" target="_blank"
+              style="display:flex;align-items:center;gap:8px;padding:8px 12px;border:0.5px solid #E5E4E0;border-radius:7px;text-decoration:none;color:#1a1917;font-size:12px;font-weight:500;background:#fff;transition:background .12s;"
+              onmouseover="this.style.background='#F2F1ED'" onmouseout="this.style.background='#fff'">
+              <span style="font-size:14px;">📄</span>PDF
+            </a>
+<a href="https://www.dropbox.com/scl/fi/rpjrkgjwphrtdrc5g40z0/260317-2026-Media-kit.pptx?rlkey=ttgi4d47lbfcnyvyysi8s3iyc&e=1&st=cxn7zezb&dl=0" target="_blank"
+              style="display:flex;align-items:center;gap:8px;padding:8px 12px;border:0.5px solid #E5E4E0;border-radius:7px;text-decoration:none;color:#1a1917;font-size:12px;font-weight:500;background:#fff;transition:background .12s;"
+              onmouseover="this.style.background='#F2F1ED'" onmouseout="this.style.background='#fff'">
+              <span style="font-size:14px;">📊</span>PPT
+            </a>
+          </div>
+        </div>
+<div style="border:0.5px solid #E5E4E0;border-radius:10px;overflow:hidden;">
+          <div style="background:#FAC775;padding:12px 16px;">
+            <div style="font-size:12px;font-weight:700;color:#fff;">타운보드 광고영업정책서</div>
+            <div style="font-size:10px;color:rgba(255,255,255,0.75);margin-top:2px;">3월 17일 버전</div>
+          </div>
+          <div style="padding:12px 14px;display:flex;flex-direction:column;gap:6px;">
+            <a href="https://www.dropbox.com/scl/fi/5ni23v7vridjt16mlnks5/260317-2026.pdf?rlkey=hzokgvhxfl7vxbhwvdz8ynynq&e=1&st=m58kya6r&dl=0" target="_blank"
+              style="display:flex;align-items:center;gap:8px;padding:8px 12px;border:0.5px solid #E5E4E0;border-radius:7px;text-decoration:none;color:#1a1917;font-size:12px;font-weight:500;background:#fff;transition:background .12s;"
+              onmouseover="this.style.background='#F2F1ED'" onmouseout="this.style.background='#fff'">
+              <span style="font-size:14px;">📄</span>PDF
+            </a>
+<a href="https://www.dropbox.com/scl/fi/agmch0t3qmccvfgnvpqxh/260317-2026.pptx?rlkey=h9nljy1t00j3r9ek767uany6d&e=1&st=uce6vhzi&dl=0" target="_blank"
+              style="display:flex;align-items:center;gap:8px;padding:8px 12px;border:0.5px solid #E5E4E0;border-radius:7px;text-decoration:none;color:#1a1917;font-size:12px;font-weight:500;background:#fff;transition:background .12s;"
+              onmouseover="this.style.background='#F2F1ED'" onmouseout="this.style.background='#fff'">
+              <span style="font-size:14px;">📊</span>PPT
+            </a>
+          </div>
+        </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 영업사원별 실적 뷰 -->  <!-- 영업사원별 실적 뷰 -->
   <div id="vsales" style="display:none;">
     <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px;flex-wrap:wrap;">
       <!-- 연도 탭 -->
@@ -348,11 +590,16 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI','Helvetica Neue',sa
       </div>
       <span id="list-team-chip" style="font-size:11px;color:#6B6A67;padding:3px 10px;border:0.5px solid #E5E4E0;border-radius:20px;background:#fff;">로딩 중...</span>
     </div>
-    <!-- 업종 탭 (2depth) -->
-    <div style="display:flex;align-items:center;gap:5px;margin-bottom:14px;flex-wrap:wrap;" id="list-sector-tabs">
-      <span style="font-size:11px;color:#aaa;margin-right:2px;">업종</span>
+    <!-- 필터 탭 (2depth) -->
+    <div style="display:flex;flex-direction:column;gap:6px;margin-bottom:14px;">
+      <div style="display:flex;align-items:center;gap:5px;flex-wrap:wrap;" id="list-sector-tabs">
+        <span style="font-size:10px;color:#aaa;width:32px;flex-shrink:0;">업종</span>
+      </div>
+      <div style="display:flex;align-items:center;gap:5px;flex-wrap:wrap;" id="list-person-tabs">
+        <span style="font-size:10px;color:#aaa;width:32px;flex-shrink:0;">담당자</span>
+      </div>
     </div>
-    <div class="kpi-section" style="border-top:3px solid #7F77DD;margin-bottom:16px;"><div class="kg kg3" id="list-kpi"></div></div>
+    <div class="kpi-section" style="border-top:3px solid #7F77DD;margin-bottom:16px;"><div id="list-kpi" style="display:grid;gap:1px;background:#EEEDE9;"></div></div>
     <div class="card" style="border-top:3px solid #7F77DD;">
       <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;margin-bottom:12px;">
         <div style="font-size:12px;font-weight:600;color:#1a1917;">광고주 리스트
@@ -372,7 +619,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI','Helvetica Neue',sa
         </div>
       </div>
       <div class="tw" style="max-height:600px;">
-        <table class="rtbl" style="min-width:820px;" id="list-tbl">
+        <table class="rtbl" style="min-width:820px;" id="list-tbl" onclick="handleListClick(event)">
           <thead><tr>
             <th style="width:150px">광고주</th>
             <th style="width:70px">담당자</th>
@@ -464,10 +711,12 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI','Helvetica Neue',sa
 // ══════════════════════════════════════
 const PERF_URL = 'https://script.google.com/macros/s/AKfycbzpcwqe08QgJCsV9D0dVr7N66weT47KUYm6QzEF85s35fcV8ibZHg464bgkUaAUBDPMUA/exec';
 const OOH_URL  = 'https://script.google.com/macros/s/AKfycbzQKV0ozhslPidbAtAnAVIUAoRC-nUiTttja8JudY2DD_JJ9Dffi6Gv8CPyXT5cH4KCDg/exec';
-const TEAM_URL = 'https://script.google.com/macros/s/AKfycbzzEDQau2irK_VKPppmKXhcqls1wPwu7clypTxmEJvJabqcsjNht1W3asIjJOXiikpHkQ/exec';
+const TEAM_URL = 'https://script.google.com/macros/s/AKfycbzU7C8BXIda6aSuLm-jbWGMhwabVPDTHARGrJgaXlZ_vgRpOUBtfGO8j4b1NSaXT_vTOA/exec';
 const ADV_URL  = 'https://script.google.com/macros/s/AKfycbzcm6y3neEroHsOqo1_Ri0fb0IhruS0KoPNQVCnDPUTyghtvSkJK-zayH6ZIbmhXmTY/exec';
 const ADVLIST_URL  = 'https://script.google.com/macros/s/AKfycbw001pN6oHzhCxabeezZ3wyMFzBeREiiytfHGQnCTY8ywGIcJwV-BTBwY_AX27_GL4WCA/exec';
 const ADVLIST_POST = 'https://script.google.com/macros/s/AKfycbyLP8-LSIylO3shOinijO_Zuh4nZAyX2kXK_mfQ2WRL1FQFBYY_PBRNFACA6K64iUwQMQ/exec';
+const WEEKLY_URL   = 'https://script.google.com/macros/s/AKfycbwnREw97vodc2pPcbYfgdDPA1wIuYUrFiMaNvwl73UJCcHNDB2rrMa7y4ErjgbFXFGJ9w/exec';
+const REPORTS_URL  = 'https://script.google.com/macros/s/AKfycbxBNC0F26oN-aqFwWsbz7rIyjmEAwviq9QNKB61xPO6rXeHJEVeSbsY7D7nxu9oc7NDKQ/exec';
 const SHEET    = '2026비솔본부_종합';
 const NC       = '■ 사업매출 - 비즈솔루션본부'; // 행 이름 컬럼
 
@@ -615,12 +864,31 @@ function fmtW(v){
 function pct(a,b){return b!==0?Math.round(a/b*1000)/10:0;} // 소수점 1자리
 function ydf(a,b){return b>0?((a-b)/b*100).toFixed(1):'0.0';}
 function fmtD(s){if(!s)return'';try{const d=new Date(s);return(d.getMonth()+1)+'/'+(d.getDate());}catch(e){return s;}}
+function fmtDY(s){if(!s)return'';try{const d=new Date(s);return d.getFullYear()+'.'+(d.getMonth()+1)+'.'+d.getDate();}catch(e){return s;}}
 function sn(n){return(n||'').replace('마케팅솔루션','마솔').replace('솔루션기획','솔기').replace('콘텐트사업','CT');}
 function aC(p){return p>=80?'#0F6E56':p>=50?'#854F0B':'#A32D2D';}
 function aBg(p){return p>=80?'#1D9E75':p>=50?'#EF9F27':'#E24B4A';}
 function aBdg(p){return p>=80?'bu':p>=50?'bt':'bw';}
-function mBar(p){return`<div style="height:3px;border-radius:2px;background:#EEEDE9;margin-top:3px"><div style="height:3px;border-radius:2px;width:${Math.min(Math.abs(p),100)}%;background:${aBg(p)}"></div></div>`;}
-function pBar(p){return`<div style="display:flex;align-items:center;gap:6px;"><div style="flex:1;height:5px;border-radius:3px;background:#EEEDE9;min-width:60px;"><div style="height:5px;border-radius:3px;width:${Math.min(Math.abs(p),100)}%;background:${aBg(p)}"></div></div><span style="font-size:11px;font-weight:600;color:${aC(p)};min-width:38px;text-align:right">${p.toFixed(1)}%</span></div>`;}
+function mBar(p){
+  const over = p>100;
+  const w = over ? 100 : Math.min(Math.abs(p),100);
+  const overStyle = over ? 'border-right:3px solid #185FA5;' : '';
+  return`<div style="height:3px;border-radius:2px;background:#EEEDE9;margin-top:3px"><div style="height:3px;border-radius:2px;width:${w}%;background:${aBg(p)};${overStyle}"></div></div>`;
+}
+function pBar(p){
+  const over = p > 100;
+  const w = over ? 100 : Math.min(Math.abs(p), 100);
+  const overTag = over
+    ? `<span style="font-size:9px;font-weight:700;color:#fff;background:#185FA5;padding:1px 5px;border-radius:3px;margin-left:2px;">+${(p-100).toFixed(0)}%</span>`
+    : '';
+  return`<div style="display:flex;align-items:center;gap:6px;">
+    <div style="flex:1;height:5px;border-radius:3px;background:#EEEDE9;min-width:60px;">
+      <div style="height:5px;border-radius:3px;width:${w}%;background:${aBg(p)};"></div>
+    </div>
+    <span style="font-size:11px;font-weight:600;color:${aC(p)};min-width:38px;text-align:right">${p.toFixed(1)}%</span>
+    ${overTag}
+  </div>`;
+}
 function fmtPct(p){return p.toFixed(1)+'%';}
 // ══════════════════════════════════════
 // PARSE
@@ -1526,23 +1794,50 @@ function switchListSector(sec, el){
   renderList();
 }
 
+let curListPerson = ''; // 현재 선택된 담당자
+
+function pillBtn(label, onclick, active=false){
+  return `<button class="sec-pill" onclick="${onclick}"
+    style="padding:3px 10px;border-radius:20px;border:0.5px solid ${active?'#378ADD':'#E5E4E0'};background:${active?'#E6F1FB':'#fff'};font-size:11px;color:${active?'#185FA5':'#6B6A67'};cursor:pointer;font-weight:${active?'600':'400'};">${label}</button>`;
+}
+
 function initListFilters(){
   const sectors=[...new Set(advListSheet.map(r=>r['업종1']||'').filter(Boolean))].sort();
-  // 셀렉트 박스 (숨김 처리 - 탭으로 대체)
   document.getElementById('list-sector1').innerHTML=
     '<option value="">전체 업종</option>'+sectors.map(s=>`<option>${s}</option>`).join('');
-  // 업종 탭 렌더
-  const tabWrap = document.getElementById('list-sector-tabs');
-  if(tabWrap){
-    const allBtn = `<button class="sec-pill" onclick="switchListSector('',this)"
-      style="padding:4px 12px;border-radius:20px;border:0.5px solid #378ADD;background:#E6F1FB;font-size:11px;color:#185FA5;cursor:pointer;font-weight:600;">전체</button>`;
-    const secBtns = sectors.map(s=>
-      `<button class="sec-pill" onclick="switchListSector('${s}',this)"
-        style="padding:4px 12px;border-radius:20px;border:0.5px solid #E5E4E0;background:#fff;font-size:11px;color:#6B6A67;cursor:pointer;font-weight:400;">${s}</button>`
-    ).join('');
-    tabWrap.innerHTML = '<span style="font-size:11px;color:#aaa;margin-right:2px;">업종</span>' + allBtn + secBtns;
+
+  // 업종 탭
+  const sectorWrap = document.getElementById('list-sector-tabs');
+  if(sectorWrap){
+    sectorWrap.innerHTML =
+      '<span style="font-size:10px;color:#aaa;width:32px;flex-shrink:0;">업종</span>' +
+      pillBtn('전체', "switchListSector('',this)", true) +
+      sectors.map(s=>pillBtn(s, `switchListSector('${s}',this)`)).join('');
   }
+
+  // 담당자 탭
+  const persons=[...new Set(advListSheet.map(r=>r['담당자']||'').filter(Boolean))].sort();
+  const personWrap = document.getElementById('list-person-tabs');
+  if(personWrap){
+    personWrap.innerHTML =
+      '<span style="font-size:10px;color:#aaa;width:32px;flex-shrink:0;">담당자</span>' +
+      pillBtn('전체', "switchListPerson('',this)", true) +
+      persons.map(p=>pillBtn(p, `switchListPerson('${p}',this)`)).join('');
+  }
+
   curListSector = '';
+  curListPerson = '';
+}
+
+function switchListPerson(person, el){
+  curListPerson = person;
+  document.querySelectorAll('#list-person-tabs .sec-pill').forEach(t=>{
+    t.style.background='#fff'; t.style.color='#6B6A67';
+    t.style.borderColor='#E5E4E0'; t.style.fontWeight='400';
+  });
+  if(el){ el.style.background='#E6F1FB'; el.style.color='#185FA5';
+    el.style.borderColor='#378ADD'; el.style.fontWeight='600'; }
+  renderList();
 }
 
 function buildRawAmounts(){
@@ -1559,37 +1854,31 @@ function buildRawAmounts(){
   return m;
 }
 
+let listExpandedRows = new Set(); // 펼쳐진 광고주 행
+
 function renderList(){
-  if(!advListSheet.length) return; // 로드 전엔 렌더 안 함 (무한루프 방지)
+  if(!advListSheet.length) return;
 
   const q=(document.getElementById('list-q').value||'').toLowerCase();
   const sec=document.getElementById('list-sector1').value;
   const sortKey=document.getElementById('list-sort').value;
-
   const rawAmt = buildRawAmounts();
 
   // 시트 데이터 + RAW 매칭
   let rows = advListSheet.map(r=>{
     const name=(r['광고주']||'').trim();
     const amt=rawAmt[name]||{te25:0,te26:0};
-    return{
-      name,
-      team:    r['담당팀']||'',
-      person:  r['담당자']||'',
-      sector1: r['업종1']||'',
-      sector2: r['업종2']||'',
-      grade:   r['등급']||'',
-      status:  r['현황']||'',
-      lastLog: r['최근 영업일지']||'',
-      note:    r['비고']||'',
-      te25:    amt.te25,
-      te26:    amt.te26,
-    };
+    return{ name, team:r['담당팀']||'', person:r['담당자']||'',
+      sector1:r['업종1']||'', sector2:r['업종2']||'',
+      grade:r['등급']||'', status:r['현황']||'',
+      lastLog:r['최근 영업일지']||'', note:r['비고']||'',
+      te25:amt.te25, te26:amt.te26 };
   });
 
   // 필터
   rows = rows.filter(v=>{
     if(curListSector && v.sector1 !== curListSector) return false;
+    if(curListPerson && v.person !== curListPerson) return false;
     if(sec && v.sector1 !== sec) return false;
     if(q && ![v.name,v.person,v.sector1,v.grade,v.status].some(s=>s&&String(s).toLowerCase().includes(q))) return false;
     return true;
@@ -1604,33 +1893,67 @@ function renderList(){
     return a.name.localeCompare(b.name,'ko');
   });
 
-  // KPI
+  // KPI - 상단 합계 + 업종별 breakdown
   const tot26=rows.reduce((s,r)=>s+r.te26,0);
   const tot25=rows.reduce((s,r)=>s+r.te25,0);
   const active26=rows.filter(r=>r.te26>0).length;
-  document.getElementById('list-kpi').innerHTML=[
-    {l:`${curListTeam} 2026년 집행합계`,v:fmtW(tot26),b:`<span class="badge bt">${active26}개 광고주</span>`},
-    {l:'2025년 집행금액 합계',v:fmtW(tot25),b:`<span class="badge bn">전년</span>`},
-    {l:'리스트 광고주 수',v:rows.length+'개',b:`<span class="badge bn">시트 기준</span>`},
-  ].map(k=>`<div class="kpi"><div class="kl">${k.l}</div><div class="kv">${k.v}</div><div class="km">${k.b}</div></div>`).join('');
+  const totDiff = tot25>0 ? ((tot26-tot25)/tot25*100) : null;
+  const totDiffTxt = totDiff!==null
+    ? `<span class="badge ${totDiff>=0?'bu':'bd'}">${totDiff>=0?'+':''}${totDiff.toFixed(1)}%</span>`
+    : '';
+
+  // 업종별 집계
+  const sectorMap={};
+  rows.forEach(r=>{ if(!sectorMap[r.sector1]) sectorMap[r.sector1]={te26:0,te25:0,cnt:0}; sectorMap[r.sector1].te26+=r.te26; sectorMap[r.sector1].te25+=r.te25; sectorMap[r.sector1].cnt++; });
+  const sectorEntries = Object.entries(sectorMap).filter(([k])=>k).sort((a,b)=>b[1].te26-a[1].te26);
+
+  const summaryKpis = [
+    `<div class="kpi" style="grid-column:span 2;border-right:0.5px solid #EEEDE9;">
+      <div class="kl">${curListTeam} · ${curListPerson||'전체'} · ${curListSector||'전체 업종'}</div>
+      <div style="font-size:11px;color:#6B6A67;margin-bottom:4px;">2026년 집행합계</div>
+      <div style="display:flex;align-items:baseline;gap:8px;">
+        <div style="font-size:22px;font-weight:600;letter-spacing:-.5px;">${fmtW(tot26)}</div>
+        <div style="font-size:13px;color:#6B6A67;">vs 25년 ${fmtW(tot25)}</div>
+        ${totDiffTxt}
+      </div>
+      <div class="ks">${active26}개 광고주 집행 / 총 ${rows.length}개</div>
+    </div>`,
+    ...sectorEntries.slice(0,4).map(([sec,v])=>{
+      const d = v.te25>0?((v.te26-v.te25)/v.te25*100):null;
+      const dTxt = d!==null?`<span style="font-size:10px;font-weight:600;color:${d>=0?'#0F6E56':'#A32D2D'}">${d>=0?'+':''}${d.toFixed(1)}%</span>`:'';
+      return `<div class="kpi">
+        <div class="kl">${sec} <span style="font-weight:400;color:#aaa">${v.cnt}개사</span></div>
+        <div class="kv" style="font-size:16px;">${fmtW(v.te26)}</div>
+        <div class="ks">전년 ${fmtW(v.te25)} ${dTxt}</div>
+      </div>`;
+    })
+  ].join('');
+
+  const kpiEl = document.getElementById('list-kpi');
+  const cols = Math.min(2 + sectorEntries.slice(0,4).length, 6);
+  kpiEl.style.gridTemplateColumns = `repeat(${cols},minmax(0,1fr))`;
+  kpiEl.innerHTML = summaryKpis;
 
   // 등급 배지
   const gradeBadge = g => {
     if(!g) return '<span style="color:#ccc">-</span>';
-    const styles = {A:'color:#185FA5;background:#E6F1FB',B:'color:#1D9E75;background:#E1F5EE',C:'color:#854F0B;background:#FAEEDA'};
-    const s = styles[g] || 'color:#888780;background:#F1EFE8';
+    const styles={A:'color:#185FA5;background:#E6F1FB',B:'color:#1D9E75;background:#E1F5EE',C:'color:#854F0B;background:#FAEEDA'};
+    const s=styles[g]||'color:#888780;background:#F1EFE8';
     return `<span style="font-size:10px;font-weight:700;${s};padding:2px 7px;border-radius:4px;">${g}</span>`;
   };
 
-  // 테이블
-  document.getElementById('list-body').innerHTML=rows.map((v)=>{
+  // 테이블 - 광고주 클릭 시 집행내역 펼침
+  const tableRows = rows.map((v,i)=>{
     const diff=v.te25>0?((v.te26-v.te25)/v.te25*100):null;
     const diffTxt=diff!==null
       ?`<span style="font-size:10px;font-weight:600;color:${diff>=0?'#0F6E56':'#A32D2D'}">${diff>=0?'+':''}${diff.toFixed(1)}%</span>`
       :'<span style="color:#aaa;font-size:10px">-</span>';
-    const lastLogTxt = v.lastLog ? `<span style="font-size:10px;color:#6B6A67">${String(v.lastLog).substring(0,20)}</span>` : '<span style="color:#ccc">-</span>';
-    return`<tr class="dr">
-      <td style="font-weight:600">${v.name}</td>
+    const lastLogTxt=v.lastLog?`<span style="font-size:10px;color:#6B6A67">${String(v.lastLog).substring(0,20)}</span>`:'<span style="color:#ccc">-</span>';
+    const isOpen=listExpandedRows.has(v.name);
+    const mainRow=`<tr class="dr list-adv-row" data-adv="${v.name.replace(/"/g,'&quot;')}" style="cursor:pointer;">
+      <td style="font-weight:600;color:#185FA5;">
+        <span style="font-size:9px;margin-right:4px;display:inline-block;transition:transform .15s;${isOpen?'transform:rotate(90deg)':''}">▶</span>${v.name}
+      </td>
       <td style="font-size:11px;color:#6B6A67">${v.person}</td>
       <td style="font-size:11px;color:#6B6A67">${v.sector1}</td>
       <td style="font-size:10px;color:#aaa">${v.sector2}</td>
@@ -1642,12 +1965,86 @@ function renderList(){
       <td style="text-align:right">${diffTxt}</td>
       <td style="font-size:10px;color:#6B6A67">${v.note||''}</td>
     </tr>`;
+    // 펼침 행 (집행내역)
+    const detailRow = isOpen ? buildListDetailRow(v.name) : '';
+    return mainRow + detailRow;
   }).join('');
 
+  document.getElementById('list-body').innerHTML=tableRows;
   document.getElementById('list-sum').innerHTML=
     `<span>표시 <span class="sv">${rows.length}개</span> 광고주</span>`+
     `<span>2026년 <span class="sv">${fmtW(tot26)}</span></span>`+
     `<span>2025년 <span class="sv">${fmtW(tot25)}</span></span>`;
+}
+
+function buildListDetailRow(advName){
+  const raws = advRaw.filter(r=>(r['광고주']||'').trim()===advName).sort((a,b)=>{
+    const da=new Date(a['시작일']||0), db=new Date(b['시작일']||0); return db-da;
+  });
+  if(!raws.length) return `<tr class="list-detail-row" data-adv="${advName.replace(/"/g,'&quot;')}">
+    <td colspan="11" style="padding:8px 16px 8px 32px;background:#F8F7F3;font-size:11px;color:#aaa;">집행 내역 없음</td></tr>`;
+
+  // 연도별 그룹핑
+  const yearGroups = {};
+  raws.forEach(r=>{
+    const yr = new Date(r['시작일']||0).getFullYear()||'미상';
+    if(!yearGroups[yr]) yearGroups[yr]=[];
+    yearGroups[yr].push(r);
+  });
+  const sortedYears = Object.keys(yearGroups).sort((a,b)=>parseInt(b)-parseInt(a));
+
+  const thead = `<thead><tr style="background:#EEEDE9;">
+    <th style="padding:5px 5px 5px 32px;text-align:left;font-size:10px;color:#6B6A67;font-weight:500;min-width:90px;">시작일</th>
+    <th colspan="2" style="text-align:left;font-size:10px;color:#6B6A67;font-weight:500;">매체</th>
+    <th colspan="2" style="text-align:left;font-size:10px;color:#6B6A67;font-weight:500;">팀/담당자</th>
+    <th colspan="2" style="text-align:right;font-size:10px;color:#6B6A67;font-weight:500;">집행금액</th>
+    <th style="text-align:left;font-size:10px;color:#6B6A67;font-weight:500;">종료일</th>
+    <th colspan="3" style="text-align:left;font-size:10px;color:#6B6A67;font-weight:500;">업종</th>
+  </tr></thead>`;
+
+  let bodyHtml = '';
+  sortedYears.forEach(yr=>{
+    const grp = yearGroups[yr];
+    const yrTotal = grp.reduce((s,r)=>s+(r['집행금액']||0),0);
+    // 연도 구분 행
+    bodyHtml += `<tr style="background:#EEF4FF;border-top:1px solid #D8E8FF;">
+      <td colspan="11" style="padding:4px 8px 4px 32px;font-size:11px;font-weight:700;color:#185FA5;">
+        ${yr}년 · ${grp.length}건 · ${fmtW(yrTotal)}
+      </td></tr>`;
+    // 해당 연도 데이터 행
+    grp.forEach(r=>{
+      const amt=r['집행금액']||0;
+      bodyHtml += `<tr style="background:#F8F7F3;border-bottom:0.5px solid #EEEDE9;">
+        <td style="padding-left:32px;font-size:11px;color:#6B6A67;">${fmtDY(r['시작일'])}</td>
+        <td colspan="2" style="font-size:11px;">${r['매체']||'-'}</td>
+        <td colspan="2" style="font-size:11px;color:#6B6A67;">${sn(r['팀명']||'')} ${r['매출담당자']?'· '+r['매출담당자']:''}</td>
+        <td colspan="2" style="text-align:right;font-size:11px;font-weight:600;">${fmtW(amt)}</td>
+        <td style="font-size:10px;color:#aaa;">${fmtDY(r['종료일'])}</td>
+        <td colspan="3" style="font-size:10px;color:#aaa;">${r['업종']||''}</td>
+      </tr>`;
+    });
+  });
+
+  const total = raws.reduce((s,r)=>s+(r['집행금액']||0),0);
+  bodyHtml += `<tr style="background:#F0EFE9;border-top:1px solid #E5E4E0;">
+    <td colspan="7" style="padding:5px 5px 5px 32px;font-size:11px;font-weight:600;">총 합계 ${raws.length}건</td>
+    <td colspan="4" style="text-align:right;padding-right:8px;font-size:12px;font-weight:700;color:#185FA5;">${fmtW(total)}</td>
+  </tr>`;
+
+  return `<tr class="list-detail-row" data-adv="${advName.replace(/"/g,'&quot;')}">
+    <td colspan="11" style="padding:0;background:#F8F7F3;">
+      <table style="width:100%;border-collapse:collapse;">${thead}<tbody>${bodyHtml}</tbody></table>
+    </td></tr>`;
+}
+
+function handleListClick(e){
+  const row = e.target.closest('.list-adv-row');
+  if(!row) return;
+  const advName = row.dataset.adv;
+  if(!advName) return;
+  if(listExpandedRows.has(advName)) listExpandedRows.delete(advName);
+  else listExpandedRows.add(advName);
+  renderList();
 }
 
 
@@ -1720,20 +2117,24 @@ function exportListCSV(){
   a.download='광고주리스트.csv';a.click();
 }
 // ══════════════════════════════════════
-const TITLES={adv:'누적 광고 데이터',sales:'영업사원별 실적',prod:'상품별 실적',list:'광고주 리스트',all:'본부 전체 실적',ms:'마케팅솔루션국',ms1:'마케팅솔루션1팀',ms2:'마케팅솔루션2팀',ms3:'마케팅솔루션3팀',ms4:'마케팅솔루션4팀',msd:'디지털사업팀',msp1:'솔루션기획1팀',msp2:'솔루션기획2팀',cs:'콘텐트사업국',cst:'콘텐트사업팀',inn:'이노베이션랩',csd:'콘텐트개발팀',dev:'솔루션개발팀',tb:'타운보드(사업지원국)'};
+const TITLES={adv:'누적 광고 데이터',sales:'영업사원별 실적',weekly:'주간업무보고',reports:'게첨보고서',intro:'본부 소개서',prod:'상품별 실적',list:'광고주 리스트',all:'본부 전체 실적',ms:'마케팅솔루션국',ms1:'마케팅솔루션1팀',ms2:'마케팅솔루션2팀',ms3:'마케팅솔루션3팀',ms4:'마케팅솔루션4팀',msd:'디지털사업팀',msp1:'솔루션기획1팀',msp2:'솔루션기획2팀',cs:'콘텐트사업국',cst:'콘텐트사업팀',inn:'이노베이션랩',csd:'콘텐트개발팀',dev:'솔루션개발팀',tb:'타운보드(사업지원국)'};
 function nav(key,el){
   cKey=key;
   document.querySelectorAll('.ni,.nc').forEach(n=>n.classList.remove('on'));if(el)el.classList.add('on');
   const isA=key==='adv',isP=key==='prod',isL=key==='list',isSales=key==='sales';
+  const isWeekly=key==='weekly',isIntro=key==='intro',isReports=key==='reports';
   const TEAM_KEYS = ['ms1','ms2','ms3','ms4','msd','inn','cst','csd','dev'];
   const isTeam = TEAM_KEYS.includes(key);
-  const isPerf = !isA&&!isP&&!isL&&!isTeam&&!isSales;
+  const isPerf = !isA&&!isP&&!isL&&!isTeam&&!isSales&&!isWeekly&&!isIntro&&!isReports;
   document.getElementById('vp').style.display=isPerf?'block':'none';
   document.getElementById('va').style.display=isA?'block':'none';
   document.getElementById('vpr').style.display=isP?'block':'none';
   document.getElementById('vlist').style.display=isL?'block':'none';
   document.getElementById('vteam').style.display=isTeam?'block':'none';
   document.getElementById('vsales').style.display=isSales?'block':'none';
+  document.getElementById('vweekly').style.display=isWeekly?'block':'none';
+  document.getElementById('vintro').style.display=isIntro?'block':'none';
+  document.getElementById('vreports').style.display=isReports?'block':'none';
   document.getElementById('perf-ctrl').style.display=(isPerf||isTeam)?'flex':'none';
   document.getElementById('page-title').textContent=TITLES[key]||key;
   if(isA)return;
@@ -1744,6 +2145,9 @@ function nav(key,el){
     return;
   }
   if(isSales){ renderSales(); return; }
+  if(isWeekly){ loadWeekly(); return; }
+  if(isReports){ loadReports(); return; }
+  if(isIntro){ return; }
   if(isTeam){ loadTeamDash(key); return; }
   renderPerf(key);
 }
@@ -2335,6 +2739,12 @@ async function loadAnnualData(){
 function makeLineChart(canvasId, datasets, color){
   const canvas = document.getElementById(canvasId);
   if(!canvas) return null;
+  // 부모 컨테이너 크기에 맞게 canvas 크기 명시적 설정
+  const wrap = canvas.parentElement;
+  if(wrap){
+    canvas.style.width = '100%';
+    canvas.style.height = '100%';
+  }
   return new Chart(canvas, {
     type:'line',
     data:{ labels:['1월','2월','3월','4월','5월','6월','7월','8월','9월','10월','11월','12월'], datasets },
@@ -2410,7 +2820,249 @@ function renderAnnualChart(){
     {c:'#5DCAA5',l:'26년 계획',dash:true},
     {c:'#1D9E75',l:'26년 실적',dash:false},
   ]);
+
+  // ResizeObserver로 컨테이너 크기 변화 감지 → 차트 resize
+  ['annual-wrap-sale','annual-wrap-net'].forEach(wrapId=>{
+    const wrap = document.getElementById(wrapId);
+    if(!wrap || wrap._roAttached) return;
+    wrap._roAttached = true;
+    new ResizeObserver(()=>{
+      if(annualChartSale) annualChartSale.resize();
+      if(annualChartNet)  annualChartNet.resize();
+    }).observe(wrap.parentElement||wrap);
+  });
 }
+
+// ══════════════════════════════════════
+// 게첨보고서
+// ══════════════════════════════════════
+let reportsData = [];
+let reportsLoading = false;
+
+async function loadReports(){
+  if(reportsLoading) return;
+  reportsLoading = true;
+  const bar = document.getElementById('reports-load-bar');
+  bar.style.cssText='display:block;background:#E6F1FB;border:0.5px solid #B8D4F0;border-radius:8px;padding:9px 14px;margin-bottom:14px;font-size:11px;color:#185FA5;';
+  bar.textContent='게첨보고서 불러오는 중...';
+  try{
+    const res = await fetch(`${REPORTS_URL}?action=reports&_=${Date.now()}`);
+    const j = await res.json();
+    if(j.error) throw new Error(j.error);
+    reportsData = j.data || [];
+
+    bar.style.cssText='display:block;background:#E1F5EE;border:0.5px solid #34A853;border-radius:8px;padding:9px 14px;margin-bottom:14px;font-size:11px;color:#0F6E56;';
+    bar.textContent=`✓ 게첨보고서 ${reportsData.length}건 로드 완료`;
+    setTimeout(()=>bar.style.display='none', 2000);
+
+    // 필터 초기화
+    initReportsFilters();
+    renderReports();
+  }catch(e){
+    bar.style.cssText='display:block;background:#FCEBEB;border:0.5px solid #E24B4A;border-radius:8px;padding:9px 14px;margin-bottom:14px;font-size:11px;color:#A32D2D;';
+    bar.textContent='로드 실패: '+e.message;
+    console.error(e);
+  } finally { reportsLoading=false; }
+}
+
+function parseReportName(name){
+  // 형태: 260401_넥슨_메이플스토리_CPMT_AP_T204_홍대
+  const parts = name.split('_');
+  const dateStr = parts[0] || '';
+  const year  = dateStr.length>=6 ? '20'+dateStr.slice(0,2) : '';
+  const month = dateStr.length>=6 ? parseInt(dateStr.slice(2,4)) : null;
+  const day   = dateStr.length>=6 ? dateStr.slice(4,6) : '';
+  const brand = parts[1] || '';
+  const campaign = parts[2] || '';
+  const medias = parts.slice(3).filter(Boolean);
+  // 알려진 매체 키워드
+  const MEDIA_KEYS = ['CPMT','PMT','CMT','AP','T204','홍대','타운보드','경기버스','버스','SB타워','쎄덱','KTS'];
+  const mediaList = medias.filter(m => MEDIA_KEYS.some(k=>m.toUpperCase().includes(k.toUpperCase())));
+  return { dateStr, year, month, day, brand, campaign, medias, mediaList };
+}
+
+function initReportsFilters(){
+  // 월 필터
+  const months = [...new Set(reportsData.map(r=>parseReportName(r.name).month).filter(Boolean))].sort((a,b)=>b-a);
+  const MON_KR = ['','1월','2월','3월','4월','5월','6월','7월','8월','9월','10월','11월','12월'];
+  document.getElementById('reports-month').innerHTML =
+    '<option value="">전체 월</option>'+months.map(m=>`<option value="${m}">${MON_KR[m]}</option>`).join('');
+  // 매체 필터
+  const MEDIA_KEYS = ['CPMT','PMT','CMT','AP','T204','홍대','타운보드','경기버스','SB타워','쎄덱','KTS'];
+  const mediasAll = new Set();
+  reportsData.forEach(r=>{
+    const {medias}=parseReportName(r.name);
+    medias.forEach(m=>{ if(MEDIA_KEYS.some(k=>m.toUpperCase().includes(k.toUpperCase()))) mediasAll.add(m); });
+  });
+  document.getElementById('reports-media').innerHTML =
+    '<option value="">전체 매체</option>'+ [...mediasAll].sort().map(m=>`<option>${m}</option>`).join('');
+}
+
+function renderReports(){
+  if(!reportsData.length) return;
+  const q = (document.getElementById('reports-q').value||'').toLowerCase();
+  const monFilter = document.getElementById('reports-month').value;
+  const mediaFilter = document.getElementById('reports-media').value;
+  const MON_KR = ['','1월','2월','3월','4월','5월','6월','7월','8월','9월','10월','11월','12월'];
+
+  let rows = reportsData.map(r=>({...r, parsed: parseReportName(r.name)}));
+
+  // 필터
+  rows = rows.filter(r=>{
+    const p = r.parsed;
+    if(monFilter && String(p.month) !== monFilter) return false;
+    if(mediaFilter && !r.parsed.medias.some(m=>m===mediaFilter)) return false;
+    if(q){
+      const searchStr = r.name.toLowerCase();
+      if(!searchStr.includes(q)) return false;
+    }
+    return true;
+  });
+
+  // KPI
+  const brands = new Set(rows.map(r=>r.parsed.brand).filter(Boolean));
+  const months = new Set(rows.map(r=>r.parsed.month).filter(Boolean));
+  document.getElementById('reports-kpi').innerHTML=[
+    {l:'게첨보고서 수', v:rows.length+'건', b:'<span class="badge bt">필터 기준</span>'},
+    {l:'브랜드 수', v:brands.size+'개', b:'<span class="badge bn">브랜드</span>'},
+    {l:'월 수', v:months.size+'개월', b:'<span class="badge bn">기간</span>'},
+  ].map(k=>`<div class="kpi"><div class="kl">${k.l}</div><div class="kv">${k.v}</div><div class="km">${k.b}</div></div>`).join('');
+
+  if(!rows.length){
+    document.getElementById('reports-list').innerHTML='<div style="text-align:center;color:#aaa;font-size:12px;padding:40px 0;">검색 결과 없음</div>';
+    document.getElementById('reports-sum').innerHTML='';
+    return;
+  }
+
+  // 테이블 형태로 렌더
+  const tableRows = rows.map((r,i)=>{
+    const p = r.parsed;
+    const dateDisp = p.month ? `${p.year}.${String(p.month).padStart(2,'0')}.${p.day}` : p.dateStr;
+    const mediaBadges = p.mediaList.map(m=>
+      `<span style="font-size:10px;padding:2px 7px;border-radius:4px;background:#E6F1FB;color:#185FA5;font-weight:500;">${m}</span>`
+    ).join(' ');
+    return `<tr class="dr" onclick="window.open('${r.url}','_blank')" style="cursor:pointer;">
+      <td style="color:#aaa;font-size:10px;">${i+1}</td>
+      <td style="font-size:11px;color:#6B6A67;">${dateDisp}</td>
+      <td style="font-weight:700;color:#185FA5;">${p.brand}</td>
+      <td style="font-size:12px;">${p.campaign}</td>
+      <td><div style="display:flex;gap:4px;flex-wrap:wrap;">${mediaBadges||'<span style="color:#aaa;font-size:11px;">-</span>'}</div></td>
+      <td style="font-size:10px;color:#aaa;">↗ 열기</td>
+    </tr>`;
+  }).join('');
+
+  document.getElementById('reports-list').innerHTML=`
+    <div style="overflow-x:auto;border:0.5px solid #EEEDE9;border-radius:10px;">
+    <table class="rtbl" style="min-width:600px;">
+      <thead><tr>
+        <th style="width:30px">#</th>
+        <th style="width:90px">날짜</th>
+        <th style="width:100px">브랜드</th>
+        <th style="width:150px">캠페인</th>
+        <th>매체</th>
+        <th style="width:60px"></th>
+      </tr></thead>
+      <tbody>${tableRows}</tbody>
+    </table></div>`;
+
+  document.getElementById('reports-sum').innerHTML=
+    `<span>표시 <span class="sv">${rows.length}건</span></span>`+
+    `<span>브랜드 <span class="sv">${brands.size}개</span></span>`;
+}
+
+// ══════════════════════════════════════
+// 주간업무보고
+// ══════════════════════════════════════
+let weeklyLoading = false;
+
+async function loadWeekly(){
+  if(weeklyLoading) return;
+  weeklyLoading = true;
+  const bar = document.getElementById('weekly-load-bar');
+  const list = document.getElementById('weekly-list');
+  bar.style.display='block'; bar.textContent='파일 목록 불러오는 중...';
+  try{
+    const res = await fetch(`${WEEKLY_URL}?action=weekly&_=${Date.now()}`);
+    const j = await res.json();
+    if(j.error) throw new Error(j.error);
+    const files = j.data || [];
+
+    // 파일명에서 월 파싱 (26.04.17 형태에서 04 추출)
+    const pdfCount = files.filter(f=>f.mimeType==='application/pdf').length;
+    const latestDate = files[0] ? new Date(files[0].date).toLocaleDateString('ko-KR') : '-';
+    document.getElementById('weekly-kpi').innerHTML=[
+      {l:'PDF 파일', v:pdfCount+'개', b:'<span class="badge bn">PDF</span>'},
+      {l:'최신 업로드', v:latestDate, b:'<span class="badge bu">최신</span>'},
+    ].map(k=>`<div class="kpi"><div class="kl">${k.l}</div><div class="kv">${k.v}</div><div class="km">${k.b}</div></div>`).join('');
+
+    bar.style.cssText='display:block;background:#E1F5EE;border:0.5px solid #34A853;border-radius:8px;padding:9px 14px;margin-bottom:14px;font-size:11px;color:#0F6E56;';
+    bar.textContent=`✓ 파일 ${files.length}개 로드 완료`;
+    setTimeout(()=>bar.style.display='none', 2000);
+
+    if(!files.length){
+      list.innerHTML='<div style="text-align:center;color:#aaa;font-size:12px;padding:40px 0;">폴더에 파일이 없습니다</div>';
+      return;
+    }
+
+    // 파일 목록 렌더 (월별 그룹핑)
+    const ext = name => name.split('.').pop().toUpperCase();
+    const extColor = e => ({'PDF':'#D85A30','PPTX':'#C84B31','PPT':'#C84B31','XLSX':'#1D9E75','DOCX':'#185FA5','MP4':'#888780'}[e]||'#888780');
+    const fmtSize = b => b>1024*1024?(b/1024/1024).toFixed(1)+'MB':(b/1024).toFixed(0)+'KB';
+    const fmtDate = s => { const d=new Date(s); return d.getFullYear()+'.'+String(d.getMonth()+1).padStart(2,'0')+'.'+String(d.getDate()).padStart(2,'0'); };
+    const MON_KR = ['','1월','2월','3월','4월','5월','6월','7월','8월','9월','10월','11월','12월'];
+
+    // 파일명에서 월 파싱 (예: 26.04.17 → 4월)
+    const getFileMon = name => {
+      const m = name.match(/(\d{2})[._\-](\d{2})[._\-](\d{2})/);
+      return m ? parseInt(m[2]) : null;
+    };
+
+    // 월별 그룹핑
+    const groups = {};
+    files.forEach(f => {
+      const mon = getFileMon(f.name) || (new Date(f.date).getMonth()+1);
+      const key = String(mon).padStart(2,'0');
+      if(!groups[key]) groups[key] = [];
+      groups[key].push(f);
+    });
+
+    const sortedMons = Object.keys(groups).sort((a,b) => parseInt(b)-parseInt(a));
+    list.innerHTML = sortedMons.map(monKey => {
+      const mon = parseInt(monKey);
+      const monFiles = groups[monKey];
+      const fileCards = monFiles.map(f => {
+        const e = ext(f.name); const c = extColor(e);
+        return '<a href="'+f.url+'" target="_blank"'+
+          ' style="display:flex;align-items:center;gap:12px;padding:11px 14px;border:0.5px solid #E5E4E0;border-radius:9px;text-decoration:none;color:#1a1917;background:#fff;transition:all .12s;"'+
+          ' onmouseover="this.style.background=\'#F2F1ED\';this.style.borderColor=\'#D0CFC9\'"'+
+          ' onmouseout="this.style.background=\'#fff\';this.style.borderColor=\'#E5E4E0\'">'+
+          '<div style="width:36px;height:36px;border-radius:7px;background:'+c+'18;display:flex;align-items:center;justify-content:center;flex-shrink:0;">'+
+          '<span style="font-size:10px;font-weight:700;color:'+c+';">'+e+'</span></div>'+
+          '<div style="flex:1;min-width:0;">'+
+          '<div style="font-size:12px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">'+f.name+'</div>'+
+          '<div style="font-size:10px;color:#aaa;margin-top:2px;">'+fmtDate(f.date)+' · '+fmtSize(f.size)+'</div>'+
+          '</div><div style="font-size:14px;color:#aaa;">↗</div></a>';
+      }).join('');
+      return '<div style="margin-bottom:18px;">'+
+        '<div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;">'+
+        '<div style="width:3px;height:14px;background:#D85A30;border-radius:2px;"></div>'+
+        '<span style="font-size:12px;font-weight:700;color:#D85A30;">'+MON_KR[mon]+'</span>'+
+        '<span style="font-size:10px;color:#aaa;">'+monFiles.length+'개</span></div>'+
+        '<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:8px;">'+fileCards+'</div></div>';
+    }).join('');
+
+
+  }catch(e){
+    bar.style.cssText='display:block;background:#FCEBEB;border:0.5px solid #E24B4A;border-radius:8px;padding:9px 14px;margin-bottom:14px;font-size:11px;color:#A32D2D;';
+    bar.textContent='로드 실패: '+e.message;
+    list.innerHTML='<div style="text-align:center;color:#aaa;font-size:12px;padding:40px 0;">파일 목록을 불러올 수 없습니다</div>';
+    console.error(e);
+  } finally {
+    weeklyLoading = false;
+  }
+}
+
+// 본부 소개서 링크는 HTML에 직접 포함
 
 // ══════════════════════════════════════
 // INIT
