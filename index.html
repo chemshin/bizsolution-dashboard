@@ -238,43 +238,48 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI','Helvetica Neue',sa
       </div>
     </div>
 
-    <div class="sec-header" style="margin-top:2px;">
-      <div class="sec-bar" style="background:#7F77DD"></div>
-      <span class="sec-title" style="color:#7F77DD">OOH 매체별 매출</span>
-      <span class="sec-sub">▶ 클릭하여 펼치기 · 당월 달성률 = 당월실적 ÷ 당월목표 · 억원</span>
-    </div>
-    <div class="card" style="border-top:3px solid #7F77DD;">
-      <div style="overflow-x:auto;">
-        <table class="oohtbl"><thead><tr>
-          <th style="text-align:left;min-width:190px">OOH 매체</th>
-          <th style="min-width:72px">당월 목표</th>
-          <th style="min-width:80px" id="ooh-mon-th">당월 실적</th>
-          <th style="min-width:72px">당월 달성률</th>
-          <th style="min-width:72px" id="ooh-acc-th">누적 실적</th>
-          <th style="min-width:72px">누적 목표</th>
-          <th style="min-width:120px">누적 달성률</th>
-        </tr></thead><tbody id="ooh-tbody"></tbody></table>
+    <!-- OOH + 주요광고주 (본부 전체 실적에서만 표시) -->
+    <div id="vp-ooh-section">
+      <div class="sec-header" style="margin-top:2px;">
+        <div class="sec-bar" style="background:#7F77DD"></div>
+        <span class="sec-title" style="color:#7F77DD">OOH 매체별 매출</span>
+        <span class="sec-sub">▶ 클릭하여 펼치기 · 당월 달성률 = 당월실적 ÷ 당월목표 · 억원</span>
+      </div>
+      <div class="card" style="border-top:3px solid #7F77DD;">
+        <div style="overflow-x:auto;">
+          <table class="oohtbl"><thead><tr>
+            <th style="text-align:left;min-width:190px">OOH 매체</th>
+            <th style="min-width:72px">당월 목표</th>
+            <th style="min-width:80px" id="ooh-mon-th">당월 실적</th>
+            <th style="min-width:72px">당월 달성률</th>
+            <th style="min-width:72px" id="ooh-acc-th">누적 실적</th>
+            <th style="min-width:72px">누적 목표</th>
+            <th style="min-width:120px">누적 달성률</th>
+          </tr></thead><tbody id="ooh-tbody"></tbody></table>
+        </div>
+      </div>
+
+      <div class="sec-header" style="margin-top:2px;">
+        <div class="sec-bar" style="background:#D85A30"></div>
+        <span class="sec-title" style="color:#D85A30">주요 광고주 현황 (타운보드)</span>
+        <span class="sec-sub" id="top-adv-sub">해당 월 타운보드(패키지) 집행 기준 상위 20개</span>
+      </div>
+      <div class="card" style="border-top:3px solid #D85A30;">
+        <div id="top-adv-wrap-tb"><div style="padding:20px;text-align:center;color:#aaa;font-size:12px;">광고주 데이터 불러오는 중...</div></div>
+      </div>
+
+      <div class="sec-header" style="margin-top:2px;">
+        <div class="sec-bar" style="background:#7F77DD"></div>
+        <span class="sec-title" style="color:#7F77DD">주요 광고주 현황 (더중앙OOH)</span>
+        <span class="sec-sub" id="top-adv-sub-ooh">해당 월 OOH 매체 집행 기준 상위 20개</span>
+      </div>
+      <div class="card" style="border-top:3px solid #7F77DD;">
+        <div id="top-adv-wrap-ooh"><div style="padding:20px;text-align:center;color:#aaa;font-size:12px;">광고주 데이터 불러오는 중...</div></div>
       </div>
     </div>
 
-    <div class="sec-header" style="margin-top:2px;">
-      <div class="sec-bar" style="background:#D85A30"></div>
-      <span class="sec-title" style="color:#D85A30">주요 광고주 현황 (타운보드)</span>
-      <span class="sec-sub" id="top-adv-sub">해당 월 타운보드(패키지) 집행 기준 상위 20개</span>
-    </div>
-    <div class="card" style="border-top:3px solid #D85A30;">
-      <div id="top-adv-wrap-tb"><div style="padding:20px;text-align:center;color:#aaa;font-size:12px;">광고주 데이터 불러오는 중...</div></div>
-    </div>
-
-    <div class="sec-header" style="margin-top:2px;">
-      <div class="sec-bar" style="background:#7F77DD"></div>
-      <span class="sec-title" style="color:#7F77DD">주요 광고주 현황 (더중앙OOH)</span>
-      <span class="sec-sub" id="top-adv-sub-ooh">해당 월 OOH 매체 집행 기준 상위 20개</span>
-    </div>
-    <div class="card" style="border-top:3px solid #7F77DD;">
-      <div id="top-adv-wrap-ooh"><div style="padding:20px;text-align:center;color:#aaa;font-size:12px;">광고주 데이터 불러오는 중...</div></div>
-    </div>
   </div>
+  <!-- /실적 뷰 -->
 
   <!-- 광고주 뷰 -->
   <div id="va" style="display:none;">
@@ -620,18 +625,16 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI','Helvetica Neue',sa
       </div>
       <div class="tw" style="max-height:600px;">
         <table class="rtbl" style="min-width:820px;" id="list-tbl" onclick="handleListClick(event)">
-          <thead><tr>
-            <th style="width:150px">광고주</th>
-            <th style="width:70px">담당자</th>
-            <th style="width:70px">업종1</th>
-            <th style="width:70px">업종2</th>
-            <th style="width:55px">등급</th>
-            <th style="width:100px">현황</th>
-            <th style="width:120px">최근 영업일지</th>
-            <th style="width:95px;text-align:right">2025년</th>
-            <th style="width:95px;text-align:right">2026년</th>
-            <th style="width:65px;text-align:right">증감</th>
-            <th style="width:100px">비고</th>
+          <thead><tr id="list-thead-row">
+            <th style="width:160px;cursor:pointer;" onclick="sortList('name')" id="lth-name">광고주 <span id="lts-name"></span></th>
+            <th style="width:80px;cursor:pointer;" onclick="sortList('person')" id="lth-person">담당자 <span id="lts-person"></span></th>
+            <th style="width:80px;cursor:pointer;" onclick="sortList('sector1')" id="lth-sector1">업종 <span id="lts-sector1"></span></th>
+            <th style="width:55px;cursor:pointer;text-align:center;" onclick="sortList('grade')" id="lth-grade">등급 <span id="lts-grade"></span></th>
+            <th style="width:55px;text-align:center;cursor:pointer;" onclick="sortList('log')" id="lth-log">영업일지 <span id="lts-log"></span></th>
+            <th style="width:95px;cursor:pointer;text-align:right;" onclick="sortList('te25')" id="lth-te25">2025년 <span id="lts-te25"></span></th>
+            <th style="width:95px;cursor:pointer;text-align:right;" onclick="sortList('te26')" id="lth-te26">2026년 <span id="lts-te26"></span></th>
+            <th style="width:65px;cursor:pointer;text-align:right;" onclick="sortList('diff')" id="lth-diff">증감 <span id="lts-diff"></span></th>
+            <th style="width:100px;">비고</th>
           </tr></thead>
           <tbody id="list-body"></tbody>
         </table>
@@ -674,6 +677,8 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI','Helvetica Neue',sa
     </div>
   </div>
 
+  </div>
+
   <!-- 팀별 대시보드 뷰 -->
   <div id="vteam" style="display:none;">
     <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px;flex-wrap:wrap;">
@@ -706,7 +711,6 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI','Helvetica Neue',sa
     </div>
   </div>
 
-  </div>
 </div>
 </div>
 
@@ -715,7 +719,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI','Helvetica Neue',sa
 // ══════════════════════════════════════
 // CONFIG & URLS
 // ══════════════════════════════════════
-const PERF_URL = 'https://script.google.com/macros/s/AKfycbzpcwqe08QgJCsV9D0dVr7N66weT47KUYm6QzEF85s35fcV8ibZHg464bgkUaAUBDPMUA/exec';
+const PERF_URL = 'https://script.google.com/macros/s/AKfycbzUWLmpsYBkOZ-2L6Fhxm8nEL9AqF6Z9YoIvsCHEPuQeuIfQwxkJ0gsUg_Ehs3tuIod5Q/exec';
 const OOH_URL  = 'https://script.google.com/macros/s/AKfycbzQKV0ozhslPidbAtAnAVIUAoRC-nUiTttja8JudY2DD_JJ9Dffi6Gv8CPyXT5cH4KCDg/exec';
 const TEAM_URL = 'https://script.google.com/macros/s/AKfycbzU7C8BXIda6aSuLm-jbWGMhwabVPDTHARGrJgaXlZ_vgRpOUBtfGO8j4b1NSaXT_vTOA/exec';
 const ADV_URL  = 'https://script.google.com/macros/s/AKfycbzcm6y3neEroHsOqo1_Ri0fb0IhruS0KoPNQVCnDPUTyghtvSkJK-zayH6ZIbmhXmTY/exec';
@@ -994,8 +998,9 @@ async function fetchPerf(){
     parsePerf(json.data, mon);
     document.getElementById('chip-txt').textContent = `억원 단위 · 2026년 ${mon}월 (실시간)`;
     document.getElementById('gs-txt').textContent = `${mon}월 연동 완료`;
-    // OOH 데이터 순차 로드
-    setTimeout(()=>loadOohData().then(()=>buildOohTbl()).catch(console.error), 300);
+
+    // OOH 데이터 순차 로드 (본부전체/타운보드 탭일 때)
+    setTimeout(()=>loadOohData().then(()=>{ if(cKey==='all'||cKey==='tb') buildOohTbl(); }).catch(console.error), 300);
     // 연간 차트 데이터 로드 (캐시 없을 때만)
     if(!annualData) setTimeout(()=>loadAnnualData(), 600);
   }catch(e){
@@ -1022,8 +1027,16 @@ async function fetchPerf(){
 function renderPerf(key){
   renderKPI(key);
   renderOrg(key);
-  buildOohTbl();
-  if(advRaw.length) renderTopAdv();
+  // OOH/주요광고주는 all/tb 탭에서만
+  const oohSec = document.getElementById('vp-ooh-section');
+  const showOoh = key === 'all' || key === 'tb';
+  if(oohSec) oohSec.style.display = showOoh ? 'block' : 'none';
+  if(showOoh){
+    buildOohTbl();
+    if(advRaw.length) renderTopAdv();
+  }
+  // 연간 차트 - 데이터 있으면 바로, 없으면 loadAnnualData 후 자동 렌더
+  if(annualData) renderAnnualChart(key);
 }
 
 function renderKPI(key){
@@ -1636,7 +1649,7 @@ async function loadMergeFile(input){
 
     st.innerHTML = `✓ <strong>${mergeRaw.length}건</strong> 로드 완료 · ${file.name} · 기존 데이터와 합산 표시 중`;
     document.getElementById('merge-clear-btn').style.display='inline-flex';
-    initFilt(); renderAdv(); renderTopAdv();
+    initFilt(); renderAdv();
   }catch(e){
     document.getElementById('merge-status').textContent='❌ 오류: '+e.message;
     console.error(e);
@@ -1649,7 +1662,7 @@ function clearMergeData(){
   document.getElementById('merge-status').textContent='합병 전 데이터가 제거되었습니다.';
   document.getElementById('merge-clear-btn').style.display='none';
   document.getElementById('merge-file').value='';
-  initFilt(); renderAdv(); renderTopAdv();
+  initFilt(); renderAdv();
 }
 
 async function loadAdv(){
@@ -1668,7 +1681,9 @@ async function loadAdv(){
     initFilt();
     if(cKey==='adv') renderAdv();
     if(cKey==='prod') renderProd();
-    renderTopAdv();
+    // 본부전체/타운보드 탭일 때 주요광고주 업데이트
+    if(cKey==='all'||cKey==='tb') renderTopAdv();
+
   }catch(e){
     setSb('display:block;background:#FCEBEB;border:0.5px solid #E24B4A;border-radius:8px;padding:9px 14px;margin-bottom:14px;font-size:11px;color:#A32D2D;','광고 데이터 로드 실패: '+e.message);
     document.getElementById('gs-txt').textContent='광고 데이터 로드 실패';
@@ -1813,6 +1828,8 @@ async function loadAdvList(sheetName){
 }
 
 let curListSector = ''; // 현재 선택된 업종 탭
+let curListSortKey = 'te26'; // 기본 정렬: 2026년 집행 내림차순
+let curListSortDir = 'desc';
 
 function switchListTeam(sheetName, el){
   // 팀 탭 활성화
@@ -1920,7 +1937,6 @@ function renderList(){
 
   const q=(document.getElementById('list-q').value||'').toLowerCase();
   const sec=document.getElementById('list-sector1').value;
-  const sortKey=document.getElementById('list-sort').value;
   const rawAmt = buildRawAmounts();
 
   // 시트 데이터 + RAW 매칭
@@ -1945,12 +1961,25 @@ function renderList(){
 
   // 정렬
   rows.sort((a,b)=>{
-    if(sortKey==='te26_desc') return b.te26-a.te26;
-    if(sortKey==='te26_asc')  return a.te26-b.te26;
-    if(sortKey==='te25_desc') return b.te25-a.te25;
-    if(sortKey==='te25_asc')  return a.te25-b.te25;
-    return a.name.localeCompare(b.name,'ko');
+    const dir = curListSortDir === 'desc' ? -1 : 1;
+    switch(curListSortKey){
+      case 'te26':   return (b.te26 - a.te26) * dir * -1;  // desc기본
+      case 'te25':   return (b.te25 - a.te25) * dir * -1;
+      case 'diff': {
+        const da = a.te25>0?(a.te26-a.te25)/a.te25:0;
+        const db = b.te25>0?(b.te26-b.te25)/b.te25:0;
+        return (db - da) * dir * -1;
+      }
+      case 'log':    return (b.lastLog?1:0) - (a.lastLog?1:0);  // 있는것 먼저
+      case 'person': return (a.person||'').localeCompare(b.person||'','ko') * dir;
+      case 'sector1':return (a.sector1||'').localeCompare(b.sector1||'','ko') * dir;
+      case 'name':
+      default:       return a.name.localeCompare(b.name,'ko') * dir;
+    }
   });
+
+  // 정렬 인디케이터 업데이트
+  updateListSortIndicators();
 
   // KPI - 상단 합계 + 업종별 breakdown
   const tot26=rows.reduce((s,r)=>s+r.te26,0);
@@ -2007,18 +2036,20 @@ function renderList(){
     const diffTxt=diff!==null
       ?`<span style="font-size:10px;font-weight:600;color:${diff>=0?'#0F6E56':'#A32D2D'}">${diff>=0?'+':''}${diff.toFixed(1)}%</span>`
       :'<span style="color:#aaa;font-size:10px">-</span>';
-    const lastLogTxt=v.lastLog?`<span style="font-size:10px;color:#6B6A67">${String(v.lastLog).substring(0,20)}</span>`:'<span style="color:#ccc">-</span>';
+
     const isOpen=listExpandedRows.has(v.name);
+    const logSafe = v.lastLog ? String(v.lastLog).replace(/&/g,'&amp;').replace(/"/g,'&quot;') : '';
+    const logIcon = v.lastLog
+      ? '<td style="text-align:center;cursor:pointer;" onclick="event.stopPropagation();showListLog(this)" data-adv="'+v.name.replace(/&/g,'&amp;').replace(/"/g,'&quot;')+'" data-log="'+logSafe+'"><span style="font-size:14px;">📋</span></td>'
+      : '<td style="text-align:center;color:#ccc;font-size:11px;">-</td>';
     const mainRow=`<tr class="dr list-adv-row" data-adv="${v.name.replace(/"/g,'&quot;')}" style="cursor:pointer;">
       <td style="font-weight:600;color:#185FA5;">
         <span style="font-size:9px;margin-right:4px;display:inline-block;transition:transform .15s;${isOpen?'transform:rotate(90deg)':''}">▶</span>${v.name}
       </td>
       <td style="font-size:11px;color:#6B6A67">${v.person}</td>
       <td style="font-size:11px;color:#6B6A67">${v.sector1}</td>
-      <td style="font-size:10px;color:#aaa">${v.sector2}</td>
       <td style="text-align:center">${gradeBadge(v.grade)}</td>
-      <td style="font-size:11px">${v.status||'<span style="color:#ccc">-</span>'}</td>
-      <td>${lastLogTxt}</td>
+      ${logIcon}
       <td style="text-align:right;color:#6B6A67">${v.te25?fmtW(v.te25):'-'}</td>
       <td style="text-align:right;font-weight:600;color:${v.te26>0?'#1a1917':'#aaa'}">${v.te26?fmtW(v.te26):'-'}</td>
       <td style="text-align:right">${diffTxt}</td>
@@ -2094,6 +2125,63 @@ function buildListDetailRow(advName){
     <td colspan="11" style="padding:0;background:#F8F7F3;">
       <table style="width:100%;border-collapse:collapse;">${thead}<tbody>${bodyHtml}</tbody></table>
     </td></tr>`;
+}
+
+function showListLog(td){
+  const advName = td.dataset.adv || '';
+  const logText = td.dataset.log || '';
+  // 기존 팝업 제거
+  const existing = document.getElementById('list-log-popup');
+  if(existing) existing.remove();
+
+  const popup = document.createElement('div');
+  popup.id = 'list-log-popup';
+  popup.style.cssText = `
+    position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);
+    background:#fff;border-radius:12px;box-shadow:0 8px 32px rgba(0,0,0,0.18);
+    padding:20px 24px;max-width:480px;width:90%;z-index:9999;
+    border-top:3px solid #7F77DD;`;
+  popup.innerHTML = `
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
+      <div style="font-size:12px;font-weight:700;color:#185FA5;">📋 최근 영업일지</div>
+      <button onclick="document.getElementById('list-log-popup').remove();document.getElementById('list-log-overlay').remove();"
+        style="background:none;border:none;font-size:18px;cursor:pointer;color:#aaa;line-height:1;">✕</button>
+    </div>
+    <div style="font-size:11px;color:#6B6A67;margin-bottom:10px;padding:4px 0;border-bottom:0.5px solid #EEEDE9;">${advName}</div>
+    <div style="font-size:13px;line-height:1.7;color:#1a1917;white-space:pre-wrap;max-height:300px;overflow-y:auto;">${logText}</div>`;
+
+  const overlay = document.createElement('div');
+  overlay.id = 'list-log-overlay';
+  overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.3);z-index:9998;';
+  overlay.onclick = ()=>{ popup.remove(); overlay.remove(); };
+
+  document.body.appendChild(overlay);
+  document.body.appendChild(popup);
+}
+
+function sortList(key){
+  if(curListSortKey === key){
+    curListSortDir = curListSortDir === 'desc' ? 'asc' : 'desc';
+  } else {
+    curListSortKey = key;
+    curListSortDir = ['te26','te25','diff'].includes(key) ? 'desc' : 'asc';
+  }
+  updateListSortIndicators();
+  renderList();
+}
+
+function updateListSortIndicators(){
+  const COLS = ['name','person','sector1','grade','log','te25','te26','diff'];
+  COLS.forEach(c=>{
+    const el = document.getElementById('lts-'+c);
+    if(!el) return;
+    if(c === curListSortKey){
+      el.textContent = curListSortDir === 'desc' ? '↓' : '↑';
+      el.style.color = '#185FA5';
+    } else {
+      el.textContent = '';
+    }
+  });
 }
 
 function handleListClick(e){
@@ -2611,30 +2699,67 @@ function renderTeamAdv(key, color){
   }
 
   const INIT=10;
-  const rows=sorted.map((r,i)=>{
-    const ms=[...r.medias],med=ms.length<=1?ms[0]||'-':ms[0]+' 외 '+(ms.length-1);
-    const share=total>0?(r.te/total*100).toFixed(1):0;
-    const hidden=i>=INIT?' style="display:none"':'';
-    return `<tr class="tadv-row-team"${hidden}>
-      <td>${i+1}</td><td>${r.n}</td>
-      <td style="color:#6B6A67;font-size:11px;text-align:left">${med}</td>
-      <td style="color:#6B6A67">${r.cnt}건</td>
-      <td style="font-weight:600">${fmtW(r.te)}</td>
-      <td><div style="display:flex;align-items:center;gap:4px;">
-        <div style="flex:1;height:4px;border-radius:2px;background:#EEEDE9;min-width:40px;">
-          <div style="height:4px;border-radius:2px;width:${Math.min(parseFloat(share)*5,100)}%;background:${color};opacity:0.7"></div>
-        </div>
-        <span style="font-size:10px;color:#6B6A67;min-width:28px">${share}%</span>
-      </div></td></tr>`;
-  }).join('');
+  let teamAdvExpanded = new Set();
 
+  const buildTeamAdvDetail = (advName) => {
+    const raws = advRaw.filter(r=>(r['광고주']||'').trim()===advName)
+      .sort((a,b)=>new Date(b['시작일']||0)-new Date(a['시작일']||0));
+    if(!raws.length) return `<tr><td colspan="6" style="padding:8px 16px 8px 32px;background:#F8F7F3;font-size:11px;color:#aaa;">집행 내역 없음</td></tr>`;
+    const yearGroups={};
+    raws.forEach(r=>{ const yr=new Date(r['시작일']||0).getFullYear()||'미상'; if(!yearGroups[yr]) yearGroups[yr]=[]; yearGroups[yr].push(r); });
+    const sortedYears=Object.keys(yearGroups).sort((a,b)=>parseInt(b)-parseInt(a));
+    let html='';
+    sortedYears.forEach(yr=>{
+      const grp=yearGroups[yr];
+      const yrTotal=grp.reduce((s,r)=>s+(r['집행금액']||0),0);
+      html+=`<tr style="background:#EEF4FF;border-top:1px solid #D8E8FF;">
+        <td colspan="6" style="padding:4px 8px 4px 32px;font-size:11px;font-weight:700;color:#185FA5;">
+          ${yr}년 · ${grp.length}건 · ${fmtW(yrTotal)}</td></tr>`;
+      grp.forEach(r=>{
+        html+=`<tr style="background:#F8F7F3;border-bottom:0.5px solid #EEEDE9;">
+          <td style="padding-left:32px;font-size:10px;color:#6B6A67;" colspan="2">${fmtDY(r['시작일'])}</td>
+          <td style="font-size:11px;text-align:left" colspan="2">${r['매체']||'-'}</td>
+          <td style="font-size:11px;font-weight:600;text-align:right">${fmtW(r['집행금액']||0)}</td>
+          <td style="font-size:10px;color:#aaa;">${fmtDY(r['종료일'])}</td>
+        </tr>`;
+      });
+    });
+    const total=raws.reduce((s,r)=>s+(r['집행금액']||0),0);
+    html+=`<tr style="background:#F0EFE9;border-top:1px solid #E5E4E0;">
+      <td colspan="4" style="padding:5px 5px 5px 32px;font-size:11px;font-weight:600;">총 ${raws.length}건</td>
+      <td style="text-align:right;font-size:12px;font-weight:700;color:#185FA5;">${fmtW(total)}</td>
+      <td></td></tr>`;
+    return html;
+  };
+
+  const renderTeamAdvRows = () => {
+    let html='';
+    sorted.forEach((r,i)=>{
+      const ms=[...r.medias],med=ms.length<=1?ms[0]||'-':ms[0]+' 외 '+(ms.length-1);
+      const isOpen=teamAdvExpanded.has(r.n);
+      const hidden=i>=INIT&&!isOpen?' style="display:none"':'';
+      html+=`<tr class="tadv-row-team"${hidden} style="cursor:pointer;" onclick="toggleTeamAdvRow('${r.n.replace(/'/g,"\'")}',this)">
+        <td>${i+1}</td>
+        <td style="color:${color};font-weight:600;">
+          <span style="font-size:9px;margin-right:3px;display:inline-block;transition:transform .15s;${isOpen?'transform:rotate(90deg)':''}">▶</span>${r.n}
+        </td>
+        <td style="color:#6B6A67;font-size:11px;text-align:left">${med}</td>
+        <td style="color:#6B6A67">${r.cnt}건</td>
+        <td style="font-weight:600">${fmtW(r.te)}</td>
+        <td></td></tr>`;
+      if(isOpen) html+=buildTeamAdvDetail(r.n);
+    });
+    return html;
+  };
+
+  const tableId = 'team-adv-tbody-'+key;
   wrap.innerHTML=`
-  <div style="max-height:360px;overflow-y:auto;border-radius:8px;border:0.5px solid #EEEDE9;">
+  <div style="max-height:480px;overflow-y:auto;border-radius:8px;border:0.5px solid #EEEDE9;">
   <table class="top-tbl" style="margin:0"><thead><tr>
     <th>#</th><th>광고주</th>
     <th style="text-align:left">주요 매체</th>
-    <th>건수</th><th>집행금액</th><th>비중</th>
-  </tr></thead><tbody>${rows}</tbody></table>
+    <th>건수</th><th>집행금액</th><th></th>
+  </tr></thead><tbody id="${tableId}">${renderTeamAdvRows()}</tbody></table>
   </div>
   ${sorted.length>INIT?`<div style="text-align:center;padding:6px 0 2px;">
     <button onclick="toggleTeamAdv()" id="tadv-btn-team"
@@ -2647,6 +2772,20 @@ function renderTeamAdv(key, color){
     <span>합계 <span class="sv">${fmtW(total)}</span></span>
     <span style="color:#aaa">${filtered.length}건 / ${sorted.length}개사</span>
   </div>`;
+
+  // 클릭 핸들러 (클로저로 sorted/color 참조)
+  wrap._toggleRow = (advName) => {
+    if(teamAdvExpanded.has(advName)) teamAdvExpanded.delete(advName);
+    else teamAdvExpanded.add(advName);
+    const tbody=document.getElementById(tableId);
+    if(tbody) tbody.innerHTML=renderTeamAdvRows();
+    // 전체보기 버튼 상태 유지
+  };
+}
+
+function toggleTeamAdvRow(advName, tr){
+  const wrap=document.getElementById('team-adv-wrap');
+  if(wrap&&wrap._toggleRow) wrap._toggleRow(advName);
 }
 
 function toggleTeamAdv(){
@@ -2787,8 +2926,8 @@ async function loadAnnualData(){
     const j = await res.json();
     if(j.error) throw new Error(j.error);
     annualData = j.data;
+    renderAnnualChart(cKey);
     if(st) st.style.display='none';
-    renderAnnualChart();
   }catch(e){
     if(st){ st.textContent='연간 데이터 로드 실패: '+e.message; }
     console.warn('[annual]', e);
@@ -2831,21 +2970,39 @@ function makeLegend(elId, items){
     </div>`).join('');
 }
 
-function renderAnnualChart(){
+function renderAnnualChart(key){
   if(!annualData) return;
+  key = key || cKey;
 
-  const rowSale = annualData.find(r=>r.name==='매출');
-  const rowNet  = annualData.find(r=>r.name==='순매출');
+  // 탭별 데이터 행 매핑
+  const isMsTab = key === 'ms';
+  const isCsTab = key === 'cs';
+
+  let rowSale, rowNet, saleLabel, netLabel;
+  if(isMsTab){
+    rowSale  = annualData.find(r=>r.name==='마케팅솔루션국');
+    rowNet   = annualData.find(r=>r.name==='마케팅솔루션국_순매출');
+    saleLabel = '마케팅솔루션국 매출';
+    netLabel  = '마케팅솔루션국 순매출';
+  } else if(isCsTab){
+    rowSale  = annualData.find(r=>r.name==='콘텐트사업국');
+    rowNet   = annualData.find(r=>r.name==='콘텐트사업국_순매출');
+    saleLabel = '콘텐트사업국 매출';
+    netLabel  = '콘텐트사업국 순매출';
+  } else {
+    rowSale  = annualData.find(r=>r.name==='매출');
+    rowNet   = annualData.find(r=>r.name==='순매출');
+    saleLabel = '매출';
+    netLabel  = '순매출';
+  }
 
   const toArr = (row, prefix) => row
     ? Array.from({length:12},(_,i)=>{ const v=row[prefix+(i+1)]; return v?A(v):null; })
     : Array(12).fill(null);
 
-  // 매출 데이터
   const saleAct  = toArr(rowSale,'act_');
   const salePlan = toArr(rowSale,'plan_');
   const saleYoy  = toArr(rowSale,'yoy_');
-  // 순매출 데이터
   const netAct   = toArr(rowNet,'act_');
   const netPlan  = toArr(rowNet,'plan_');
   const netYoy   = toArr(rowNet,'yoy_');
@@ -2857,16 +3014,26 @@ function renderAnnualChart(){
   if(annualChartSale){ annualChartSale.destroy(); annualChartSale=null; }
   if(annualChartNet){  annualChartNet.destroy();  annualChartNet=null; }
 
+  // 순매출 카드 항상 표시
+  const netWrap = document.getElementById('annual-wrap-net')?.closest('.card');
+  if(netWrap) netWrap.style.display='';
+
+  // 차트 제목 업데이트
+  const saleTitleEl = document.querySelector('#annual-wrap-sale')?.closest('.card')?.querySelector('div');
+  const netTitleEl  = document.querySelector('#annual-wrap-net')?.closest('.card')?.querySelector('div');
+  if(saleTitleEl) saleTitleEl.innerHTML = `${saleLabel} <span style="font-size:10px;font-weight:400;color:#6B6A67;">· 억원</span>`;
+  if(netTitleEl)  netTitleEl.innerHTML  = `${netLabel}  <span style="font-size:10px;font-weight:400;color:#6B6A67;">· 억원</span>`;
+
   annualChartSale = makeLineChart('chart-annual-sale', [
-    { label:'25년 실적', data:saleYoy,  borderColor:'#AAAAAA', borderWidth:2, pointRadius:3, tension:0.3, borderDash:[4,3], spanGaps:false },
-    { label:'26년 계획', data:salePlan, borderColor:'#378ADD', borderWidth:2, pointRadius:3, tension:0.3, borderDash:[5,3] },
-    { label:'26년 실적', data:saleAct,  borderColor:'#185FA5', borderWidth:2.5,pointRadius:4, tension:0.3 },
+    { label:'25년 실적', data:saleYoy,  borderColor:'#AAAAAA', borderWidth:2,   pointRadius:3, tension:0.3, borderDash:[4,3], spanGaps:false },
+    { label:'26년 계획', data:salePlan, borderColor:'#378ADD', borderWidth:2,   pointRadius:3, tension:0.3, borderDash:[5,3] },
+    { label:'26년 실적', data:saleAct,  borderColor:'#185FA5', borderWidth:2.5, pointRadius:4, tension:0.3 },
   ], '#185FA5');
 
   annualChartNet = makeLineChart('chart-annual-net', [
-    { label:'25년 실적', data:netYoy,  borderColor:'#AAAAAA', borderWidth:2, pointRadius:3, tension:0.3, borderDash:[4,3], spanGaps:false },
-    { label:'26년 계획', data:netPlan, borderColor:'#5DCAA5', borderWidth:2, pointRadius:3, tension:0.3, borderDash:[5,3] },
-    { label:'26년 실적', data:netAct,  borderColor:'#1D9E75', borderWidth:2.5,pointRadius:4, tension:0.3 },
+    { label:'25년 실적', data:netYoy,  borderColor:'#AAAAAA', borderWidth:2,   pointRadius:3, tension:0.3, borderDash:[4,3], spanGaps:false },
+    { label:'26년 계획', data:netPlan, borderColor:'#5DCAA5', borderWidth:2,   pointRadius:3, tension:0.3, borderDash:[5,3] },
+    { label:'26년 실적', data:netAct,  borderColor:'#1D9E75', borderWidth:2.5, pointRadius:4, tension:0.3 },
   ], '#1D9E75');
 
   makeLegend('annual-legend-sale',[
