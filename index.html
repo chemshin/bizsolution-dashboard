@@ -40,7 +40,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI','Helvetica Neue',sa
 .badge{font-size:10px;padding:3px 8px;border-radius:4px;font-weight:600;display:inline-block;}
 .bu{background:#E1F5EE;color:#0F6E56;}.bd{background:#FCEBEB;color:#A32D2D;}.bn{background:#F1EFE8;color:#5F5E5A;}.bt{background:#E6F1FB;color:#185FA5;}.bw{background:#FAEEDA;color:#854F0B;}
 .card{background:#fff;border:0.5px solid #E5E4E0;border-radius:12px;padding:16px;margin-bottom:16px;}
-.chart-row{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:16px;}
+.chart-row{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:16px;min-width:0;}
 .cw{position:relative;width:100%;}
 .otbl{width:100%;border-collapse:collapse;font-size:11px;}
 .otbl th{text-align:right;color:#6B6A67;font-weight:500;padding:0 5px 8px;border-bottom:1px solid #E5E4E0;}
@@ -166,6 +166,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI','Helvetica Neue',sa
     <div class="nsl">데이터</div>
     <div class="ni" id="ni-sales" onclick="nav('sales',this)"><div class="nd" style="background:#EF9F27"></div>영업사원별 실적</div>
     <div class="ni" id="ni-adv" onclick="nav('adv',this)"><div class="nd" style="background:#D85A30"></div>누적 광고 데이터</div>
+    <div class="ni" id="ni-major" onclick="nav('major',this)"><div class="nd" style="background:#EF9F27"></div>(참고용) 국내 주요 광고주</div>
   </div>
   <div style="flex:1"></div>
   <div class="gs-bar"><div class="gs-dot"></div><span id="gs-txt">연동 중...</span></div>
@@ -222,19 +223,19 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI','Helvetica Neue',sa
     </div>
     <div id="annual-status" style="background:#E6F1FB;border:0.5px solid #B8D4F0;border-radius:8px;padding:9px 14px;margin-bottom:10px;font-size:11px;color:#185FA5;display:none;">데이터 불러오는 중...</div>
     <div class="chart-row" style="margin-bottom:16px;">
-      <div class="card" style="border-top:3px solid #185FA5;">
+      <div class="card" style="border-top:3px solid #185FA5;min-width:0;overflow:hidden;">
         <div style="font-size:12px;font-weight:600;margin-bottom:8px;">매출
           <span style="font-size:10px;font-weight:400;color:#6B6A67;">· 억원</span>
         </div>
         <div style="display:flex;gap:12px;flex-wrap:wrap;margin-bottom:8px;" id="annual-legend-sale"></div>
-        <div id="annual-wrap-sale" style="position:relative;height:300px;"><canvas id="chart-annual-sale"></canvas></div>
+        <div id="annual-wrap-sale" style="position:relative;height:300px;width:100%;"><canvas id="chart-annual-sale" style="display:block;"></canvas></div>
       </div>
-      <div class="card" style="border-top:3px solid #1D9E75;">
+      <div class="card" style="border-top:3px solid #1D9E75;min-width:0;overflow:hidden;">
         <div style="font-size:12px;font-weight:600;margin-bottom:8px;">순매출
           <span style="font-size:10px;font-weight:400;color:#6B6A67;">· 억원</span>
         </div>
         <div style="display:flex;gap:12px;flex-wrap:wrap;margin-bottom:8px;" id="annual-legend-net"></div>
-        <div id="annual-wrap-net" style="position:relative;height:300px;"><canvas id="chart-annual-net"></canvas></div>
+        <div id="annual-wrap-net" style="position:relative;height:300px;width:100%;"><canvas id="chart-annual-net" style="display:block;"></canvas></div>
       </div>
     </div>
 
@@ -322,6 +323,37 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI','Helvetica Neue',sa
       <div id="weekly-list" style="min-height:120px;">
         <div style="text-align:center;color:#aaa;font-size:12px;padding:40px 0;">파일 목록 불러오는 중...</div>
       </div>
+    </div>
+  </div>
+
+  <!-- 국내 주요 광고주 뷰 -->
+  <div id="vmajor" style="display:none;">
+    <div id="major-load-bar" style="background:#E6F1FB;border:0.5px solid #B8D4F0;border-radius:8px;padding:9px 14px;margin-bottom:14px;font-size:11px;color:#185FA5;display:none;"></div>
+    <!-- KPI -->
+    <div class="kpi-section" style="border-top:3px solid #EF9F27;margin-bottom:16px;"><div class="kg kg4" id="major-kpi"></div></div>
+    <div class="card" style="border-top:3px solid #EF9F27;">
+      <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;margin-bottom:12px;">
+        <div style="font-size:12px;font-weight:600;">국내 주요 광고주 리스트 2026
+          <span style="font-size:10px;font-weight:400;color:#6B6A67;">· 광고주명 일치 시 담당팀/담당자 자동 매칭</span>
+        </div>
+        <button class="ub" style="padding:5px 12px;font-size:11px;" onclick="loadMajorAdv()">새로고침</button>
+      </div>
+      <!-- 검색 + 필터 -->
+      <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:12px;">
+        <input class="si" id="major-q" style="min-width:180px;" placeholder="광고주명, 업종, 그룹 검색..."
+          oninput="renderMajorAdv()"/>
+        <select class="fsel" id="major-sector" onchange="renderMajorAdv()"><option value="">전체 업종</option></select>
+        <select class="fsel" id="major-tier" onchange="renderMajorAdv()"><option value="">전체 티어</option></select>
+        <select class="fsel" id="major-contact" onchange="renderMajorAdv()">
+          <option value="">전체</option>
+          <option value="yes">컨택 있음</option>
+          <option value="no">컨택 없음</option>
+        </select>
+      </div>
+      <div id="major-list" style="min-height:120px;overflow-x:auto;">
+        <div style="text-align:center;color:#aaa;font-size:12px;padding:40px 0;">데이터 불러오는 중...</div>
+      </div>
+      <div class="sm" id="major-sum"></div>
     </div>
   </div>
 
@@ -2264,15 +2296,15 @@ function exportListCSV(){
   a.download='광고주리스트.csv';a.click();
 }
 // ══════════════════════════════════════
-const TITLES={adv:'누적 광고 데이터',sales:'영업사원별 실적',weekly:'주간업무보고',reports:'게첨보고서',intro:'본부 소개서',prod:'상품별 실적',list:'광고주 리스트',all:'본부 전체 실적',ms:'마케팅솔루션국',ms1:'마케팅솔루션1팀',ms2:'마케팅솔루션2팀',ms3:'마케팅솔루션3팀',ms4:'마케팅솔루션4팀',msd:'디지털사업팀',msp1:'솔루션기획1팀',msp2:'솔루션기획2팀',cs:'콘텐트사업국',cst:'콘텐트사업팀',inn:'이노베이션랩',csd:'콘텐트개발팀',dev:'솔루션개발팀',tb:'타운보드(사업지원국)'};
+const TITLES={adv:'누적 광고 데이터',sales:'영업사원별 실적',weekly:'주간업무보고',reports:'게첨보고서',major:'(참고용) 국내 주요 광고주',intro:'본부 소개서',prod:'상품별 실적',list:'광고주 리스트',all:'본부 전체 실적',ms:'마케팅솔루션국',ms1:'마케팅솔루션1팀',ms2:'마케팅솔루션2팀',ms3:'마케팅솔루션3팀',ms4:'마케팅솔루션4팀',msd:'디지털사업팀',msp1:'솔루션기획1팀',msp2:'솔루션기획2팀',cs:'콘텐트사업국',cst:'콘텐트사업팀',inn:'이노베이션랩',csd:'콘텐트개발팀',dev:'솔루션개발팀',tb:'타운보드(사업지원국)'};
 function nav(key,el){
   cKey=key;
   document.querySelectorAll('.ni,.nc').forEach(n=>n.classList.remove('on'));if(el)el.classList.add('on');
   const isA=key==='adv',isP=key==='prod',isL=key==='list',isSales=key==='sales';
-  const isWeekly=key==='weekly',isIntro=key==='intro',isReports=key==='reports';
+  const isWeekly=key==='weekly',isIntro=key==='intro',isReports=key==='reports',isMajor=key==='major';
   const TEAM_KEYS = ['ms1','ms2','ms3','ms4','msd','inn','cst','csd','dev'];
   const isTeam = TEAM_KEYS.includes(key);
-  const isPerf = !isA&&!isP&&!isL&&!isTeam&&!isSales&&!isWeekly&&!isIntro&&!isReports;
+  const isPerf = !isA&&!isP&&!isL&&!isTeam&&!isSales&&!isWeekly&&!isIntro&&!isReports&&!isMajor;
   document.getElementById('vp').style.display=isPerf?'block':'none';
   document.getElementById('va').style.display=isA?'block':'none';
   document.getElementById('vpr').style.display=isP?'block':'none';
@@ -2282,6 +2314,7 @@ function nav(key,el){
   document.getElementById('vweekly').style.display=isWeekly?'block':'none';
   document.getElementById('vintro').style.display=isIntro?'block':'none';
   document.getElementById('vreports').style.display=isReports?'block':'none';
+  document.getElementById('vmajor').style.display=isMajor?'block':'none';
   document.getElementById('perf-ctrl').style.display=(isPerf||isTeam)?'flex':'none';
   document.getElementById('page-title').textContent=TITLES[key]||key;
   if(isA)return;
@@ -2294,6 +2327,7 @@ function nav(key,el){
   if(isSales){ renderSales(); return; }
   if(isWeekly){ loadWeekly(); return; }
   if(isReports){ loadReports(); return; }
+  if(isMajor){ loadMajorAdv(); return; }
   if(isIntro){ return; }
   if(isTeam){ loadTeamDash(key); return; }
   renderPerf(key);
@@ -2937,17 +2971,15 @@ async function loadAnnualData(){
 function makeLineChart(canvasId, datasets, color){
   const canvas = document.getElementById(canvasId);
   if(!canvas) return null;
-  // 부모 컨테이너 크기에 맞게 canvas 크기 명시적 설정
-  const wrap = canvas.parentElement;
-  if(wrap){
-    canvas.style.width = '100%';
-    canvas.style.height = '100%';
-  }
+  // canvas는 부모 wrap이 크기를 결정하도록 위임
+  canvas.style.width  = '100%';
+  canvas.style.height = '100%';
   return new Chart(canvas, {
     type:'line',
     data:{ labels:['1월','2월','3월','4월','5월','6월','7월','8월','9월','10월','11월','12월'], datasets },
     options:{
       responsive:true, maintainAspectRatio:false,
+      onResize: (chart, size) => { chart.canvas.parentNode.style.height = '300px'; },
       interaction:{ mode:'index', intersect:false },
       plugins:{
         legend:{ display:false },
@@ -3047,16 +3079,248 @@ function renderAnnualChart(key){
     {c:'#1D9E75',l:'26년 실적',dash:false},
   ]);
 
-  // ResizeObserver로 컨테이너 크기 변화 감지 → 차트 resize
-  ['annual-wrap-sale','annual-wrap-net'].forEach(wrapId=>{
-    const wrap = document.getElementById(wrapId);
-    if(!wrap || wrap._roAttached) return;
-    wrap._roAttached = true;
-    new ResizeObserver(()=>{
-      if(annualChartSale) annualChartSale.resize();
-      if(annualChartNet)  annualChartNet.resize();
-    }).observe(wrap.parentElement||wrap);
+  // 반응형: 최초 1회만 등록 (window resize + wrap 직접 감지)
+  if(!window._annualResizeAttached){
+    window._annualResizeAttached = true;
+    let _resizeTimer = null;
+    const resizeCharts = ()=>{
+      clearTimeout(_resizeTimer);
+      _resizeTimer = setTimeout(()=>{
+        if(annualChartSale) annualChartSale.resize();
+        if(annualChartNet)  annualChartNet.resize();
+      }, 50);
+    };
+    window.addEventListener('resize', resizeCharts);
+    // wrap 컨테이너 직접 감지
+    const ro = new ResizeObserver(resizeCharts);
+    ['annual-wrap-sale','annual-wrap-net'].forEach(id=>{
+      const el = document.getElementById(id);
+      if(el) ro.observe(el.parentElement || el);
+    });
+  }
+}
+
+// ══════════════════════════════════════
+// 국내 주요 광고주
+// ══════════════════════════════════════
+let majorAdvData = [];
+let majorAdvLoading = false;
+let majorSortKey = '_tier_name'; // 기본: 티어순+가나다순
+let majorSortDir = 'asc';
+const TIER_ORDER = {'S':0,'A':1,'B':2,'C':3,'':4};
+
+async function loadMajorAdv(){
+  if(majorAdvLoading) return;
+  majorAdvLoading = true;
+  const bar = document.getElementById('major-load-bar');
+  bar.style.cssText='display:block;background:#E6F1FB;border:0.5px solid #B8D4F0;border-radius:8px;padding:9px 14px;margin-bottom:14px;font-size:11px;color:#185FA5;';
+  bar.textContent='국내 주요 광고주 리스트 불러오는 중...';
+  try{
+    const res = await fetch(`${PERF_URL}?action=majoradv&_=${Date.now()}`);
+    const j = await res.json();
+    if(j.error) throw new Error(j.error);
+    majorAdvData = j.data || [];
+
+    // 전체 팀 advListSheet 데이터로 매핑 테이블 생성 (4팀 전체)
+    const ALL_TEAMS = ['마케팅솔루션1팀','마케팅솔루션2팀','마케팅솔루션3팀','마케팅솔루션4팀'];
+    // 아직 안 로드된 팀 fetch
+    await Promise.all(ALL_TEAMS.map(async team=>{
+      if(!listCache[team]){
+        try{
+          const res = await fetch(`${ADVLIST_URL}?action=advlist&sheet=${encodeURIComponent(team)}&_=${Date.now()}`);
+          const j = await res.json();
+          if(!j.error) listCache[team] = j.data || [];
+        }catch(e){ console.warn('팀 로드 실패:',team,e); }
+      }
+    }));
+
+    const advMap = {};
+    // 우선순위 1: listCache 1~4팀 (2026년 최신 담당정보 - 광고주리스트 시트 기준)
+    ALL_TEAMS.forEach(team=>{
+      (listCache[team]||[]).forEach(r=>{
+        const name = (r['광고주']||'').trim();
+        if(name && !advMap[name]){
+          advMap[name] = { team: r['담당팀']||team, person: r['담당자']||'' };
+        }
+      });
+    });
+    // 우선순위 2: advRaw 집행 RAW (담당팀/매출담당자 컬럼)
+    // 이미 listCache에서 매칭된 경우 덮어쓰지 않음 (listCache가 최신)
+    advRaw.forEach(r=>{
+      const name = (r['광고주']||'').trim();
+      const yr = getYr(r);
+      // 2026년 RAW 데이터만 보조 매핑으로 활용 (2025년은 outdated)
+      if(name && !advMap[name] && yr===2026){
+        advMap[name] = { team: r['팀명']||'', person: r['매출담당자']||'' };
+      }
+    });
+
+    // 주요 광고주 → 기존 광고주 별칭 매핑 테이블
+    const MAJOR_ALIAS = {
+      '디올코리아':'디올패션', '로레알 코리아':'로레알',
+      '코스트코 코리아':'(주)코스트코코리아', '갤러리아백화점':'갤러리아 백화점',
+      '디아지오 코리아':'디아지오', '나이키 코리아':'나이키',
+      '노스페이스':'노스페이스(영원무역)', '루이비통 코리아':'루이비통',
+      '아디다스 코리아':'아디다스', '뉴발란스 코리아':'뉴발란스',
+      '디스커버리 익스페디션':'디스커버리', '버버리 코리아':'버버리코리아',
+      '내셔널지오그래픽 어패럴':'내셔널지오그래픽', '데상트 코리아':'데상트코리아',
+      '업비트':'두나무', '토스':'비바리퍼블리카',
+      'G마켓':'주식회사 지마켓', 'Apple Korea':'애플',
+      '다이슨코리아':'다이슨', '필립스코리아':'필립스',
+      '지포어':'코오롱지포어', '캘러웨이 코리아':'캘러웨이골프',
+      '타이틀리스트':'아쿠쉬네트 코리아', '핑 코리아':'핑골프',
+      'NH농협은행':'농협은행', 'BC카드':'비씨카드',
+      'IBK기업은행':'기업은행',
+    };
+
+    // 매칭 결과 반영 (광고주명 → 별칭 → 모기업/그룹 → 대표 브랜드/제품 순)
+    majorAdvData = majorAdvData.map(r=>{
+      const name    = (r['광고주명']||'').trim();
+      const alias   = MAJOR_ALIAS[name] || '';
+      const group   = (r['모기업/그룹']||'').trim();
+      const brand   = (r['대표 브랜드/제품']||'').trim();
+      const match = advMap[name] || (alias && advMap[alias]) || advMap[group] || advMap[brand] || null;
+      const matchKey = advMap[name] ? '광고주명' : (alias && advMap[alias]) ? '별칭' : advMap[group] ? '모기업/그룹' : advMap[brand] ? '브랜드' : '';
+      return {
+        ...r,
+        _matched:  !!match,
+        _matchKey: matchKey,
+        _team:     match?.team   || r['담당팀']  || '',
+        _person:   match?.person || r['담당자']  || '',
+      };
+    });
+
+    bar.style.cssText='display:block;background:#E1F5EE;border:0.5px solid #34A853;border-radius:8px;padding:9px 14px;margin-bottom:14px;font-size:11px;color:#0F6E56;';
+    bar.textContent=`✓ ${majorAdvData.length}개 광고주 로드 완료 · 매칭 ${majorAdvData.filter(r=>r._matched).length}개`;
+    setTimeout(()=>bar.style.display='none', 2500);
+
+    initMajorFilters();
+    renderMajorAdv();
+  }catch(e){
+    bar.style.cssText='display:block;background:#FCEBEB;border:0.5px solid #E24B4A;border-radius:8px;padding:9px 14px;margin-bottom:14px;font-size:11px;color:#A32D2D;';
+    bar.textContent='로드 실패: '+e.message;
+    console.error(e);
+  } finally { majorAdvLoading=false; }
+}
+
+function initMajorFilters(){
+  const sectors = [...new Set(majorAdvData.map(r=>r['업종']||'').filter(Boolean))].sort();
+  document.getElementById('major-sector').innerHTML =
+    '<option value="">전체 업종</option>'+sectors.map(s=>`<option>${s}</option>`).join('');
+  const tiers = [...new Set(majorAdvData.map(r=>String(r['광고규모 티어']||'').trim()).filter(Boolean))].sort();
+  document.getElementById('major-tier').innerHTML =
+    '<option value="">전체 티어</option>'+tiers.map(t=>`<option>${t}</option>`).join('');
+}
+
+function sortMajor(key){
+  if(majorSortKey===key) majorSortDir=majorSortDir==='asc'?'desc':'asc';
+  else { majorSortKey=key; majorSortDir=['_tier_name','tier'].includes(key)?'asc':'asc'; }
+  renderMajorAdv();
+}
+
+function renderMajorAdv(){
+  if(!majorAdvData.length) return;
+  const q       = (document.getElementById('major-q').value||'').toLowerCase();
+  const sector  = document.getElementById('major-sector').value;
+  const tier    = document.getElementById('major-tier').value;
+  const contact = document.getElementById('major-contact').value;
+
+  let rows = majorAdvData.filter(r=>{
+    if(sector  && r['업종'] !== sector) return false;
+    if(tier    && String(r['광고규모 티어']||'').trim() !== tier) return false;
+    if(contact === 'yes' && !r._matched) return false;
+    if(contact === 'no'  &&  r._matched) return false;
+    if(q){
+      const s=[r['광고주명'],r['업종'],r['모기업/그룹'],r['대표 브랜드/제품']].join(' ').toLowerCase();
+      if(!s.includes(q)) return false;
+    }
+    return true;
   });
+
+  // 정렬
+  rows.sort((a,b)=>{
+    const d = majorSortDir==='asc'?1:-1;
+    const ta = TIER_ORDER[String(a['광고규모 티어']||'').trim()]??4;
+    const tb2= TIER_ORDER[String(b['광고규모 티어']||'').trim()]??4;
+    switch(majorSortKey){
+      case '_tier_name': // 기본: 티어순 → 가나다순
+        if(ta!==tb2) return ta-tb2;
+        return (a['광고주명']||'').localeCompare(b['광고주명']||'','ko');
+      case 'tier':   return (ta-tb2)*d;
+      case 'name':   return (a['광고주명']||'').localeCompare(b['광고주명']||'','ko')*d;
+      case 'sector': return (a['업종']||'').localeCompare(b['업종']||'','ko')*d;
+      case 'group':  return (a['모기업/그룹']||'').localeCompare(b['모기업/그룹']||'','ko')*d;
+      case 'contact':return ((b._matched?1:0)-(a._matched?1:0))*d;
+      case 'team':   return (a._team||'').localeCompare(b._team||'','ko')*d;
+      case 'person': return (a._person||'').localeCompare(b._person||'','ko')*d;
+      default: return ta-tb2;
+    }
+  });
+
+  // KPI
+  const matched   = rows.filter(r=>r._matched).length;
+  const unmatched = rows.length - matched;
+  const tierCount = t => rows.filter(r=>String(r['광고규모 티어']||'').trim()===t).length;
+  document.getElementById('major-kpi').innerHTML=[
+    {l:'전체 광고주', v:rows.length+'개', b:'<span class="badge bt">조회 기준</span>'},
+    {l:'컨택 있음 ✓', v:matched+'개',   b:'<span class="badge bu" style="background:#E1F5EE;color:#0F6E56;">매칭</span>'},
+    {l:'컨택 없음',   v:unmatched+'개', b:'<span class="badge bn">미매칭</span>'},
+    {l:'S/A/B/C 티어', v:'S:'+tierCount('S')+' A:'+tierCount('A')+' B:'+tierCount('B')+' C:'+tierCount('C'), b:'<span class="badge bn">티어</span>'},
+  ].map(k=>'<div class="kpi"><div class="kl">'+k.l+'</div><div class="kv" style="font-size:18px;">'+k.v+'</div><div class="km">'+k.b+'</div></div>').join('');
+
+  const tierColor = t => ({'S':'#E53E3E','A':'#DD8726','B':'#2B7BB5','C':'#6B6A67'}[t]||'#aaa');
+  const tierBg    = t => ({'S':'#FEE2E2','A':'#FAEEDA','B':'#E6F1FB','C':'#F1EFE8'}[t]||'#F8F7F3');
+
+  // 정렬 인디케이터
+  const si = col => majorSortKey===col ? (majorSortDir==='asc'?' ↑':' ↓') : '';
+  const sh = (col,lbl,w,align) => {
+    const al = align ? 'text-align:'+align+';' : '';
+    return '<th style="width:'+w+';cursor:pointer;'+al+'" onclick="sortMajor(&quot;'+col+'&quot;)">'+lbl+si(col)+'</th>';
+  };
+
+  const tableRows = rows.map((r,i)=>{
+    const t2  = String(r['광고규모 티어']||'').trim();
+    const tc  = tierColor(t2);
+    const tbg = tierBg(t2);
+    const matchBadge = r._matched
+      ? '<span style="font-size:10px;font-weight:600;color:#0F6E56;background:#E1F5EE;padding:2px 7px;border-radius:4px;">✓ 컨택'+(r._matchKey&&r._matchKey!=='광고주명'?' <span style="font-weight:400;opacity:.7">('+r._matchKey+')</span>':'')+'</span>'
+      : '<span style="font-size:10px;color:#aaa;background:#F1EFE8;padding:2px 7px;border-radius:4px;">미컨택</span>';
+    const teamTxt   = r._team   ? '<span style="font-size:11px;color:#185FA5;">'+r._team+'</span>' : '<span style="color:#ccc">-</span>';
+    const personTxt = r._person ? '<span style="font-size:11px;color:#6B6A67;">'+r._person+'</span>' : '<span style="color:#ccc">-</span>';
+    return '<tr class="dr">'
+      +'<td style="color:#aaa;font-size:10px;text-align:center;">'+(i+1)+'</td>'
+      +'<td style="font-size:11px;color:#6B6A67;">'+(r['업종']||'')+'</td>'
+      +'<td style="font-weight:600;">'+(r['광고주명']||'')+'</td>'
+      +'<td style="font-size:11px;color:#6B6A67;">'+(r['모기업/그룹']||'')+'</td>'
+      +'<td style="font-size:11px;color:#6B6A67;">'+(r['대표 브랜드/제품']||'')+'</td>'
+      +'<td style="font-size:11px;color:#6B6A67;">'+(r['본사 위치']||'')+'</td>'
+      +'<td style="text-align:center;"><span style="font-size:11px;font-weight:700;color:'+tc+';background:'+tbg+';padding:2px 8px;border-radius:4px;">'+t2+'</span></td>'
+      +'<td style="text-align:center;">'+matchBadge+'</td>'
+      +'<td>'+teamTxt+'</td>'
+      +'<td>'+personTxt+'</td>'
+      +'<td style="font-size:10px;color:#6B6A67;">'+(r['비고']||'')+'</td>'
+      +'</tr>';
+  }).join('');
+
+  document.getElementById('major-list').innerHTML=
+    '<table class="rtbl" style="min-width:900px;"><thead><tr>'
+    +'<th style="width:36px;text-align:center;">#</th>'
+    +sh('sector','업종','70px')
+    +sh('name','광고주명','130px')
+    +sh('group','모기업/그룹','100px')
+    +'<th style="width:130px;">대표 브랜드/제품</th>'
+    +'<th style="width:80px;">본사 위치</th>'
+    +sh('tier','티어','50px','center')
+    +sh('contact','컨택','70px','center')
+    +sh('team','담당팀','90px')
+    +sh('person','담당자','70px')
+    +'<th style="width:100px;">비고</th>'
+    +'</tr></thead><tbody>'+tableRows+'</tbody></table>';
+
+  document.getElementById('major-sum').innerHTML=
+    '<span>표시 <span class="sv">'+rows.length+'개</span></span>'
+    +'<span>컨택 있음 <span class="sv">'+matched+'개</span></span>'
+    +'<span>미컨택 <span class="sv">'+unmatched+'개</span></span>';
 }
 
 // ══════════════════════════════════════
