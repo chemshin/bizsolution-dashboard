@@ -219,6 +219,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI','Helvetica Neue',sa
     <div class="ni" id="ni-sales" onclick="nav('sales',this)"><div class="nd" style="background:#EF9F27"></div>영업사원별 실적</div>
     <div class="ni" id="ni-adv" onclick="nav('adv',this)"><div class="nd" style="background:#D85A30"></div>누적 광고 데이터</div>
     <div class="ni" id="ni-major" onclick="nav('major',this)"><div class="nd" style="background:#EF9F27"></div>(참고용) 국내 주요 광고주</div>
+    <div class="ni" id="ni-comp" onclick="nav('comp',this)"><div class="nd" style="background:#D85A30"></div>경쟁사 모니터링</div>
   </div>
   <div style="flex:1"></div>
   <div class="gs-bar"><div class="gs-dot"></div><span id="gs-txt">연동 중...</span></div>
@@ -414,6 +415,41 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI','Helvetica Neue',sa
         <div style="text-align:center;color:#aaa;font-size:12px;padding:40px 0;">데이터 불러오는 중...</div>
       </div>
       <div class="sm" id="major-sum"></div>
+    </div>
+  </div>
+
+  <!-- 경쟁사 모니터링 뷰 -->
+  <div id="vcomp" style="display:none;">
+    <div id="comp-load-bar" style="background:#E6F1FB;border:0.5px solid #B8D4F0;border-radius:8px;padding:9px 14px;margin-bottom:14px;font-size:11px;color:#185FA5;display:none;"></div>
+    <!-- 팀 탭 -->
+    <div id="comp-tabs" style="display:flex;gap:6px;margin-bottom:14px;flex-wrap:wrap;">
+      <button class="comp-tab" data-team="" onclick="setCompTeam('')" style="padding:7px 14px;font-size:11px;font-weight:600;background:#185FA5;color:#fff;border:none;border-radius:6px;cursor:pointer;">전체</button>
+      <button class="comp-tab" data-team="1팀" onclick="setCompTeam('1팀')" style="padding:7px 14px;font-size:11px;font-weight:600;background:#fff;color:#6B6A67;border:0.5px solid #D5D3CD;border-radius:6px;cursor:pointer;">마솔1팀</button>
+      <button class="comp-tab" data-team="2팀" onclick="setCompTeam('2팀')" style="padding:7px 14px;font-size:11px;font-weight:600;background:#fff;color:#6B6A67;border:0.5px solid #D5D3CD;border-radius:6px;cursor:pointer;">마솔2팀</button>
+      <button class="comp-tab" data-team="3팀" onclick="setCompTeam('3팀')" style="padding:7px 14px;font-size:11px;font-weight:600;background:#fff;color:#6B6A67;border:0.5px solid #D5D3CD;border-radius:6px;cursor:pointer;">마솔3팀</button>
+      <button class="comp-tab" data-team="4팀" onclick="setCompTeam('4팀')" style="padding:7px 14px;font-size:11px;font-weight:600;background:#fff;color:#6B6A67;border:0.5px solid #D5D3CD;border-radius:6px;cursor:pointer;">마솔4팀</button>
+    </div>
+    <!-- KPI -->
+    <div class="kpi-section" style="border-top:3px solid #D85A30;margin-bottom:16px;"><div class="kg kg4" id="comp-kpi"></div></div>
+    <div class="card" style="border-top:3px solid #D85A30;">
+      <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;margin-bottom:12px;">
+        <div style="font-size:12px;font-weight:600;" id="comp-title">경쟁사 누락광고주 월별 현황
+          <span style="font-size:10px;font-weight:400;color:#6B6A67;">· 경쟁사 매체에 집행 중인 미수주 광고주</span>
+        </div>
+        <button class="ub" style="padding:5px 12px;font-size:11px;" onclick="loadCompetitor()">새로고침</button>
+      </div>
+      <!-- 검색 + 필터 -->
+      <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:12px;">
+        <input class="si" id="comp-q" style="min-width:200px;" placeholder="광고주, 캠페인, 매체, 담당자, 내용 검색..." oninput="renderCompetitor()"/>
+        <select class="fsel" id="comp-month" onchange="renderCompetitor()"><option value="">전체 월</option></select>
+        <select class="fsel" id="comp-sector" onchange="renderCompetitor()"><option value="">전체 업종</option></select>
+        <select class="fsel" id="comp-media" onchange="renderCompetitor()"><option value="">전체 경쟁매체</option></select>
+        <select class="fsel" id="comp-status" onchange="renderCompetitor()"><option value="">전체 진행상태</option></select>
+      </div>
+      <div id="comp-list" style="min-height:120px;overflow-x:auto;">
+        <div style="text-align:center;color:#aaa;font-size:12px;padding:40px 0;">데이터 불러오는 중...</div>
+      </div>
+      <div class="sm" id="comp-sum"></div>
     </div>
   </div>
 
@@ -917,7 +953,7 @@ async function doChangePw(){
 }
 
 
-const PERF_URL = 'https://script.google.com/macros/s/AKfycbzlmpmENaWMXig5g8JMeBAhbP9J6YQb0mY7-Eh2mudRhnmEU9v-xMBm5oehrohTRogkjA/exec';
+const PERF_URL = 'https://script.google.com/macros/s/AKfycbx3C1kFcFWC2kh0zJKoMmj8HtlAhCxIHfKPE6iDrBxgxR9ZzrKQ6GyRfOIffoDvD7L6bw/exec';
 const OOH_URL  = 'https://script.google.com/macros/s/AKfycbx9APUD9FO0Olo7itgaAz0dOqNH0nIa0EpILuUmWVh4nztGnKiNrnvhdRqPvHTkJwjIMQ/exec';
 const TEAM_URL = 'https://script.google.com/macros/s/AKfycbzU7C8BXIda6aSuLm-jbWGMhwabVPDTHARGrJgaXlZ_vgRpOUBtfGO8j4b1NSaXT_vTOA/exec';
 const ADV_URL  = 'https://script.google.com/macros/s/AKfycbzcm6y3neEroHsOqo1_Ri0fb0IhruS0KoPNQVCnDPUTyghtvSkJK-zayH6ZIbmhXmTY/exec';
@@ -2488,15 +2524,15 @@ function exportListCSV(){
   a.download='광고주리스트.csv';a.click();
 }
 // ══════════════════════════════════════
-const TITLES={adv:'누적 광고 데이터',sales:'영업사원별 실적',weekly:'주간업무보고',reports:'게첨보고서',major:'(참고용) 국내 주요 광고주',intro:'본부 소개서',prod:'상품별 실적',list:'광고주 리스트',all:'본부 전체 실적',ms:'마케팅솔루션국',ms1:'마케팅솔루션1팀',ms2:'마케팅솔루션2팀',ms3:'마케팅솔루션3팀',ms4:'마케팅솔루션4팀',msd:'디지털사업팀',msp1:'솔루션기획1팀',msp2:'솔루션기획2팀',cs:'콘텐트사업국',cst:'콘텐트사업팀',inn:'이노베이션랩',csd:'콘텐트개발팀',dev:'솔루션개발팀',tb:'타운보드(사업지원국)'};
+const TITLES={adv:'누적 광고 데이터',sales:'영업사원별 실적',weekly:'주간업무보고',reports:'게첨보고서',major:'(참고용) 국내 주요 광고주',comp:'경쟁사 모니터링',intro:'본부 소개서',prod:'상품별 실적',list:'광고주 리스트',all:'본부 전체 실적',ms:'마케팅솔루션국',ms1:'마케팅솔루션1팀',ms2:'마케팅솔루션2팀',ms3:'마케팅솔루션3팀',ms4:'마케팅솔루션4팀',msd:'디지털사업팀',msp1:'솔루션기획1팀',msp2:'솔루션기획2팀',cs:'콘텐트사업국',cst:'콘텐트사업팀',inn:'이노베이션랩',csd:'콘텐트개발팀',dev:'솔루션개발팀',tb:'타운보드(사업지원국)'};
 function nav(key,el){
   cKey=key;
   document.querySelectorAll('.ni,.nc').forEach(n=>n.classList.remove('on'));if(el)el.classList.add('on');
   const isA=key==='adv',isP=key==='prod',isL=key==='list',isSales=key==='sales';
-  const isWeekly=key==='weekly',isIntro=key==='intro',isReports=key==='reports',isMajor=key==='major';
+  const isWeekly=key==='weekly',isIntro=key==='intro',isReports=key==='reports',isMajor=key==='major',isComp=key==='comp';
   const TEAM_KEYS = ['ms1','ms2','ms3','ms4','msd','inn','cst','csd','dev'];
   const isTeam = TEAM_KEYS.includes(key);
-  const isPerf = !isA&&!isP&&!isL&&!isTeam&&!isSales&&!isWeekly&&!isIntro&&!isReports&&!isMajor;
+  const isPerf = !isA&&!isP&&!isL&&!isTeam&&!isSales&&!isWeekly&&!isIntro&&!isReports&&!isMajor&&!isComp;
   document.getElementById('vp').style.display=isPerf?'block':'none';
   document.getElementById('va').style.display=isA?'block':'none';
   document.getElementById('vpr').style.display=isP?'block':'none';
@@ -2507,6 +2543,7 @@ function nav(key,el){
   document.getElementById('vintro').style.display=isIntro?'block':'none';
   document.getElementById('vreports').style.display=isReports?'block':'none';
   document.getElementById('vmajor').style.display=isMajor?'block':'none';
+  document.getElementById('vcomp').style.display=isComp?'block':'none';
   document.getElementById('perf-ctrl').style.display=(isPerf||isTeam)?'flex':'none';
   document.getElementById('page-title').textContent=TITLES[key]||key;
   if(isA)return;
@@ -2520,6 +2557,7 @@ function nav(key,el){
   if(isWeekly){ loadWeekly(); return; }
   if(isReports){ loadReports(); return; }
   if(isMajor){ loadMajorAdv(); return; }
+  if(isComp){ loadCompetitor(); return; }
   if(isIntro){ return; }
   if(isTeam){ loadTeamDash(key); return; }
   renderPerf(key);
@@ -3513,6 +3551,203 @@ function renderMajorAdv(){
     '<span>표시 <span class="sv">'+rows.length+'개</span></span>'
     +'<span>컨택 있음 <span class="sv">'+matched+'개</span></span>'
     +'<span>미컨택 <span class="sv">'+unmatched+'개</span></span>';
+}
+
+// ══════════════════════════════════════
+// 경쟁사 모니터링
+// ══════════════════════════════════════
+const COMP_URL = PERF_URL; // Apps Script에 competitor 분기 추가됨
+let compData = [];
+let compLoading = false;
+let compSortKey = '_default';
+let compSortDir = 'asc';
+let compTeam = ''; // '' = 전체, '1팀'~'4팀'
+
+function setCompTeam(team){
+  compTeam = team;
+  // 탭 활성 스타일 업데이트
+  document.querySelectorAll('#comp-tabs .comp-tab').forEach(btn=>{
+    if(btn.dataset.team === team){
+      btn.style.cssText = 'padding:7px 14px;font-size:11px;font-weight:600;background:#185FA5;color:#fff;border:none;border-radius:6px;cursor:pointer;';
+    } else {
+      btn.style.cssText = 'padding:7px 14px;font-size:11px;font-weight:600;background:#fff;color:#6B6A67;border:0.5px solid #D5D3CD;border-radius:6px;cursor:pointer;';
+    }
+  });
+  // 제목 업데이트
+  const t = team ? '마솔'+team : '전체';
+  document.getElementById('comp-title').innerHTML =
+    '경쟁사 누락광고주 월별 현황 <span style="font-size:11px;font-weight:600;color:#D85A30;">· '+t+'</span>'+
+    ' <span style="font-size:10px;font-weight:400;color:#6B6A67;">· 경쟁사 매체에 집행 중인 미수주 광고주</span>';
+  // 필터도 현재 팀 기준으로 재구성
+  initCompFilters();
+  renderCompetitor();
+}
+
+async function loadCompetitor(){
+  if(compLoading) return;
+  compLoading = true;
+  const bar = document.getElementById('comp-load-bar');
+  bar.style.cssText='display:block;background:#E6F1FB;border:0.5px solid #B8D4F0;border-radius:8px;padding:9px 14px;margin-bottom:14px;font-size:11px;color:#185FA5;';
+  bar.textContent='경쟁사 모니터링 데이터 불러오는 중...';
+  try {
+    const url = `${COMP_URL}?action=competitor&_=${Date.now()}`;
+    const res = await fetch(url);
+    const j = await res.json();
+    if(j.error) throw new Error(j.error);
+    compData = j.data || [];
+    bar.style.cssText='display:block;background:#E1F5EE;border:0.5px solid #34A853;border-radius:8px;padding:9px 14px;margin-bottom:14px;font-size:11px;color:#0F6E56;';
+    bar.textContent=`✓ ${compData.length}개 항목 로드 완료`;
+    setTimeout(()=>bar.style.display='none', 2500);
+    initCompFilters();
+    renderCompetitor();
+  } catch(e){
+    bar.style.cssText='display:block;background:#FCEBEB;border:0.5px solid #E24B4A;border-radius:8px;padding:9px 14px;margin-bottom:14px;font-size:11px;color:#A32D2D;';
+    bar.textContent='로드 실패: '+e.message;
+    console.error(e);
+  } finally { compLoading=false; }
+}
+
+function initCompFilters(){
+  // 팀별로 데이터 한정해서 필터 옵션 구성
+  const base = compTeam ? compData.filter(r=>r._sheet===compTeam) : compData;
+  const months  = [...new Set(base.map(r=>r['월']||'').filter(Boolean))].sort();
+  const sectors = [...new Set(base.map(r=>r['업종']||'').filter(Boolean))].sort();
+  const medias  = [...new Set(base.map(r=>r['경쟁매체']||'').filter(Boolean))].sort();
+  const stats   = [...new Set(base.map(r=>r['제안경과']||'').filter(Boolean))].sort();
+  document.getElementById('comp-month').innerHTML  = '<option value="">전체 월</option>'+months.map(s=>`<option>${s}</option>`).join('');
+  document.getElementById('comp-sector').innerHTML = '<option value="">전체 업종</option>'+sectors.map(s=>`<option>${s}</option>`).join('');
+  document.getElementById('comp-media').innerHTML  = '<option value="">전체 경쟁매체</option>'+medias.map(s=>`<option>${s}</option>`).join('');
+  document.getElementById('comp-status').innerHTML = '<option value="">전체 진행상태</option>'+stats.map(s=>`<option>${s}</option>`).join('');
+}
+
+function sortComp(key){
+  if(compSortKey===key) compSortDir = compSortDir==='asc'?'desc':'asc';
+  else { compSortKey = key; compSortDir = 'asc'; }
+  renderCompetitor();
+}
+
+function renderCompetitor(){
+  if(!compData.length) return;
+  const q       = (document.getElementById('comp-q').value||'').toLowerCase();
+  const month   = document.getElementById('comp-month').value;
+  const sector  = document.getElementById('comp-sector').value;
+  const media   = document.getElementById('comp-media').value;
+  const status  = document.getElementById('comp-status').value;
+
+  let rows = compData.filter(r=>{
+    if(compTeam && r._sheet !== compTeam) return false;
+    if(month  && r['월']!==month) return false;
+    if(sector && r['업종']!==sector) return false;
+    if(media  && r['경쟁매체']!==media) return false;
+    if(status && r['제안경과']!==status) return false;
+    if(q){
+      const s=[r['광고주명'],r['업종'],r['캠페인명'],r['경쟁매체'],r['담당자'],r['제안내용'],r['저장시각']].join(' ').toLowerCase();
+      if(!s.includes(q)) return false;
+    }
+    return true;
+  });
+
+  // 정렬
+  rows.sort((a,b)=>{
+    const d = compSortDir==='asc'?1:-1;
+    switch(compSortKey){
+      case 'month':    return (a['월']||'').localeCompare(b['월']||'')*d;
+      case 'name':     return (a['광고주명']||'').localeCompare(b['광고주명']||'','ko')*d;
+      case 'sector':   return (a['업종']||'').localeCompare(b['업종']||'','ko')*d;
+      case 'campaign': return (a['캠페인명']||'').localeCompare(b['캠페인명']||'','ko')*d;
+      case 'media':    return (a['경쟁매체']||'').localeCompare(b['경쟁매체']||'','ko')*d;
+      case 'status':   return (a['제안경과']||'').localeCompare(b['제안경과']||'','ko')*d;
+      case 'person':   return (a['담당자']||'').localeCompare(b['담당자']||'','ko')*d;
+      case 'propose':  return ((a['제안여부']==='Y'?1:0)-(b['제안여부']==='Y'?1:0))*d;
+      default:
+        // 기본: 월 내림차순 → 광고주명 가나다순
+        const m = (b['월']||'').localeCompare(a['월']||'');
+        if(m!==0) return m;
+        return (a['광고주명']||'').localeCompare(b['광고주명']||'','ko');
+    }
+  });
+
+  // KPI
+  const proposed = rows.filter(r=>r['제안여부']==='Y').length;
+  const won      = rows.filter(r=>String(r['제안경과']||'').includes('수주') && !String(r['제안경과']||'').includes('미수주')).length;
+  const inprog   = rows.filter(r=>{
+    const s = r['제안경과']||'';
+    return s.includes('협의') || s.includes('확인') || s.includes('파악');
+  }).length;
+  document.getElementById('comp-kpi').innerHTML=[
+    {l:'전체',     v:rows.length+'건', b:'<span class="badge bt">조회</span>'},
+    {l:'제안 완료', v:proposed+'건',    b:'<span class="badge bu" style="background:#E6F1FB;color:#185FA5;">제안 Y</span>'},
+    {l:'협의/파악 중', v:inprog+'건',  b:'<span class="badge bu" style="background:#FAEEDA;color:#DD8726;">진행</span>'},
+    {l:'수주',     v:won+'건',         b:'<span class="badge bu" style="background:#E1F5EE;color:#0F6E56;">성공</span>'},
+  ].map(k=>'<div class="kpi"><div class="kl">'+k.l+'</div><div class="kv" style="font-size:18px;">'+k.v+'</div><div class="km">'+k.b+'</div></div>').join('');
+
+  // 진행상태 배지 색상
+  const statusBadge = s=>{
+    const t = String(s||'').trim();
+    if(!t) return '<span style="font-size:10px;color:#aaa;">-</span>';
+    let bg='#F1EFE8', fg='#6B6A67';
+    if(t.includes('수주') && !t.includes('미수주')){ bg='#E1F5EE'; fg='#0F6E56'; }
+    else if(t.includes('미수주')){ bg='#FCEBEB'; fg='#A32D2D'; }
+    else if(t.includes('협의') || t.includes('제안')){ bg='#E6F1FB'; fg='#185FA5'; }
+    else if(t.includes('확인') || t.includes('파악')){ bg='#FAEEDA'; fg='#DD8726'; }
+    else if(t.includes('보류') || t.includes('미제안') || t.includes('미컨택')){ bg='#F1EFE8'; fg='#6B6A67'; }
+    return `<span style="font-size:10px;font-weight:600;background:${bg};color:${fg};padding:2px 7px;border-radius:4px;white-space:nowrap;">${t}</span>`;
+  };
+
+  const proposeBadge = p=>{
+    const t = String(p||'').trim().toUpperCase();
+    if(t==='Y') return '<span style="font-size:9px;font-weight:700;background:#E1F5EE;color:#0F6E56;padding:2px 6px;border-radius:3px;">Y</span>';
+    if(t==='N') return '<span style="font-size:9px;font-weight:700;background:#F1EFE8;color:#6B6A67;padding:2px 6px;border-radius:3px;">N</span>';
+    return '<span style="color:#ccc">-</span>';
+  };
+
+  // 정렬 인디케이터
+  const si = col => compSortKey===col ? (compSortDir==='asc'?' ↑':' ↓') : '';
+  const sh = (col,lbl,w,align) => {
+    const al = align ? 'text-align:'+align+';' : '';
+    return '<th style="width:'+w+';cursor:pointer;'+al+'" onclick="sortComp(&quot;'+col+'&quot;)">'+lbl+si(col)+'</th>';
+  };
+
+  const tableRows = rows.map((r,i)=>{
+    const note    = r['제안내용'] ? String(r['제안내용']).replace(/</g,'&lt;') : '';
+    const noteShort = note.length>80 ? note.slice(0,80)+'...' : note;
+    const teamBadge = compTeam ? '' :
+      '<td style="text-align:center;"><span style="font-size:9px;font-weight:700;background:#FAEEDA;color:#DD8726;padding:2px 6px;border-radius:3px;">마솔'+(r._sheet||'')+'</span></td>';
+    return '<tr class="dr">'
+      +'<td style="color:#aaa;font-size:10px;text-align:center;">'+(i+1)+'</td>'
+      +teamBadge
+      +'<td style="font-size:11px;color:#185FA5;font-weight:600;text-align:center;">'+(r['월']||'')+'</td>'
+      +'<td style="font-weight:600;">'+(r['광고주명']||'')+'</td>'
+      +'<td style="font-size:11px;color:#6B6A67;">'+(r['업종']||'')+'</td>'
+      +'<td style="font-size:11px;color:#6B6A67;">'+(r['캠페인명']||'')+'</td>'
+      +'<td style="font-size:11px;color:#6B6A67;">'+(r['경쟁매체']||'')+'</td>'
+      +'<td style="text-align:center;">'+proposeBadge(r['제안여부'])+'</td>'
+      +'<td style="text-align:center;">'+statusBadge(r['제안경과'])+'</td>'
+      +'<td style="font-size:11px;color:#6B6A67;">'+(r['담당자']||'')+'</td>'
+      +'<td style="font-size:10px;color:#6B6A67;line-height:1.4;" title="'+note.replace(/"/g,'&quot;')+'">'+noteShort+'</td>'
+      +'</tr>';
+  }).join('');
+
+  const teamHeader = compTeam ? '' : '<th style="width:60px;text-align:center;">팀</th>';
+  document.getElementById('comp-list').innerHTML=
+    '<table class="rtbl" style="min-width:1200px;"><thead><tr>'
+    +'<th style="width:36px;text-align:center;">#</th>'
+    +teamHeader
+    +sh('month','월','60px','center')
+    +sh('name','광고주명','120px')
+    +sh('sector','업종','80px')
+    +sh('campaign','캠페인명','160px')
+    +sh('media','경쟁매체','110px')
+    +sh('propose','제안','40px','center')
+    +sh('status','진행상태','80px','center')
+    +sh('person','담당자','90px')
+    +'<th style="min-width:240px;">제안내용</th>'
+    +'</tr></thead><tbody>'+tableRows+'</tbody></table>';
+
+  document.getElementById('comp-sum').innerHTML=
+    '<span>표시 <span class="sv">'+rows.length+'건</span></span>'
+    +'<span>제안 <span class="sv">'+proposed+'건</span></span>'
+    +'<span>수주 <span class="sv">'+won+'건</span></span>';
 }
 
 // ══════════════════════════════════════
