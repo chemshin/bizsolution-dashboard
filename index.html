@@ -178,28 +178,39 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI','Helvetica Neue',sa
     <div class="nsl">전체</div>
     <div class="ni on" id="ni-all" onclick="nav('all',this)"><div class="nd" style="background:#185FA5"></div>본부 전체 실적</div>
     <div class="ni" id="ni-list" onclick="nav('list',this)"><div class="nd" style="background:#7F77DD"></div>광고주 리스트</div>
+    <div class="ni" id="ni-comp" onclick="nav('comp',this)"><div class="nd" style="background:#D85A30"></div>경쟁 매체 모니터링</div>
     <div class="ni" id="ni-prod" onclick="nav('prod',this)"><div class="nd" style="background:#1D9E75"></div>상품별 실적</div>
   </div>
   <div class="nsep"></div>
   <div class="ns">
-    <div class="nsl">마케팅솔루션국</div>
-    <div class="ni" onclick="nav('ms',this)"><div class="nd" style="background:#1D9E75"></div>국 전체</div>
-    <div class="nc" onclick="nav('ms1',this)">마케팅솔루션1팀</div>
-    <div class="nc" onclick="nav('ms2',this)">마케팅솔루션2팀</div>
-    <div class="nc" onclick="nav('ms3',this)">마케팅솔루션3팀</div>
-    <div class="nc" onclick="nav('ms4',this)">마케팅솔루션4팀</div>
-    <div class="nc" onclick="nav('msd',this)">디지털사업팀</div>
-    <div class="nc" onclick="nav('msp1',this)">솔루션기획1팀</div>
-    <div class="nc" onclick="nav('msp2',this)">솔루션기획2팀</div>
+    <div class="ni" id="ni-ms" onclick="navOrToggle('ms','ms-group',this,event)">
+      <div class="nd" style="background:#1D9E75"></div>
+      <span style="flex:1;">마케팅솔루션국</span>
+      <span class="caret" id="caret-ms" style="font-size:9px;color:#aaa;cursor:pointer;padding:2px 6px;" onclick="event.stopPropagation();toggleGroup('ms-group','caret-ms');">▼</span>
+    </div>
+    <div id="ms-group" style="display:none;">
+      <div class="nc" onclick="nav('ms1',this)">마케팅솔루션1팀</div>
+      <div class="nc" onclick="nav('ms2',this)">마케팅솔루션2팀</div>
+      <div class="nc" onclick="nav('ms3',this)">마케팅솔루션3팀</div>
+      <div class="nc" onclick="nav('ms4',this)">마케팅솔루션4팀</div>
+      <div class="nc" onclick="nav('msd',this)">디지털사업팀</div>
+      <div class="nc" onclick="nav('msp1',this)">솔루션기획1팀</div>
+      <div class="nc" onclick="nav('msp2',this)">솔루션기획2팀</div>
+    </div>
   </div>
   <div class="nsep"></div>
   <div class="ns">
-    <div class="nsl">콘텐트사업국</div>
-    <div class="ni" onclick="nav('cs',this)"><div class="nd" style="background:#7F77DD"></div>국 전체</div>
-    <div class="nc" onclick="nav('cst',this)">콘텐트사업팀</div>
-    <div class="nc" onclick="nav('inn',this)">이노베이션랩</div>
-    <div class="nc" onclick="nav('csd',this)">콘텐트개발팀</div>
-    <div class="nc" onclick="nav('dev',this)">솔루션개발팀</div>
+    <div class="ni" id="ni-cs" onclick="navOrToggle('cs','cs-group',this,event)">
+      <div class="nd" style="background:#7F77DD"></div>
+      <span style="flex:1;">콘텐트사업국</span>
+      <span class="caret" id="caret-cs" style="font-size:9px;color:#aaa;cursor:pointer;padding:2px 6px;" onclick="event.stopPropagation();toggleGroup('cs-group','caret-cs');">▼</span>
+    </div>
+    <div id="cs-group" style="display:none;">
+      <div class="nc" onclick="nav('cst',this)">콘텐트사업팀</div>
+      <div class="nc" onclick="nav('inn',this)">이노베이션랩</div>
+      <div class="nc" onclick="nav('csd',this)">콘텐트개발팀</div>
+      <div class="nc" onclick="nav('dev',this)">솔루션개발팀</div>
+    </div>
   </div>
   <div class="nsep"></div>
   <div class="ns">
@@ -219,7 +230,6 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI','Helvetica Neue',sa
     <div class="ni" id="ni-sales" onclick="nav('sales',this)"><div class="nd" style="background:#EF9F27"></div>영업사원별 실적</div>
     <div class="ni" id="ni-adv" onclick="nav('adv',this)"><div class="nd" style="background:#D85A30"></div>누적 광고 데이터</div>
     <div class="ni" id="ni-major" onclick="nav('major',this)"><div class="nd" style="background:#EF9F27"></div>(참고용) 국내 주요 광고주</div>
-    <div class="ni" id="ni-comp" onclick="nav('comp',this)"><div class="nd" style="background:#D85A30"></div>경쟁사 모니터링</div>
   </div>
   <div style="flex:1"></div>
   <div class="gs-bar"><div class="gs-dot"></div><span id="gs-txt">연동 중...</span></div>
@@ -418,7 +428,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI','Helvetica Neue',sa
     </div>
   </div>
 
-  <!-- 경쟁사 모니터링 뷰 -->
+  <!-- 경쟁 매체 모니터링 뷰 -->
   <div id="vcomp" style="display:none;">
     <div id="comp-load-bar" style="background:#E6F1FB;border:0.5px solid #B8D4F0;border-radius:8px;padding:9px 14px;margin-bottom:14px;font-size:11px;color:#185FA5;display:none;"></div>
     <!-- 팀 탭 -->
@@ -433,7 +443,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI','Helvetica Neue',sa
     <div class="kpi-section" style="border-top:3px solid #D85A30;margin-bottom:16px;"><div class="kg kg4" id="comp-kpi"></div></div>
     <div class="card" style="border-top:3px solid #D85A30;">
       <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;margin-bottom:12px;">
-        <div style="font-size:12px;font-weight:600;" id="comp-title">경쟁사 누락광고주 월별 현황
+        <div style="font-size:12px;font-weight:600;" id="comp-title">경쟁 매체 집행 광고주 월별 현황
           <span style="font-size:10px;font-weight:400;color:#6B6A67;">· 경쟁사 매체에 집행 중인 미수주 광고주</span>
         </div>
         <button class="ub" style="padding:5px 12px;font-size:11px;" onclick="loadCompetitor()">새로고침</button>
@@ -713,17 +723,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI','Helvetica Neue',sa
 
     <div id="vlist" style="display:none;">
     <div id="list-load-bar" style="background:#E6F1FB;border:0.5px solid #B8D4F0;border-radius:8px;padding:9px 14px;margin-bottom:14px;font-size:11px;color:#185FA5;display:none;"></div>
-    <!-- 팀 탭 (1depth) -->
-    <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;flex-wrap:wrap;">
-      <div class="yr-tabs" id="list-team-tabs">
-        <button class="yr-tab on" onclick="switchListTeam('마케팅솔루션1팀',this)">마솔1팀</button>
-        <button class="yr-tab" onclick="switchListTeam('마케팅솔루션2팀',this)">마솔2팀</button>
-        <button class="yr-tab" onclick="switchListTeam('마케팅솔루션3팀',this)">마솔3팀</button>
-        <button class="yr-tab" onclick="switchListTeam('마케팅솔루션4팀',this)">마솔4팀</button>
-      </div>
-      <span id="list-team-chip" style="font-size:11px;color:#6B6A67;padding:3px 10px;border:0.5px solid #E5E4E0;border-radius:20px;background:#fff;">로딩 중...</span>
-    </div>
-    <!-- 필터 탭 (2depth) -->
+    <!-- 필터 탭 -->
     <div style="display:flex;flex-direction:column;gap:6px;margin-bottom:14px;">
       <div style="display:flex;align-items:center;gap:5px;flex-wrap:wrap;" id="list-sector-tabs">
         <span style="font-size:10px;color:#aaa;width:32px;flex-shrink:0;">업종</span>
@@ -736,10 +736,17 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI','Helvetica Neue',sa
     <div class="card" style="border-top:3px solid #7F77DD;">
       <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;margin-bottom:12px;">
         <div style="font-size:12px;font-weight:600;color:#1a1917;">광고주 리스트
-          <span style="font-size:10px;font-weight:400;color:#6B6A67;" id="list-sheet-label">· 시트 기준 · 집행금액은 RAW 데이터 자동 매칭</span>
+          <span style="font-size:10px;font-weight:400;color:#6B6A67;" id="list-sheet-label">· 마솔1~4팀 통합</span>
         </div>
         <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
           <input class="si" id="list-q" style="min-width:150px;" placeholder="광고주·담당자 검색..." oninput="renderList()"/>
+          <select class="fsel" id="list-team-filter" onchange="renderList()">
+            <option value="">전체 팀</option>
+            <option value="마케팅솔루션1팀">마솔1팀</option>
+            <option value="마케팅솔루션2팀">마솔2팀</option>
+            <option value="마케팅솔루션3팀">마솔3팀</option>
+            <option value="마케팅솔루션4팀">마솔4팀</option>
+          </select>
           <select class="fsel" id="list-sector1" onchange="renderList()"><option value="">전체 업종</option></select>
           <select class="fsel" id="list-sort" onchange="renderList()">
             <option value="te26_desc">2026금액↓</option>
@@ -752,17 +759,19 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI','Helvetica Neue',sa
         </div>
       </div>
       <div class="tw" style="max-height:600px;">
-        <table class="rtbl" style="min-width:820px;" id="list-tbl" onclick="handleListClick(event)">
+        <table class="rtbl" style="min-width:900px;" id="list-tbl" onclick="handleListClick(event)">
           <thead><tr id="list-thead-row">
-            <th style="width:160px;cursor:pointer;" onclick="sortList('name')" id="lth-name">광고주 <span id="lts-name"></span></th>
-            <th style="width:80px;cursor:pointer;" onclick="sortList('person')" id="lth-person">담당자 <span id="lts-person"></span></th>
-            <th style="width:80px;cursor:pointer;" onclick="sortList('sector1')" id="lth-sector1">업종 <span id="lts-sector1"></span></th>
-            <th style="width:55px;cursor:pointer;text-align:center;" onclick="sortList('grade')" id="lth-grade">등급 <span id="lts-grade"></span></th>
+            <th style="width:60px;cursor:pointer;text-align:center;" onclick="sortList('team')" id="lth-team">팀 <span id="lts-team"></span></th>
+            <th style="width:150px;cursor:pointer;" onclick="sortList('name')" id="lth-name">광고주 <span id="lts-name"></span></th>
+            <th style="width:75px;cursor:pointer;" onclick="sortList('person')" id="lth-person">담당자 <span id="lts-person"></span></th>
+            <th style="width:75px;cursor:pointer;" onclick="sortList('sector1')" id="lth-sector1">업종 <span id="lts-sector1"></span></th>
+            <th style="width:50px;cursor:pointer;text-align:center;" onclick="sortList('grade')" id="lth-grade">등급 <span id="lts-grade"></span></th>
             <th style="width:55px;text-align:center;cursor:pointer;" onclick="sortList('log')" id="lth-log">영업일지 <span id="lts-log"></span></th>
-            <th style="width:95px;cursor:pointer;text-align:right;" onclick="sortList('te25')" id="lth-te25">2025년 <span id="lts-te25"></span></th>
-            <th style="width:95px;cursor:pointer;text-align:right;" onclick="sortList('te26')" id="lth-te26">2026년 <span id="lts-te26"></span></th>
-            <th style="width:65px;cursor:pointer;text-align:right;" onclick="sortList('diff')" id="lth-diff">증감 <span id="lts-diff"></span></th>
-            <th style="width:100px;">비고</th>
+            <th style="width:75px;text-align:center;cursor:pointer;" onclick="sortList('comp')" id="lth-comp">경쟁 매체 현황 <span id="lts-comp"></span></th>
+            <th style="width:90px;cursor:pointer;text-align:right;" onclick="sortList('te25')" id="lth-te25">2025년 <span id="lts-te25"></span></th>
+            <th style="width:90px;cursor:pointer;text-align:right;" onclick="sortList('te26')" id="lth-te26">2026년 <span id="lts-te26"></span></th>
+            <th style="width:60px;cursor:pointer;text-align:right;" onclick="sortList('diff')" id="lth-diff">증감 <span id="lts-diff"></span></th>
+            <th style="width:90px;">비고</th>
           </tr></thead>
           <tbody id="list-body"></tbody>
         </table>
@@ -1943,6 +1952,11 @@ async function loadAdv(){
     if(cKey==='prod') renderProd();
     // 본부전체/타운보드 탭일 때 주요광고주 업데이트
     if(cKey==='all'||cKey==='tb') renderTopAdv();
+    // 광고주 리스트 탭이면 업종 정렬(26년매출순)을 위해 필터 재구성
+    if(cKey==='list' && advListSheet.length){
+      initListFilters();
+      renderList();
+    }
 
   }catch(e){
     setSb('display:block;background:#FCEBEB;border:0.5px solid #E24B4A;border-radius:8px;padding:9px 14px;margin-bottom:14px;font-size:11px;color:#A32D2D;','광고 데이터 로드 실패: '+e.message);
@@ -2051,66 +2065,64 @@ async function loadAdvList(sheetName){
   curListTeam = sheetName;
 
   const bar = document.getElementById('list-load-bar');
-  const chip = document.getElementById('list-team-chip');
   bar.style.cssText='display:block;background:#E6F1FB;border:0.5px solid #B8D4F0;border-radius:8px;padding:9px 14px;margin-bottom:14px;font-size:11px;color:#185FA5;';
-  bar.textContent = sheetName + ' 불러오는 중...';
-  if(chip) chip.textContent = '로딩 중...';
+  bar.textContent = '마솔 1~4팀 데이터 통합 로딩 중...';
   listLoading = true;
 
   try{
-    const url = `${ADVLIST_URL}?action=advlist&sheet=${encodeURIComponent(sheetName)}&_=${Date.now()}`;
-    const res = await fetch(url);
-    if(!res.ok) throw new Error('HTTP '+res.status);
-    const json = await res.json();
-    if(json.error) throw new Error(json.error);
-    advListSheet = json.data || [];
+    // 1~4팀 전체를 병렬 로드
+    const TEAMS = ['마케팅솔루션1팀','마케팅솔루션2팀','마케팅솔루션3팀','마케팅솔루션4팀'];
+    const allRows = [];
+    await Promise.all(TEAMS.map(async team=>{
+      // 캐시 있으면 사용
+      if(listCache[team] && listCache[team].length){
+        listCache[team].forEach(r=>allRows.push({...r, _team: team}));
+        return;
+      }
+      try {
+        const url = `${ADVLIST_URL}?action=advlist&sheet=${encodeURIComponent(team)}&_=${Date.now()}`;
+        const res = await fetch(url);
+        if(!res.ok) throw new Error('HTTP '+res.status);
+        const json = await res.json();
+        if(json.error) throw new Error(json.error);
+        const data = json.data || [];
+        listCache[team] = data;
+        data.forEach(r=>allRows.push({...r, _team: team}));
+      } catch(e){
+        console.warn(team+' 로드 실패:', e);
+      }
+    }));
+
+    advListSheet = allRows;
     advListSheet._amountsSynced = false;
-    listCache[sheetName] = advListSheet;
 
     bar.style.cssText='display:block;background:#E1F5EE;border:0.5px solid #34A853;border-radius:8px;padding:9px 14px;margin-bottom:14px;font-size:11px;color:#0F6E56;';
-    bar.textContent = `✓ ${sheetName} ${advListSheet.length}개 로드 완료`;
-    if(chip) chip.textContent = `${sheetName} · ${advListSheet.length}개`;
+    bar.textContent = `✓ 마솔 1~4팀 통합 ${advListSheet.length}개 로드 완료`;
     setTimeout(()=>bar.style.display='none', 2000);
 
     const label = document.getElementById('list-sheet-label');
-    if(label) label.textContent = `· ${sheetName} 시트 기준 · 집행금액은 RAW 데이터 자동 매칭`;
+    if(label) label.textContent = `· 마솔 1~4팀 통합 ${advListSheet.length}개 · 집행금액은 RAW 데이터 자동 매칭`;
 
     initListFilters();
     renderList();
   }catch(e){
     bar.style.cssText='display:block;background:#FCEBEB;border:0.5px solid #E24B4A;border-radius:8px;padding:9px 14px;margin-bottom:14px;font-size:11px;color:#A32D2D;';
     bar.textContent='로드 실패: '+e.message;
-    if(chip) chip.textContent = '로드 실패';
     console.error(e);
   } finally {
     listLoading = false;
   }
 }
 
-let curListSector = ''; // 현재 선택된 업종 탭
-let curListSortKey = 'te26'; // 기본 정렬: 2026년 집행 내림차순
+let curListSector = '';
+let curListSortKey = 'te26';
 let curListSortDir = 'desc';
 
 function switchListTeam(sheetName, el){
-  // 팀 탭 활성화
-  document.querySelectorAll('#list-team-tabs .yr-tab').forEach(t=>t.classList.remove('on'));
-  if(el) el.classList.add('on');
-  // 검색어·업종 초기화
-  document.getElementById('list-q').value = '';
-  curListSector = '';
-  // 캐시 있으면 바로 렌더, 없으면 fetch
-  if(listCache[sheetName]){
-    curListTeam = sheetName;
-    advListSheet = listCache[sheetName];
-    const label = document.getElementById('list-sheet-label');
-    if(label) label.textContent = `· ${sheetName} 시트 기준 · 집행금액은 RAW 데이터 자동 매칭`;
-    const chip = document.getElementById('list-team-chip');
-    if(chip) chip.textContent = `${sheetName} · ${advListSheet.length}개`;
-    initListFilters();
-    renderList();
-  } else {
-    loadAdvList(sheetName);
-  }
+  // 더 이상 사용 안 됨 (전체 통합 로드로 변경)
+  // 호환성을 위해 유지 - 팀 필터 셀렉트로 변경
+  const sel = document.getElementById('list-team-filter');
+  if(sel){ sel.value = sheetName || ''; renderList(); }
 }
 
 function switchListSector(sec, el){
@@ -2138,27 +2150,91 @@ function pillBtn(label, onclick, active=false){
 }
 
 function initListFilters(){
-  const sectors=[...new Set(advListSheet.map(r=>r['업종1']||'').filter(Boolean))].sort();
+  // 업종별 26년 누적매출 계산
+  const rawAmt = buildRawAmounts();
+  const hasRev = Object.keys(rawAmt).length > 0;
+  const sectorRev = {}; // {업종: 26년매출합}
+  advListSheet.forEach(r=>{
+    const sec = (r['업종1']||'').trim();
+    if(!sec) return;
+    const name = (r['광고주']||'').trim();
+    const amt = rawAmt[name]||{te26:0};
+    sectorRev[sec] = (sectorRev[sec]||0) + (amt.te26||0);
+  });
+
+  // 26년 매출 내림차순 정렬, '기타'는 항상 맨 뒤
+  // advRaw 아직 로드 안됐으면 가나다순 fallback
+  const allSectors = Object.keys(sectorRev);
+  const sectors = allSectors.sort((a,b)=>{
+    const aIsEtc = a === '기타' || a.includes('기타');
+    const bIsEtc = b === '기타' || b.includes('기타');
+    if(aIsEtc && !bIsEtc) return 1;
+    if(!aIsEtc && bIsEtc) return -1;
+    if(aIsEtc && bIsEtc) return a.localeCompare(b,'ko');
+    if(!hasRev) return a.localeCompare(b,'ko');
+    // 26년 매출 내림차순 (동일 매출이면 가나다순)
+    const diff = (sectorRev[b]||0) - (sectorRev[a]||0);
+    if(diff !== 0) return diff;
+    return a.localeCompare(b,'ko');
+  });
+
   document.getElementById('list-sector1').innerHTML=
     '<option value="">전체 업종</option>'+sectors.map(s=>`<option>${s}</option>`).join('');
 
-  // 업종 탭
+  // 업종 탭 (개수 표시)
   const sectorWrap = document.getElementById('list-sector-tabs');
   if(sectorWrap){
     sectorWrap.innerHTML =
-      '<span style="font-size:10px;color:#aaa;width:32px;flex-shrink:0;">업종</span>' +
+      '<span style="font-size:10px;color:#aaa;flex-shrink:0;white-space:nowrap;">업종 <span style="color:#185FA5;font-weight:600;">(총 '+sectors.length+'업종)</span></span>' +
       pillBtn('전체', "switchListSector('',this)", true) +
       sectors.map(s=>pillBtn(s, `switchListSector('${s}',this)`)).join('');
   }
 
-  // 담당자 탭
-  const persons=[...new Set(advListSheet.map(r=>r['담당자']||'').filter(Boolean))].sort();
+  // 담당자 탭: 팀 순(1팀→4팀) → 가나다순, 이름에 팀 배지 부착
+  const personTeamMap = {}; // {담당자: 팀}
+  advListSheet.forEach(r=>{
+    const p = (r['담당자']||'').trim();
+    const t = (r._team||r['담당팀']||'').trim();
+    if(!p) return;
+    if(!personTeamMap[p]) personTeamMap[p] = t;
+  });
+  const teamNum = t => {
+    const m = String(t||'').match(/(\d+)/);
+    return m ? parseInt(m[1]) : 99;
+  };
+  const persons = Object.keys(personTeamMap).sort((a,b)=>{
+    const ta = teamNum(personTeamMap[a]);
+    const tb = teamNum(personTeamMap[b]);
+    if(ta !== tb) return ta - tb;
+    return a.localeCompare(b,'ko');
+  });
+  // 팀별 색상
+  const teamColor = (team) => {
+    const n = teamNum(team);
+    if(n===1) return {bg:'#E6F1FB',fg:'#185FA5'};
+    if(n===2) return {bg:'#E1F5EE',fg:'#0F6E56'};
+    if(n===3) return {bg:'#FAEEDA',fg:'#854F0B'};
+    if(n===4) return {bg:'#F5E1F5',fg:'#8B2A8B'};
+    return {bg:'#F1EFE8',fg:'#6B6A67'};
+  };
+  const personPill = (p, active=false)=>{
+    const team = personTeamMap[p] || '';
+    const teamShort = team.replace('마케팅솔루션','마솔');
+    const tc = teamColor(team);
+    const teamBadge = teamShort
+      ? `<span style="font-size:8px;font-weight:700;background:${tc.bg};color:${tc.fg};padding:1px 4px;border-radius:2px;margin-right:4px;">${teamShort}</span>`
+      : '';
+    const onclick = `switchListPerson('${p}',this)`;
+    return `<button class="sec-pill" onclick="${onclick}"
+      style="padding:3px 10px;border-radius:20px;border:0.5px solid ${active?'#378ADD':'#E5E4E0'};background:${active?'#E6F1FB':'#fff'};font-size:11px;color:${active?'#185FA5':'#6B6A67'};cursor:pointer;font-weight:${active?'600':'400'};display:inline-flex;align-items:center;">${teamBadge}${p}</button>`;
+  };
+
   const personWrap = document.getElementById('list-person-tabs');
   if(personWrap){
     personWrap.innerHTML =
-      '<span style="font-size:10px;color:#aaa;width:32px;flex-shrink:0;">담당자</span>' +
+      '<span style="font-size:10px;color:#aaa;flex-shrink:0;white-space:nowrap;">담당자 <span style="color:#185FA5;font-weight:600;">(총 '+persons.length+'명)</span></span>' +
       pillBtn('전체', "switchListPerson('',this)", true) +
-      persons.map(p=>pillBtn(p, `switchListPerson('${p}',this)`)).join('');
+      persons.map(p=>personPill(p)).join('');
   }
 
   curListSector = '';
@@ -2197,25 +2273,54 @@ function renderList(){
 
   const q=(document.getElementById('list-q').value||'').toLowerCase();
   const sec=document.getElementById('list-sector1').value;
+  const teamFilter = document.getElementById('list-team-filter') ? document.getElementById('list-team-filter').value : '';
   const rawAmt = buildRawAmounts();
+
+  // 경쟁매체 집행 정보 매칭 맵 (광고주명 → [{month, media, status, note, person}])
+  const compMatchMap = {};
+  if(compData && compData.length){
+    const currentYear = new Date().getFullYear();
+    compData.forEach(c=>{
+      const advName = (c['광고주명']||'').trim();
+      if(!advName) return;
+      const mon = (c['월']||'').trim();
+      // 올해 1~5월 데이터만
+      if(!mon.startsWith(currentYear + '-')) return;
+      const monNum = parseInt(mon.split('-')[1]);
+      if(!monNum || monNum < 1 || monNum > 5) return;
+      if(!compMatchMap[advName]) compMatchMap[advName] = [];
+      compMatchMap[advName].push({
+        month:    mon,
+        media:    c['경쟁매체']||'',
+        campaign: c['캠페인명']||'',
+        status:   c['제안경과']||'',
+        propose:  c['제안여부']||'',
+        person:   c['담당자']||'',
+        note:     c['제안내용']||'',
+      });
+    });
+  }
 
   // 시트 데이터 + RAW 매칭
   let rows = advListSheet.map(r=>{
     const name=(r['광고주']||'').trim();
     const amt=rawAmt[name]||{te25:0,te26:0};
-    return{ name, team:r['담당팀']||'', person:r['담당자']||'',
+    return{ name, team:r['담당팀']||r._team||'', _team: r._team||r['담당팀']||'',
+      person:r['담당자']||'',
       sector1:r['업종1']||'', sector2:r['업종2']||'',
       grade:r['등급']||'', status:r['현황']||'',
       lastLog:r['최근 영업일지']||'', note:r['비고']||'',
-      te25:amt.te25, te26:amt.te26 };
+      te25:amt.te25, te26:amt.te26,
+      compInfo: compMatchMap[name] || null };
   });
 
   // 필터
   rows = rows.filter(v=>{
+    if(teamFilter && v._team !== teamFilter) return false;
     if(curListSector && v.sector1 !== curListSector) return false;
     if(curListPerson && v.person !== curListPerson) return false;
     if(sec && v.sector1 !== sec) return false;
-    if(q && ![v.name,v.person,v.sector1,v.grade,v.status].some(s=>s&&String(s).toLowerCase().includes(q))) return false;
+    if(q && ![v.name,v.person,v.sector1,v.grade,v.status,v._team].some(s=>s&&String(s).toLowerCase().includes(q))) return false;
     return true;
   });
 
@@ -2223,14 +2328,16 @@ function renderList(){
   rows.sort((a,b)=>{
     const dir = curListSortDir === 'desc' ? -1 : 1;
     switch(curListSortKey){
-      case 'te26':   return (b.te26 - a.te26) * dir * -1;  // desc기본
+      case 'te26':   return (b.te26 - a.te26) * dir * -1;
       case 'te25':   return (b.te25 - a.te25) * dir * -1;
       case 'diff': {
         const da = a.te25>0?(a.te26-a.te25)/a.te25:0;
         const db = b.te25>0?(b.te26-b.te25)/b.te25:0;
         return (db - da) * dir * -1;
       }
-      case 'log':    return (b.lastLog?1:0) - (a.lastLog?1:0);  // 있는것 먼저
+      case 'log':    return (b.lastLog?1:0) - (a.lastLog?1:0);
+      case 'comp':   return ((b.compInfo?b.compInfo.length:0) - (a.compInfo?a.compInfo.length:0));
+      case 'team':   return (a._team||'').localeCompare(b._team||'','ko') * dir;
       case 'person': return (a.person||'').localeCompare(b.person||'','ko') * dir;
       case 'sector1':return (a.sector1||'').localeCompare(b.sector1||'','ko') * dir;
       case 'name':
@@ -2302,7 +2409,17 @@ function renderList(){
     const logIcon = v.lastLog
       ? '<td style="text-align:center;cursor:pointer;" onclick="event.stopPropagation();showListLog(this)" data-adv="'+v.name.replace(/&/g,'&amp;').replace(/"/g,'&quot;')+'" data-log="'+logSafe+'"><span style="font-size:14px;">📋</span></td>'
       : '<td style="text-align:center;color:#ccc;font-size:11px;">-</td>';
+
+    // 경쟁사 집행 아이콘
+    const compCount = v.compInfo ? v.compInfo.length : 0;
+    const compIcon = compCount > 0
+      ? '<td style="text-align:center;cursor:pointer;" onclick="event.stopPropagation();showCompInfo(this)" data-adv="'+v.name.replace(/&/g,'&amp;').replace(/"/g,'&quot;')+'" title="경쟁매체 '+compCount+'건"><span style="font-size:14px;">⚠️</span><span style="font-size:9px;color:#A32D2D;font-weight:700;margin-left:2px;">'+compCount+'</span></td>'
+      : '<td style="text-align:center;color:#ccc;font-size:11px;">-</td>';
+    const teamBadge = v._team
+      ? '<span style="font-size:9px;font-weight:700;background:#FAEEDA;color:#DD8726;padding:2px 6px;border-radius:3px;">'+v._team.replace('마케팅솔루션','마솔')+'</span>'
+      : '<span style="color:#ccc">-</span>';
     const mainRow=`<tr class="dr list-adv-row" data-adv="${v.name.replace(/"/g,'&quot;')}" style="cursor:pointer;">
+      <td style="text-align:center;">${teamBadge}</td>
       <td style="font-weight:600;color:#185FA5;">
         <span style="font-size:9px;margin-right:4px;display:inline-block;transition:transform .15s;${isOpen?'transform:rotate(90deg)':''}">▶</span>${v.name}
       </td>
@@ -2310,6 +2427,7 @@ function renderList(){
       <td style="font-size:11px;color:#6B6A67">${v.sector1}</td>
       <td style="text-align:center">${gradeBadge(v.grade)}</td>
       ${logIcon}
+      ${compIcon}
       <td style="text-align:right;color:#6B6A67">${v.te25?fmtW(v.te25):'-'}</td>
       <td style="text-align:right;font-weight:600;color:${v.te26>0?'#1a1917':'#aaa'}">${v.te26?fmtW(v.te26):'-'}</td>
       <td style="text-align:right">${diffTxt}</td>
@@ -2419,6 +2537,103 @@ function showListLog(td){
   document.body.appendChild(popup);
 }
 
+function showCompInfo(td){
+  const advName = td.dataset.adv || '';
+  // 다시 compData에서 매칭 (renderList의 매칭 결과를 재사용하지 않고 직접 조회)
+  const currentYear = new Date().getFullYear();
+  const items = (compData || []).filter(c=>{
+    if((c['광고주명']||'').trim() !== advName) return false;
+    const mon = (c['월']||'').trim();
+    if(!mon.startsWith(currentYear + '-')) return false;
+    const monNum = parseInt(mon.split('-')[1]);
+    return monNum >= 1 && monNum <= 5;
+  });
+  // 월 내림차순 정렬
+  items.sort((a,b)=>(b['월']||'').localeCompare(a['월']||''));
+
+  // 기존 팝업 제거
+  const existing = document.getElementById('comp-info-popup');
+  if(existing) existing.remove();
+  const existOv = document.getElementById('comp-info-overlay');
+  if(existOv) existOv.remove();
+
+  // 진행상태 배지 헬퍼
+  const statusBadge = s=>{
+    const t = String(s||'').trim();
+    if(!t) return '';
+    let bg='#F1EFE8', fg='#6B6A67';
+    if(t.includes('수주') && !t.includes('미수주')){ bg='#E1F5EE'; fg='#0F6E56'; }
+    else if(t.includes('미수주')){ bg='#FCEBEB'; fg='#A32D2D'; }
+    else if(t.includes('협의') || t.includes('제안')){ bg='#E6F1FB'; fg='#185FA5'; }
+    else if(t.includes('확인') || t.includes('파악')){ bg='#FAEEDA'; fg='#DD8726'; }
+    return `<span style="font-size:10px;font-weight:600;background:${bg};color:${fg};padding:2px 7px;border-radius:3px;white-space:nowrap;">${t}</span>`;
+  };
+
+  // 자연어 요약 생성
+  const summaryLines = items.map(it=>{
+    const m = String(it['월']||'');
+    const yr = m.split('-')[0];
+    const mo = parseInt(m.split('-')[1]);
+    const date = yr+'년 '+mo+'월';
+    const parts = [];
+    parts.push('<strong>'+date+'</strong>');
+    if(it['경쟁매체']) parts.push(it['경쟁매체']);
+    if(it['캠페인명']) parts.push('('+it['캠페인명']+')');
+    parts.push('집행');
+    if(it['제안내용']) parts.push('· '+it['제안내용']);
+    return parts.join(' ');
+  });
+
+  const itemsHtml = items.map(it=>{
+    const m = String(it['월']||'');
+    const yr = m.split('-')[0];
+    const mo = parseInt(m.split('-')[1]);
+    const media    = it['경쟁매체']||'';
+    const status   = it['제안경과']||'';
+    const propose  = it['제안여부']||'';
+    const campaign = it['캠페인명']||'';
+    const note     = it['제안내용']||'';
+    const person   = it['담당자']||'';
+    return `
+      <div style="padding:10px 12px;border:0.5px solid #EEEDE9;border-radius:8px;margin-bottom:8px;background:#fff;">
+        <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:6px;">
+          <span style="font-size:11px;font-weight:700;color:#185FA5;">${yr}년 ${mo}월</span>
+          ${media?'<span style="font-size:10px;background:#F1EFE8;color:#1A1918;padding:2px 7px;border-radius:3px;">'+media+'</span>':''}
+          ${statusBadge(status)}
+          ${propose==='Y'?'<span style="font-size:9px;font-weight:700;background:#E1F5EE;color:#0F6E56;padding:2px 6px;border-radius:3px;">제안 Y</span>':''}
+        </div>
+        ${campaign?'<div style="font-size:11px;color:#6B6A67;margin-bottom:4px;">📌 '+campaign.replace(/</g,'&lt;')+'</div>':''}
+        ${note?'<div style="font-size:12px;color:#1a1917;line-height:1.5;padding:6px 0 0;border-top:0.5px solid #F1EFE8;">'+note.replace(/</g,'&lt;')+'</div>':''}
+        ${person?'<div style="font-size:10px;color:#aaa;margin-top:6px;">담당: '+person+'</div>':''}
+      </div>`;
+  }).join('');
+
+  const popup = document.createElement('div');
+  popup.id = 'comp-info-popup';
+  popup.style.cssText = `
+    position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);
+    background:#fff;border-radius:12px;box-shadow:0 8px 32px rgba(0,0,0,0.18);
+    padding:20px 24px;max-width:560px;width:90%;z-index:9999;
+    border-top:3px solid #D85A30;max-height:80vh;display:flex;flex-direction:column;`;
+  popup.innerHTML = `
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;flex-shrink:0;">
+      <div style="font-size:13px;font-weight:700;color:#A32D2D;">⚠️ 경쟁매체 집행 현황</div>
+      <button onclick="document.getElementById('comp-info-popup').remove();document.getElementById('comp-info-overlay').remove();"
+        style="background:none;border:none;font-size:18px;cursor:pointer;color:#aaa;line-height:1;">✕</button>
+    </div>
+    <div style="font-size:12px;color:#1a1917;font-weight:600;margin-bottom:6px;flex-shrink:0;">${advName}</div>
+    <div style="font-size:10px;color:#6B6A67;padding:4px 0;border-bottom:0.5px solid #EEEDE9;margin-bottom:12px;flex-shrink:0;">${currentYear}년 1~5월 · ${items.length}건</div>
+    <div style="overflow-y:auto;flex:1;padding-right:4px;">${itemsHtml}</div>`;
+
+  const overlay = document.createElement('div');
+  overlay.id = 'comp-info-overlay';
+  overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.3);z-index:9998;';
+  overlay.onclick = ()=>{ popup.remove(); overlay.remove(); };
+
+  document.body.appendChild(overlay);
+  document.body.appendChild(popup);
+}
+
 function sortList(key){
   if(curListSortKey === key){
     curListSortDir = curListSortDir === 'desc' ? 'asc' : 'desc';
@@ -2431,7 +2646,7 @@ function sortList(key){
 }
 
 function updateListSortIndicators(){
-  const COLS = ['name','person','sector1','grade','log','te25','te26','diff'];
+  const COLS = ['team','name','person','sector1','grade','log','comp','te25','te26','diff'];
   COLS.forEach(c=>{
     const el = document.getElementById('lts-'+c);
     if(!el) return;
@@ -2524,7 +2739,27 @@ function exportListCSV(){
   a.download='광고주리스트.csv';a.click();
 }
 // ══════════════════════════════════════
-const TITLES={adv:'누적 광고 데이터',sales:'영업사원별 실적',weekly:'주간업무보고',reports:'게첨보고서',major:'(참고용) 국내 주요 광고주',comp:'경쟁사 모니터링',intro:'본부 소개서',prod:'상품별 실적',list:'광고주 리스트',all:'본부 전체 실적',ms:'마케팅솔루션국',ms1:'마케팅솔루션1팀',ms2:'마케팅솔루션2팀',ms3:'마케팅솔루션3팀',ms4:'마케팅솔루션4팀',msd:'디지털사업팀',msp1:'솔루션기획1팀',msp2:'솔루션기획2팀',cs:'콘텐트사업국',cst:'콘텐트사업팀',inn:'이노베이션랩',csd:'콘텐트개발팀',dev:'솔루션개발팀',tb:'타운보드(사업지원국)'};
+const TITLES={adv:'누적 광고 데이터',sales:'영업사원별 실적',weekly:'주간업무보고',reports:'게첨보고서',major:'(참고용) 국내 주요 광고주',comp:'경쟁 매체 모니터링',intro:'본부 소개서',prod:'상품별 실적',list:'광고주 리스트',all:'본부 전체 실적',ms:'마케팅솔루션국',ms1:'마케팅솔루션1팀',ms2:'마케팅솔루션2팀',ms3:'마케팅솔루션3팀',ms4:'마케팅솔루션4팀',msd:'디지털사업팀',msp1:'솔루션기획1팀',msp2:'솔루션기획2팀',cs:'콘텐트사업국',cst:'콘텐트사업팀',inn:'이노베이션랩',csd:'콘텐트개발팀',dev:'솔루션개발팀',tb:'타운보드(사업지원국)'};
+function toggleGroup(groupId, caretId){
+  const g = document.getElementById(groupId);
+  const c = document.getElementById(caretId);
+  if(!g) return;
+  if(g.style.display === 'none' || !g.style.display){
+    g.style.display = 'block';
+    if(c) c.textContent = '▲';
+  } else {
+    g.style.display = 'none';
+    if(c) c.textContent = '▼';
+  }
+}
+
+function navOrToggle(key, groupId, el, evt){
+  // 캐럿 클릭이 아니라 라벨 영역 클릭 시 → 탭 전환 + 그룹 펼침
+  toggleGroup(groupId, 'caret-'+(key==='ms'?'ms':'cs'));
+  // 펼침 후 탭으로도 이동
+  nav(key, el);
+}
+
 function nav(key,el){
   cKey=key;
   document.querySelectorAll('.ni,.nc').forEach(n=>n.classList.remove('on'));if(el)el.classList.add('on');
@@ -2551,6 +2786,12 @@ function nav(key,el){
   if(isL){
     if(!advListSheet.length) loadAdvList(curListTeam);
     else renderList();
+    // 경쟁매체 데이터도 백그라운드 로드 (없으면)
+    if(!compData || !compData.length){
+      setTimeout(()=>{
+        loadCompetitor().then(()=>{ if(advListSheet.length) renderList(); }).catch(()=>{});
+      }, 600);
+    }
     return;
   }
   if(isSales){ renderSales(); return; }
@@ -3554,14 +3795,15 @@ function renderMajorAdv(){
 }
 
 // ══════════════════════════════════════
-// 경쟁사 모니터링
+// 경쟁 매체 모니터링
 // ══════════════════════════════════════
 const COMP_URL = PERF_URL; // Apps Script에 competitor 분기 추가됨
 let compData = [];
 let compLoading = false;
 let compSortKey = '_default';
 let compSortDir = 'asc';
-let compTeam = ''; // '' = 전체, '1팀'~'4팀'
+let compTeam = ''; // 기본: 전체
+let _compFirstLoad = true;
 
 function setCompTeam(team){
   compTeam = team;
@@ -3576,7 +3818,7 @@ function setCompTeam(team){
   // 제목 업데이트
   const t = team ? '마솔'+team : '전체';
   document.getElementById('comp-title').innerHTML =
-    '경쟁사 누락광고주 월별 현황 <span style="font-size:11px;font-weight:600;color:#D85A30;">· '+t+'</span>'+
+    '경쟁 매체 집행 광고주 월별 현황 <span style="font-size:11px;font-weight:600;color:#D85A30;">· '+t+'</span>'+
     ' <span style="font-size:10px;font-weight:400;color:#6B6A67;">· 경쟁사 매체에 집행 중인 미수주 광고주</span>';
   // 필터도 현재 팀 기준으로 재구성
   initCompFilters();
@@ -3588,7 +3830,7 @@ async function loadCompetitor(){
   compLoading = true;
   const bar = document.getElementById('comp-load-bar');
   bar.style.cssText='display:block;background:#E6F1FB;border:0.5px solid #B8D4F0;border-radius:8px;padding:9px 14px;margin-bottom:14px;font-size:11px;color:#185FA5;';
-  bar.textContent='경쟁사 모니터링 데이터 불러오는 중...';
+  bar.textContent='경쟁 매체 모니터링 데이터 불러오는 중...';
   try {
     const url = `${COMP_URL}?action=competitor&_=${Date.now()}`;
     const res = await fetch(url);
@@ -3598,7 +3840,40 @@ async function loadCompetitor(){
     bar.style.cssText='display:block;background:#E1F5EE;border:0.5px solid #34A853;border-radius:8px;padding:9px 14px;margin-bottom:14px;font-size:11px;color:#0F6E56;';
     bar.textContent=`✓ ${compData.length}개 항목 로드 완료`;
     setTimeout(()=>bar.style.display='none', 2500);
-    initCompFilters();
+
+    // 첫 로드 시 디폴트: 전체 + 가장 최신 월(또는 5월 우선) + 팀순 정렬
+    if(_compFirstLoad){
+      _compFirstLoad = false;
+      compTeam = '';
+      compSortKey = 'team';
+      compSortDir = 'asc';
+      // 팀 탭 활성 상태 반영 (전체 디폴트)
+      document.querySelectorAll('#comp-tabs .comp-tab').forEach(btn=>{
+        if(btn.dataset.team === ''){
+          btn.style.cssText = 'padding:7px 14px;font-size:11px;font-weight:600;background:#185FA5;color:#fff;border:none;border-radius:6px;cursor:pointer;';
+        } else {
+          btn.style.cssText = 'padding:7px 14px;font-size:11px;font-weight:600;background:#fff;color:#6B6A67;border:0.5px solid #D5D3CD;border-radius:6px;cursor:pointer;';
+        }
+      });
+      // 제목 업데이트
+      document.getElementById('comp-title').innerHTML =
+        '경쟁 매체 집행 광고주 월별 현황 <span style="font-size:11px;font-weight:600;color:#D85A30;">· 전체</span>'+
+        ' <span style="font-size:10px;font-weight:400;color:#6B6A67;">· 경쟁사 매체에 집행 중인 미수주 광고주</span>';
+      initCompFilters();
+      // 5월(현재연도-05)이 존재하면 자동 선택, 없으면 가장 최신 월
+      const monthSel = document.getElementById('comp-month');
+      const monthsAll = [...new Set(compData.map(r=>r['월']||'').filter(Boolean))].sort();
+      const currentYear = new Date().getFullYear();
+      const targetMon = currentYear + '-05';
+      let defaultMon = '';
+      if(monthsAll.includes(targetMon)) defaultMon = targetMon;
+      else if(monthsAll.length) defaultMon = monthsAll[monthsAll.length-1];
+      if(defaultMon){
+        monthSel.value = defaultMon;
+      }
+    } else {
+      initCompFilters();
+    }
     renderCompetitor();
   } catch(e){
     bar.style.cssText='display:block;background:#FCEBEB;border:0.5px solid #E24B4A;border-radius:8px;padding:9px 14px;margin-bottom:14px;font-size:11px;color:#A32D2D;';
@@ -3634,7 +3909,8 @@ function renderCompetitor(){
   const media   = document.getElementById('comp-media').value;
   const status  = document.getElementById('comp-status').value;
 
-  let rows = compData.filter(r=>{
+  // 1차 필터링
+  let rawRows = compData.filter(r=>{
     if(compTeam && r._sheet !== compTeam) return false;
     if(month  && r['월']!==month) return false;
     if(sector && r['업종']!==sector) return false;
@@ -3647,57 +3923,105 @@ function renderCompetitor(){
     return true;
   });
 
+  // 광고주명+팀(시트)+월 기준으로 그룹핑
+  const groupMap = {};
+  rawRows.forEach(r=>{
+    const advName = (r['광고주명']||'').trim();
+    const mon     = (r['월']||'').trim();
+    const key = (r._sheet||'') + '||' + mon + '||' + advName;
+    if(!groupMap[key]){
+      groupMap[key] = {
+        _sheet:    r._sheet,
+        '월':      mon,
+        '광고주명': advName,
+        '업종':    r['업종'],
+        '담당자':  r['담당자'],
+        _campaigns:new Set(),
+        _medias:   new Set(),
+        _statuses: new Set(),
+        _proposes: new Set(),
+        _notes:    [],
+        _count:    0,
+        _items:    [],
+      };
+    }
+    const g = groupMap[key];
+    if(r['캠페인명']) g._campaigns.add(r['캠페인명']);
+    if(r['경쟁매체']) g._medias.add(r['경쟁매체']);
+    if(r['제안경과']) g._statuses.add(r['제안경과']);
+    if(r['제안여부']) g._proposes.add(String(r['제안여부']).toUpperCase());
+    if(r['제안내용']) g._notes.push(r['제안내용']);
+    g._count++;
+    g._items.push(r);
+  });
+
+  // 그룹을 배열로
+  let rows = Object.values(groupMap).map(g=>({
+    _sheet:      g._sheet,
+    '월':        g['월'],
+    '광고주명':  g['광고주명'],
+    '업종':      g['업종'],
+    '담당자':    g['담당자'],
+    campaigns:   [...g._campaigns],
+    medias:      [...g._medias].sort(),
+    statuses:    [...g._statuses],
+    proposes:    [...g._proposes],
+    notes:       g._notes,
+    count:       g._count,
+  }));
+
   // 정렬
   rows.sort((a,b)=>{
     const d = compSortDir==='asc'?1:-1;
+    // 팀 정렬 헬퍼: '1팀' → 1, '2팀' → 2 등
+    const teamNum = s => parseInt(String(s||'').replace(/[^\d]/g,'')) || 99;
     switch(compSortKey){
-      case 'month':    return (a['월']||'').localeCompare(b['월']||'')*d;
-      case 'name':     return (a['광고주명']||'').localeCompare(b['광고주명']||'','ko')*d;
-      case 'sector':   return (a['업종']||'').localeCompare(b['업종']||'','ko')*d;
-      case 'campaign': return (a['캠페인명']||'').localeCompare(b['캠페인명']||'','ko')*d;
-      case 'media':    return (a['경쟁매체']||'').localeCompare(b['경쟁매체']||'','ko')*d;
-      case 'status':   return (a['제안경과']||'').localeCompare(b['제안경과']||'','ko')*d;
-      case 'person':   return (a['담당자']||'').localeCompare(b['담당자']||'','ko')*d;
-      case 'propose':  return ((a['제안여부']==='Y'?1:0)-(b['제안여부']==='Y'?1:0))*d;
+      case 'team':    return (teamNum(a._sheet) - teamNum(b._sheet))*d;
+      case 'name':    return (a['광고주명']||'').localeCompare(b['광고주명']||'','ko')*d;
+      case 'sector':  return (a['업종']||'').localeCompare(b['업종']||'','ko')*d;
+      case 'media':   return (a.medias[0]||'').localeCompare(b.medias[0]||'','ko')*d;
+      case 'count':   return (a.count-b.count)*d;
+      case 'month':   return (a['월']||'').localeCompare(b['월']||'')*d;
+      case 'person':  return (a['담당자']||'').localeCompare(b['담당자']||'','ko')*d;
       default:
-        // 기본: 월 내림차순 → 광고주명 가나다순
+        // 기본: 월 내림차순 → 팀 오름차순(1→4) → 광고주 가나다순
         const m = (b['월']||'').localeCompare(a['월']||'');
-        if(m!==0) return m;
+        if(m !== 0) return m;
+        const t = teamNum(a._sheet) - teamNum(b._sheet);
+        if(t !== 0) return t;
         return (a['광고주명']||'').localeCompare(b['광고주명']||'','ko');
     }
   });
 
-  // KPI
-  const proposed = rows.filter(r=>r['제안여부']==='Y').length;
-  const won      = rows.filter(r=>String(r['제안경과']||'').includes('수주') && !String(r['제안경과']||'').includes('미수주')).length;
-  const inprog   = rows.filter(r=>{
-    const s = r['제안경과']||'';
-    return s.includes('협의') || s.includes('확인') || s.includes('파악');
-  }).length;
+  // KPI (원본 행 기준)
+  const totalAdv = new Set(rows.map(r=>r['광고주명'])).size;
+  const totalItems = rawRows.length;
+  const proposed = rawRows.filter(r=>String(r['제안여부']||'').toUpperCase()==='Y').length;
+  const won = rawRows.filter(r=>String(r['제안경과']||'').includes('수주') && !String(r['제안경과']||'').includes('미수주')).length;
   document.getElementById('comp-kpi').innerHTML=[
-    {l:'전체',     v:rows.length+'건', b:'<span class="badge bt">조회</span>'},
-    {l:'제안 완료', v:proposed+'건',    b:'<span class="badge bu" style="background:#E6F1FB;color:#185FA5;">제안 Y</span>'},
-    {l:'협의/파악 중', v:inprog+'건',  b:'<span class="badge bu" style="background:#FAEEDA;color:#DD8726;">진행</span>'},
-    {l:'수주',     v:won+'건',         b:'<span class="badge bu" style="background:#E1F5EE;color:#0F6E56;">성공</span>'},
+    {l:'광고주 수', v:totalAdv+'곳',     b:'<span class="badge bt">중복 제거</span>'},
+    {l:'월별 항목', v:rows.length+'건',  b:'<span class="badge bu" style="background:#E6F1FB;color:#185FA5;">월×광고주</span>'},
+    {l:'제안 완료', v:proposed+'건',    b:'<span class="badge bu" style="background:#FAEEDA;color:#DD8726;">진행</span>'},
+    {l:'수주',     v:won+'건',          b:'<span class="badge bu" style="background:#E1F5EE;color:#0F6E56;">성공</span>'},
   ].map(k=>'<div class="kpi"><div class="kl">'+k.l+'</div><div class="kv" style="font-size:18px;">'+k.v+'</div><div class="km">'+k.b+'</div></div>').join('');
 
-  // 진행상태 배지 색상
+  // 배지 헬퍼
   const statusBadge = s=>{
     const t = String(s||'').trim();
-    if(!t) return '<span style="font-size:10px;color:#aaa;">-</span>';
+    if(!t) return '';
     let bg='#F1EFE8', fg='#6B6A67';
     if(t.includes('수주') && !t.includes('미수주')){ bg='#E1F5EE'; fg='#0F6E56'; }
     else if(t.includes('미수주')){ bg='#FCEBEB'; fg='#A32D2D'; }
     else if(t.includes('협의') || t.includes('제안')){ bg='#E6F1FB'; fg='#185FA5'; }
     else if(t.includes('확인') || t.includes('파악')){ bg='#FAEEDA'; fg='#DD8726'; }
     else if(t.includes('보류') || t.includes('미제안') || t.includes('미컨택')){ bg='#F1EFE8'; fg='#6B6A67'; }
-    return `<span style="font-size:10px;font-weight:600;background:${bg};color:${fg};padding:2px 7px;border-radius:4px;white-space:nowrap;">${t}</span>`;
+    return `<span style="font-size:9px;font-weight:600;background:${bg};color:${fg};padding:2px 6px;border-radius:3px;white-space:nowrap;display:inline-block;margin:1px;">${t}</span>`;
   };
 
-  const proposeBadge = p=>{
-    const t = String(p||'').trim().toUpperCase();
-    if(t==='Y') return '<span style="font-size:9px;font-weight:700;background:#E1F5EE;color:#0F6E56;padding:2px 6px;border-radius:3px;">Y</span>';
-    if(t==='N') return '<span style="font-size:9px;font-weight:700;background:#F1EFE8;color:#6B6A67;padding:2px 6px;border-radius:3px;">N</span>';
+  const proposeBadge = arr=>{
+    if(!arr || !arr.length) return '<span style="color:#ccc">-</span>';
+    if(arr.includes('Y')) return '<span style="font-size:9px;font-weight:700;background:#E1F5EE;color:#0F6E56;padding:2px 6px;border-radius:3px;">Y</span>';
+    if(arr.includes('N')) return '<span style="font-size:9px;font-weight:700;background:#F1EFE8;color:#6B6A67;padding:2px 6px;border-radius:3px;">N</span>';
     return '<span style="color:#ccc">-</span>';
   };
 
@@ -3709,43 +4033,68 @@ function renderCompetitor(){
   };
 
   const tableRows = rows.map((r,i)=>{
-    const note    = r['제안내용'] ? String(r['제안내용']).replace(/</g,'&lt;') : '';
-    const noteShort = note.length>80 ? note.slice(0,80)+'...' : note;
     const teamBadge = compTeam ? '' :
       '<td style="text-align:center;"><span style="font-size:9px;font-weight:700;background:#FAEEDA;color:#DD8726;padding:2px 6px;border-radius:3px;">마솔'+(r._sheet||'')+'</span></td>';
-    return '<tr class="dr">'
-      +'<td style="color:#aaa;font-size:10px;text-align:center;">'+(i+1)+'</td>'
+
+    // 캠페인명: 줄바꿈으로 모두 나열, 긴 텍스트는 ellipsis
+    const campaignsHtml = r.campaigns.length === 0 ? '<span style="color:#ccc">-</span>' :
+      r.campaigns.map(c=>{
+        const txt = c.replace(/</g,'&lt;');
+        return '<div style="padding:1px 0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="'+txt.replace(/"/g,'&quot;')+'">• '+txt+'</div>';
+      }).join('');
+
+    // 경쟁매체: 줄바꿈으로 한 줄당 하나씩
+    const mediasHtml = r.medias.length === 0 ? '<span style="color:#ccc">-</span>' :
+      r.medias.map(m=>{
+        const txt = m.replace(/</g,'&lt;');
+        return '<div style="font-size:10px;background:#F1EFE8;color:#1A1918;padding:2px 6px;border-radius:3px;margin:2px 0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="'+txt.replace(/"/g,'&quot;')+'">'+txt+'</div>';
+      }).join('');
+
+    // 진행상태: 모두 배지로
+    const statusesHtml = r.statuses.length === 0 ? '<span style="color:#ccc">-</span>' :
+      r.statuses.map(s=>statusBadge(s)).join('');
+
+    // 제안내용: 중복 제거 후 줄바꿈으로
+    const uniqueNotes = [...new Set(r.notes.map(n=>String(n).trim()).filter(Boolean))];
+    const notesHtml = uniqueNotes.length === 0 ? '' :
+      uniqueNotes.map(n=>'<div style="padding:2px 0;line-height:1.4;">• '+n.replace(/</g,'&lt;')+'</div>').join('');
+
+    return '<tr class="dr" style="vertical-align:top;">'
+      +'<td style="color:#aaa;font-size:10px;text-align:center;padding-top:8px;">'+(i+1)+'</td>'
       +teamBadge
-      +'<td style="font-size:11px;color:#185FA5;font-weight:600;text-align:center;">'+(r['월']||'')+'</td>'
-      +'<td style="font-weight:600;">'+(r['광고주명']||'')+'</td>'
-      +'<td style="font-size:11px;color:#6B6A67;">'+(r['업종']||'')+'</td>'
-      +'<td style="font-size:11px;color:#6B6A67;">'+(r['캠페인명']||'')+'</td>'
-      +'<td style="font-size:11px;color:#6B6A67;">'+(r['경쟁매체']||'')+'</td>'
-      +'<td style="text-align:center;">'+proposeBadge(r['제안여부'])+'</td>'
-      +'<td style="text-align:center;">'+statusBadge(r['제안경과'])+'</td>'
-      +'<td style="font-size:11px;color:#6B6A67;">'+(r['담당자']||'')+'</td>'
-      +'<td style="font-size:10px;color:#6B6A67;line-height:1.4;" title="'+note.replace(/"/g,'&quot;')+'">'+noteShort+'</td>'
+      +'<td style="font-size:11px;color:#185FA5;font-weight:600;text-align:center;padding-top:8px;">'+(r['월']||'')+'</td>'
+      +'<td style="padding-top:8px;"><div style="font-weight:700;">'+(r['광고주명']||'')+'</div>'
+        +(r.count>1?'<div style="font-size:9px;color:#aaa;margin-top:2px;">'+r.count+'건</div>':'')+'</td>'
+      +'<td style="font-size:11px;color:#6B6A67;padding-top:8px;">'+(r['업종']||'')+'</td>'
+      +'<td style="font-size:10px;color:#6B6A67;padding-top:6px;">'+campaignsHtml+'</td>'
+      +'<td style="padding-top:6px;">'+mediasHtml+'</td>'
+      +'<td style="text-align:center;padding-top:8px;">'+proposeBadge(r.proposes)+'</td>'
+      +'<td style="padding-top:6px;">'+statusesHtml+'</td>'
+      +'<td style="font-size:11px;color:#6B6A67;padding-top:8px;">'+(r['담당자']||'')+'</td>'
+      +'<td style="font-size:10px;color:#6B6A67;padding-top:6px;">'+notesHtml+'</td>'
       +'</tr>';
   }).join('');
 
-  const teamHeader = compTeam ? '' : '<th style="width:60px;text-align:center;">팀</th>';
+  const teamHeader = compTeam ? '' : ('<th style="width:60px;text-align:center;cursor:pointer;" onclick="sortComp(&quot;team&quot;)">팀'+(compSortKey==='team'?(compSortDir==='asc'?' ↑':' ↓'):'')+'</th>');
   document.getElementById('comp-list').innerHTML=
-    '<table class="rtbl" style="min-width:1200px;"><thead><tr>'
+    '<table class="rtbl" style="min-width:1200px;table-layout:fixed;"><thead><tr>'
     +'<th style="width:36px;text-align:center;">#</th>'
     +teamHeader
     +sh('month','월','60px','center')
-    +sh('name','광고주명','120px')
-    +sh('sector','업종','80px')
-    +sh('campaign','캠페인명','160px')
-    +sh('media','경쟁매체','110px')
-    +sh('propose','제안','40px','center')
-    +sh('status','진행상태','80px','center')
-    +sh('person','담당자','90px')
-    +'<th style="min-width:240px;">제안내용</th>'
+    +sh('name','광고주명','110px')
+    +sh('sector','업종','70px')
+    +'<th style="width:130px;">캠페인명</th>'
+    +sh('media','경쟁매체','90px')
+    +'<th style="width:45px;text-align:center;">제안</th>'
+    +'<th style="width:100px;text-align:center;">진행상태</th>'
+    +sh('person','담당자','70px')
+    +'<th style="min-width:280px;">제안내용</th>'
     +'</tr></thead><tbody>'+tableRows+'</tbody></table>';
 
   document.getElementById('comp-sum').innerHTML=
-    '<span>표시 <span class="sv">'+rows.length+'건</span></span>'
+    '<span>광고주 <span class="sv">'+totalAdv+'곳</span></span>'
+    +'<span>월별 항목 <span class="sv">'+rows.length+'건</span></span>'
+    +'<span>전체 항목 <span class="sv">'+totalItems+'건</span></span>'
     +'<span>제안 <span class="sv">'+proposed+'건</span></span>'
     +'<span>수주 <span class="sv">'+won+'건</span></span>';
 }
