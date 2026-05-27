@@ -42,10 +42,10 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI','Helvetica Neue',sa
 .card{background:#fff;border:0.5px solid #E5E4E0;border-radius:12px;padding:16px;margin-bottom:16px;}
 .chart-row{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:16px;min-width:0;}
 .cw{position:relative;width:100%;}
-.otbl{width:100%;border-collapse:collapse;font-size:11px;}
-.otbl th{text-align:right;color:#6B6A67;font-weight:500;padding:0 5px 8px;border-bottom:1px solid #E5E4E0;}
+.otbl{width:100%;border-collapse:collapse;font-size:11px;min-width:880px;}
+.otbl th{text-align:right;color:#6B6A67;font-weight:500;padding:3px 4px;border-bottom:1px solid #E5E4E0;text-align:center;}
 .otbl th:first-child{text-align:left;padding-left:0;}
-.otbl td{padding:7px 5px;border-bottom:0.5px solid #EEEDE9;vertical-align:middle;text-align:right;}
+.otbl td{padding:7px 4px;border-bottom:0.5px solid #EEEDE9;vertical-align:middle;text-align:right;}
 .otbl td:first-child{text-align:left;padding-left:0;}
 .otbl tr:last-child td{border-bottom:none;}
 .otbl .op td{background:#F8F7F3;font-weight:600;cursor:pointer;}
@@ -273,18 +273,31 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI','Helvetica Neue',sa
 
     <div class="sec-header" style="margin-top:2px;">
       <div class="sec-bar" style="background:#1D9E75"></div>
-      <span class="sec-title" style="color:#1D9E75">조직별 매출 현황</span>
-      <span class="sec-sub">▶ 국 클릭하면 팀별 상세 · 억원</span>
+      <span class="sec-title" style="color:#1D9E75">조직별 실적 현황</span>
+      <span class="sec-sub">▶ 국 클릭하면 팀별 상세 · 목표比=실적−목표 · 억원</span>
     </div>
     <div class="card" style="border-top:3px solid #1D9E75;">
-      <table class="otbl"><thead><tr>
-        <th style="width:22%;text-align:left">조직</th>
-        <th style="width:10%">당월 매출</th><th style="width:8%">달성률</th>
-        <th style="width:10%">당월 순매출</th><th style="width:8%">달성률</th>
-        <th style="width:10%">누적 매출</th><th style="width:8%">달성률</th>
-        <th style="width:10%">누적 순매출</th><th style="width:8%">달성률</th>
-        <th style="width:6%">전년比</th>
-      </tr></thead><tbody id="org-tbody"></tbody></table>
+      <div style="overflow-x:auto;">
+      <table class="otbl"><thead>
+        <tr>
+          <th rowspan="3" style="text-align:left;vertical-align:middle;">조직</th>
+          <th colspan="6" style="border-bottom:0.5px solid #E5E4E0;" id="org-mon-th">당월</th>
+          <th colspan="6" style="border-bottom:0.5px solid #E5E4E0;border-left:2px solid #E5E4E0;" id="org-acc-th">누계</th>
+        </tr>
+        <tr>
+          <th colspan="3" style="border-bottom:0.5px solid #F1EFE8;font-size:10px;text-align:center;">매출</th>
+          <th colspan="3" style="border-bottom:0.5px solid #F1EFE8;border-left:0.5px solid #F1EFE8;font-size:10px;text-align:center;">순매출</th>
+          <th colspan="3" style="border-bottom:0.5px solid #F1EFE8;border-left:2px solid #E5E4E0;font-size:10px;text-align:center;">매출</th>
+          <th colspan="3" style="border-bottom:0.5px solid #F1EFE8;border-left:0.5px solid #F1EFE8;font-size:10px;text-align:center;">순매출</th>
+        </tr>
+        <tr style="font-size:9px;color:#6B6A67;">
+          <th style="text-align:center;">목표</th><th style="text-align:center;">실적</th><th style="text-align:center;">목표比</th>
+          <th style="border-left:0.5px solid #F1EFE8;text-align:center;">목표</th><th style="text-align:center;">실적</th><th style="text-align:center;">목표比</th>
+          <th style="border-left:2px solid #E5E4E0;text-align:center;">목표</th><th style="text-align:center;">실적</th><th style="text-align:center;">목표比</th>
+          <th style="border-left:0.5px solid #F1EFE8;text-align:center;">목표</th><th style="text-align:center;">실적</th><th style="text-align:center;">목표比</th>
+        </tr>
+      </thead><tbody id="org-tbody"></tbody></table>
+      </div>
     </div>
 
     <div class="sec-header" style="margin-top:2px;">
@@ -324,9 +337,9 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI','Helvetica Neue',sa
             <th style="min-width:72px">당월 목표</th>
             <th style="min-width:80px" id="ooh-mon-th">당월 실적</th>
             <th style="min-width:72px">당월 달성률</th>
-            <th style="min-width:72px" id="ooh-acc-th">누적 실적</th>
             <th style="min-width:72px">누적 목표</th>
-            <th style="min-width:120px">누적 달성률</th>
+            <th style="min-width:80px" id="ooh-acc-th">누적 실적</th>
+            <th style="min-width:90px">누적 달성률</th>
           </tr></thead><tbody id="ooh-tbody"></tbody></table>
         </div>
       </div>
@@ -732,7 +745,6 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI','Helvetica Neue',sa
         <span style="font-size:10px;color:#aaa;width:32px;flex-shrink:0;">담당자</span>
       </div>
     </div>
-    <div class="kpi-section" style="border-top:3px solid #7F77DD;margin-bottom:16px;"><div id="list-kpi" style="display:grid;gap:1px;background:#EEEDE9;"></div></div>
     <div class="card" style="border-top:3px solid #7F77DD;">
       <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;margin-bottom:12px;">
         <div style="font-size:12px;font-weight:600;color:#1a1917;">광고주 리스트
@@ -762,7 +774,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI','Helvetica Neue',sa
         <table class="rtbl" style="min-width:900px;" id="list-tbl" onclick="handleListClick(event)">
           <thead><tr id="list-thead-row">
             <th style="width:60px;cursor:pointer;text-align:center;" onclick="sortList('team')" id="lth-team">팀 <span id="lts-team"></span></th>
-            <th style="width:150px;cursor:pointer;" onclick="sortList('name')" id="lth-name">광고주 <span id="lts-name"></span></th>
+            <th style="width:90px;cursor:pointer;" onclick="sortList('name')" id="lth-name">광고주 <span id="lts-name"></span></th>
             <th style="width:75px;cursor:pointer;" onclick="sortList('person')" id="lth-person">담당자 <span id="lts-person"></span></th>
             <th style="width:75px;cursor:pointer;" onclick="sortList('sector1')" id="lth-sector1">업종 <span id="lts-sector1"></span></th>
             <th style="width:50px;cursor:pointer;text-align:center;" onclick="sortList('grade')" id="lth-grade">등급 <span id="lts-grade"></span></th>
@@ -1298,26 +1310,51 @@ function renderKPI(key){
 
   const kpiList = [
     {l:`당월 매출 (${CUR_MON}월)`,  v:fmtA(A(d.mon)),    s:'목표 '+fmtA(A(d.monPlan)),        p:pct(d.mon,d.monPlan),        lbl:'월목표달성률', prev:d.yoy,      prevLbl:'전년동월', cur:d.mon},
-    {l:'당월 순매출',               v:fmtA(A(d.netMon)), s:'목표 '+fmtA(A(d.netMonPlan)),      p:pct(d.netMon,d.netMonPlan),  lbl:'월목표달성률', prev:d.netYoy,   prevLbl:'전년동월', cur:d.netMon},
+    {l:`당월 순매출 (${CUR_MON}월)`,               v:fmtA(A(d.netMon)), s:'목표 '+fmtA(A(d.netMonPlan)),      p:pct(d.netMon,d.netMonPlan),  lbl:'월목표달성률', prev:d.netYoy,   prevLbl:'전년동월', cur:d.netMon},
     {l:`누적 매출 (1~${CUR_MON}월)`,v:fmtA(A(d.acc)),    s:'누적목표 '+fmtA(A(d.accPlan)),    p:pct(d.acc,d.accPlan),        lbl:'누적달성률',   prev:d.acc25,    prevLbl:'전년동기', cur:d.acc},
-    {l:'누적 순매출',               v:fmtA(A(d.netAcc)), s:'누적목표 '+fmtA(A(d.netAccPlan)),  p:pct(d.netAcc,d.netAccPlan),  lbl:'누적달성률',   prev:d.netAcc25, prevLbl:'전년동기', cur:d.netAcc},
+    {l:`누적 순매출 (1~${CUR_MON}월)`,               v:fmtA(A(d.netAcc)), s:'누적목표 '+fmtA(A(d.netAccPlan)),  p:pct(d.netAcc,d.netAccPlan),  lbl:'누적달성률',   prev:d.netAcc25, prevLbl:'전년동기', cur:d.netAcc},
   ];
 
   document.getElementById('kpi-grid').innerHTML = kpiList.map(k => {
     const g = k.prev ? yoyGrowth(k.cur, k.prev) : null;
-    const prevTxt = k.prev
-      ? `<span style="color:#aaa;margin:0 4px">|</span><span style="font-size:11px;color:#6B6A67">${k.prevLbl} ${fmtA(A(k.prev))}</span>${yoyBadge(g)}`
-      : '';
-    return `<div class="kpi">
-      <div class="kl">${k.l}</div>
-      <div class="kv">${k.v}</div>
-      <div class="ks" style="display:flex;align-items:center;flex-wrap:wrap;gap:0;">${k.s}${prevTxt}</div>
-      <div class="km"><span class="badge ${aBdg(k.p)}">${k.lbl} ${k.p.toFixed(1)}%</span></div>
+    const pColor = k.p >= 100 ? '#0F6E56' : k.p >= 80 ? '#185FA5' : k.p >= 50 ? '#DD8726' : '#A32D2D';
+    const gColor = g === null ? '#aaa' : g >= 0 ? '#0F6E56' : '#A32D2D';
+    const gTxt = g === null ? '' : `${g >= 0 ? '▲' : '▼'} ${Math.abs(g).toFixed(1)}%`;
+    const planNum = k.s.replace(/[^0-9.\-]/g, '');
+    const planLabel = k.s.includes('누적') ? '누적목표' : '목표';
+
+    return `<div class="kpi" style="padding:16px 18px;">
+      <div class="kl" style="font-size:11px;color:#6B6A67;margin-bottom:10px;font-weight:600;">${k.l}</div>
+      <!-- 실적 (큰 숫자) -->
+      <div style="display:flex;align-items:baseline;gap:6px;margin-bottom:4px;">
+        <span style="font-size:10px;color:#aaa;width:42px;flex-shrink:0;">실적</span>
+        <span style="font-size:18px;font-weight:700;letter-spacing:-.5px;line-height:1.1;color:#1a1917;">${k.v}</span>
+      </div>
+      <!-- 목표 -->
+      <div style="display:flex;align-items:baseline;gap:6px;margin-bottom:4px;">
+        <span style="font-size:10px;color:#aaa;width:42px;flex-shrink:0;">${planLabel}</span>
+        <span style="font-size:13px;font-weight:600;color:#6B6A67;">${planNum}억</span>
+      </div>
+      <!-- 달성률 -->
+      <div style="display:flex;align-items:baseline;gap:6px;margin-bottom:8px;">
+        <span style="font-size:10px;color:#aaa;width:42px;flex-shrink:0;">달성률</span>
+        <span style="font-size:14px;font-weight:700;color:${pColor};">${k.p.toFixed(0)}%</span>
+      </div>
+      <!-- 전년 -->
+      <div style="display:flex;align-items:baseline;gap:6px;border-top:0.5px solid #F1EFE8;padding-top:8px;">
+        <span style="font-size:10px;color:#aaa;width:42px;flex-shrink:0;">${k.prevLbl}</span>
+        <span style="font-size:13px;font-weight:600;color:#6B6A67;">${k.prev ? fmtA(A(k.prev)) : '-'}</span>
+        ${gTxt ? `<span style="font-size:11px;font-weight:700;color:${gColor};">${gTxt}</span>` : ''}
+      </div>
     </div>`;
   }).join('');
 }
 
 function renderOrg(key){
+  const monTh = document.getElementById('org-mon-th');
+  if(monTh) monTh.textContent = `${CUR_MON}월 (당월)`;
+  const accTh = document.getElementById('org-acc-th');
+  if(accTh) accTh.textContent = `${CUR_MON}월 누계`;
   const tree = key==='all'?ORG_TREE_ALL
     :key==='ms'?[{id:'ms',type:'solo'},...['ms1','ms2','ms3','ms4','msd','msp1','msp2'].map(id=>({id,type:'solo'}))]
     :key==='cs'?[{id:'cs',type:'solo'},...['cst','inn','csd'].map(id=>({id,type:'solo'}))]
@@ -1337,22 +1374,46 @@ function renderOrg(key){
 }
 
 function orgRow(d,id,cls,isOpen,isParent){
-  const ma=pct(d.mon,d.monPlan),na=pct(d.netMon,d.netMonPlan);
-  const aa=pct(d.acc,d.accPlan),naa=pct(d.netAcc,d.netAccPlan);
-  const yp=parseFloat(ydf(d.acc,d.yoy));
   const col=CM[d.n]||'#888';
   const isChild=cls==='oc';
-  const ac=(a,p)=>p!==0?`<td><span style="font-size:10px;font-weight:600;color:${aC(a)}">${a.toFixed(1)}%</span>${mBar(a)}</td>`:`<td><span style="font-size:10px;color:#aaa">-</span></td>`;
   const dot=`<span style="width:7px;height:7px;border-radius:50%;background:${col};display:inline-block;margin-right:6px;vertical-align:middle"></span>`;
   const nameCell=isParent
     ?`<td style="font-weight:600;cursor:pointer" onclick="togOrg('${id}')"><span class="oa${isOpen?' x':''}">▶</span>${dot}${d.n}</td>`
     :`<td style="font-weight:${isChild?'500':'600'}">${isChild?'':dot}${d.n}</td>`;
+
+  // 목표比 셀: 실적 − 목표 차액 (±억)
+  const achCell = (act, plan, borderLeft) => {
+    const bl = borderLeft ? 'border-left:'+borderLeft+';' : '';
+    if(plan === 0) return `<td style="${bl}"><span style="font-size:10px;color:#aaa">-</span></td>`;
+    const diff = A(act) - A(plan); // 억 단위 차액
+    const sign = diff >= 0 ? '+' : '';
+    const dColor = diff >= 0 ? '#0F6E56' : '#A32D2D';
+    return `<td style="${bl}"><span style="font-size:10px;font-weight:600;color:${dColor}">${sign}${diff.toFixed(2)}억</span></td>`;
+  };
+  // 금액 셀
+  const amtCell = (v, borderLeft, isNet) => {
+    const bl = borderLeft ? 'border-left:'+borderLeft+';' : '';
+    const color = (isNet && v < 0) ? '#A32D2D' : '#1a1917';
+    return `<td style="${bl}color:${color};font-size:11px;">${fmtA(A(v))}</td>`;
+  };
+
   return`<tr class="${cls}">${nameCell}
-    <td>${fmtA(A(d.mon))}</td>${ac(ma,d.monPlan)}
-    <td style="color:${d.netMon<0?'#A32D2D':'#1a1917'}">${fmtA(A(d.netMon))}</td>${ac(na,d.netMonPlan)}
-    <td style="font-weight:600">${fmtA(A(d.acc))}</td>${ac(aa,d.accPlan)}
-    <td style="color:${d.netAcc<0?'#A32D2D':'#1a1917'}">${fmtA(A(d.netAcc))}</td>${ac(naa,d.netAccPlan)}
-    <td><span class="badge ${yp>=0?'bu':'bd'}">${yp>=0?'+':''}${yp}%</span></td>
+    <!-- 당월 매출 -->
+    ${amtCell(d.monPlan, null, false)}
+    ${amtCell(d.mon, null, false)}
+    ${achCell(d.mon, d.monPlan, null)}
+    <!-- 당월 순매출 -->
+    ${amtCell(d.netMonPlan, '0.5px solid #F1EFE8', true)}
+    ${amtCell(d.netMon, null, true)}
+    ${achCell(d.netMon, d.netMonPlan, null)}
+    <!-- 누계 매출 -->
+    ${amtCell(d.accPlan, '2px solid #E5E4E0', false)}
+    ${amtCell(d.acc, null, false)}
+    ${achCell(d.acc, d.accPlan, null)}
+    <!-- 누계 순매출 -->
+    ${amtCell(d.netAccPlan, '0.5px solid #F1EFE8', true)}
+    ${amtCell(d.netAcc, null, true)}
+    ${achCell(d.netAcc, d.netAccPlan, null)}
   </tr>`;
 }
 function togOrg(id){orgOpen.has(id)?orgOpen.delete(id):orgOpen.add(id);renderOrg(cKey);}
@@ -1448,11 +1509,11 @@ function buildOohTbl(){
       📍 직접 투자 매체
       <span style="font-size:10px;font-weight:400;color:#6B6A67;"> · CPMT, AP, CW</span>
     </td>
-    <td style="font-weight:700;">${fmtA(A(dMp))}</td>
+    <td style="font-weight:700;color:#6B6A67;">${fmtA(A(dMp))}</td>
     <td style="font-weight:700;">${fmtA(A(dMon))}</td>
     <td>${pBar(dMaR)}</td>
+    <td style="font-weight:700;color:#6B6A67;">${fmtA(A(dAp))}</td>
     <td style="font-weight:700;">${fmtA(A(dAcc))}</td>
-    <td style="font-weight:700;">${fmtA(A(dAp))}</td>
     <td>${pBar(dAcR)}</td>
   </tr>`;
 
@@ -1464,28 +1525,31 @@ function buildOohTbl(){
       const isOpen=oohOpen.has(row.id);
       html+=`<tr class="op2" onclick="togOoh('${row.id}')">
         <td><span class="oa2${isOpen?' x':''}">▶</span>${row.n}</td>
-        <td>${fmtA(A(mp))}</td>
+        <td style="color:#6B6A67">${fmtA(A(mp))}</td>
         <td>${fmtA(A(row.mon))}</td>
         <td>${pBar(maR)}</td>
-        <td>${fmtA(A(row.acc))}</td><td>${fmtA(A(row.ap))}</td>
+        <td style="color:#6B6A67">${fmtA(A(row.ap))}</td>
+        <td>${fmtA(A(row.acc))}</td>
         <td>${pBar(acR)}</td></tr>`;
       if(isOpen&&row.children)row.children.forEach(c=>{
         const cmp  = c.mp||0;
         const cmaR = pct(c.mon, cmp);
         const cacR = pct(c.acc, c.ap);
         html+=`<tr class="oc2"><td>${c.n}</td>
-          <td>${fmtA(A(cmp))}</td>
+          <td style="color:#6B6A67">${fmtA(A(cmp))}</td>
           <td>${fmtA(A(c.mon))}</td>
           <td>${pBar(cmaR)}</td>
-          <td>${fmtA(A(c.acc))}</td><td>${fmtA(A(c.ap))}</td>
+          <td style="color:#6B6A67">${fmtA(A(c.ap))}</td>
+          <td>${fmtA(A(c.acc))}</td>
           <td>${pBar(cacR)}</td></tr>`;
       });
     } else {
       html+=`<tr class="os2"><td style="padding-left:4px">${row.n}</td>
-        <td>${fmtA(A(mp))}</td>
+        <td style="color:#6B6A67">${fmtA(A(mp))}</td>
         <td>${fmtA(A(row.mon))}</td>
         <td>${pBar(maR)}</td>
-        <td>${fmtA(A(row.acc))}</td><td>${fmtA(A(row.ap))}</td>
+        <td style="color:#6B6A67">${fmtA(A(row.ap))}</td>
+        <td>${fmtA(A(row.acc))}</td>
         <td>${pBar(acR)}</td></tr>`;
     }
   });
@@ -2385,9 +2449,11 @@ function renderList(){
   ].join('');
 
   const kpiEl = document.getElementById('list-kpi');
-  const cols = Math.min(2 + sectorEntries.slice(0,4).length, 6);
-  kpiEl.style.gridTemplateColumns = `repeat(${cols},minmax(0,1fr))`;
-  kpiEl.innerHTML = summaryKpis;
+  if(kpiEl){
+    const cols = Math.min(2 + sectorEntries.slice(0,4).length, 6);
+    kpiEl.style.gridTemplateColumns = `repeat(${cols},minmax(0,1fr))`;
+    kpiEl.innerHTML = summaryKpis;
+  }
 
   // 등급 배지
   const gradeBadge = g => {
