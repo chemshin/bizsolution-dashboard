@@ -974,7 +974,7 @@ async function doChangePw(){
 }
 
 
-const PERF_URL = 'https://script.google.com/macros/s/AKfycbx3C1kFcFWC2kh0zJKoMmj8HtlAhCxIHfKPE6iDrBxgxR9ZzrKQ6GyRfOIffoDvD7L6bw/exec';
+const PERF_URL = 'https://script.google.com/macros/s/AKfycbwxn05kWc_Go2b0BiheD7-9nOPPXbvJabCfhlm_T02Hj3ClCk6yvEU2d0BLCRUWDs-zlA/exec';
 const OOH_URL  = 'https://script.google.com/macros/s/AKfycbx9APUD9FO0Olo7itgaAz0dOqNH0nIa0EpILuUmWVh4nztGnKiNrnvhdRqPvHTkJwjIMQ/exec';
 const TEAM_URL = 'https://script.google.com/macros/s/AKfycbzU7C8BXIda6aSuLm-jbWGMhwabVPDTHARGrJgaXlZ_vgRpOUBtfGO8j4b1NSaXT_vTOA/exec';
 const ADV_URL  = 'https://script.google.com/macros/s/AKfycbzcm6y3neEroHsOqo1_Ri0fb0IhruS0KoPNQVCnDPUTyghtvSkJK-zayH6ZIbmhXmTY/exec';
@@ -2119,53 +2119,40 @@ function renderProd(){
 // ══════════════════════════════════════
 let advListSheet = []; // 광고주리스트 시트 데이터
 let listData = {};     // {광고주: {status, note}} 직접 입력값
-let curListTeam = '마케팅솔루션1팀'; // 현재 선택된 팀 시트
+let curListTeam = '전체광고주'; // 현재 시트 (단일 시트 통합)
 let listLoading = false; // 중복 호출 방지 플래그
 const listCache = {};  // 팀별 캐시 {시트명: data[]}
 
 async function loadAdvList(sheetName){
   if(listLoading) return;
-  sheetName = sheetName || curListTeam;
+  sheetName = sheetName || '전체광고주';
   curListTeam = sheetName;
 
   const bar = document.getElementById('list-load-bar');
   bar.style.cssText='display:block;background:#E6F1FB;border:0.5px solid #B8D4F0;border-radius:8px;padding:9px 14px;margin-bottom:14px;font-size:11px;color:#185FA5;';
-  bar.textContent = '마솔 1~4팀 데이터 통합 로딩 중...';
+  bar.textContent = '광고주 리스트 로딩 중...';
   listLoading = true;
 
   try{
-    // 1~4팀 전체를 병렬 로드
-    const TEAMS = ['마케팅솔루션1팀','마케팅솔루션2팀','마케팅솔루션3팀','마케팅솔루션4팀'];
-    const allRows = [];
-    await Promise.all(TEAMS.map(async team=>{
-      // 캐시 있으면 사용
-      if(listCache[team] && listCache[team].length){
-        listCache[team].forEach(r=>allRows.push({...r, _team: team}));
-        return;
-      }
-      try {
-        const url = `${ADVLIST_URL}?action=advlist&sheet=${encodeURIComponent(team)}&_=${Date.now()}`;
-        const res = await fetch(url);
-        if(!res.ok) throw new Error('HTTP '+res.status);
-        const json = await res.json();
-        if(json.error) throw new Error(json.error);
-        const data = json.data || [];
-        listCache[team] = data;
-        data.forEach(r=>allRows.push({...r, _team: team}));
-      } catch(e){
-        console.warn(team+' 로드 실패:', e);
-      }
-    }));
+    // 전체광고주 시트 단일 호출
+    const url = `${PERF_URL}?action=advlist&sheet=${encodeURIComponent(sheetName)}&_=${Date.now()}`;
+    const res = await fetch(url);
+    if(!res.ok) throw new Error('HTTP '+res.status);
+    const j = await res.json();
+    if(j.error) throw new Error(j.error);
+    const data = j.data || [];
 
-    advListSheet = allRows;
+    // _team 필드는 시트의 '담당팀' 컬럼을 그대로 사용
+    advListSheet = data.map(r=>({...r, _team: r['담당팀'] || ''}));
     advListSheet._amountsSynced = false;
+    listCache[sheetName] = advListSheet;
 
     bar.style.cssText='display:block;background:#E1F5EE;border:0.5px solid #34A853;border-radius:8px;padding:9px 14px;margin-bottom:14px;font-size:11px;color:#0F6E56;';
-    bar.textContent = `✓ 마솔 1~4팀 통합 ${advListSheet.length}개 로드 완료`;
+    bar.textContent = `✓ ${advListSheet.length}개 광고주 로드 완료`;
     setTimeout(()=>bar.style.display='none', 2000);
 
     const label = document.getElementById('list-sheet-label');
-    if(label) label.textContent = `· 마솔 1~4팀 통합 ${advListSheet.length}개 · 집행금액은 RAW 데이터 자동 매칭`;
+    if(label) label.textContent = `· 전체광고주 ${advListSheet.length}개 · 집행금액은 RAW 데이터 자동 매칭`;
 
     initListFilters();
     renderList();
@@ -2473,7 +2460,7 @@ function renderList(){
     const isOpen=listExpandedRows.has(v.name);
     const logSafe = v.lastLog ? String(v.lastLog).replace(/&/g,'&amp;').replace(/"/g,'&quot;') : '';
     const logIcon = v.lastLog
-      ? '<td style="text-align:center;cursor:pointer;" onclick="event.stopPropagation();showListLog(this)" data-adv="'+v.name.replace(/&/g,'&amp;').replace(/"/g,'&quot;')+'" data-log="'+logSafe+'"><span style="font-size:14px;">📋</span></td>'
+      ? '<td style="text-align:center;cursor:pointer;" onclick="event.stopPropagation();showListLog(this)" data-adv="'+v.name.replace(/&/g,'&amp;').replace(/"/g,'&quot;')+'" data-log="'+logSafe+'" title="최근 영업일지 보기"><span style="font-size:14px;">📋</span></td>'
       : '<td style="text-align:center;color:#ccc;font-size:11px;">-</td>';
 
     // 경쟁사 집행 아이콘
@@ -2574,25 +2561,28 @@ function buildListDetailRow(advName){
 function showListLog(td){
   const advName = td.dataset.adv || '';
   const logText = td.dataset.log || '';
+
   // 기존 팝업 제거
   const existing = document.getElementById('list-log-popup');
   if(existing) existing.remove();
+  const existOv = document.getElementById('list-log-overlay');
+  if(existOv) existOv.remove();
 
   const popup = document.createElement('div');
   popup.id = 'list-log-popup';
   popup.style.cssText = `
     position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);
     background:#fff;border-radius:12px;box-shadow:0 8px 32px rgba(0,0,0,0.18);
-    padding:20px 24px;max-width:480px;width:90%;z-index:9999;
-    border-top:3px solid #7F77DD;`;
+    padding:20px 24px;max-width:520px;width:90%;z-index:9999;
+    border-top:3px solid #7F77DD;max-height:80vh;display:flex;flex-direction:column;`;
   popup.innerHTML = `
-    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
-      <div style="font-size:12px;font-weight:700;color:#185FA5;">📋 최근 영업일지</div>
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;flex-shrink:0;">
+      <div style="font-size:13px;font-weight:700;color:#185FA5;">📋 최근 영업일지</div>
       <button onclick="document.getElementById('list-log-popup').remove();document.getElementById('list-log-overlay').remove();"
         style="background:none;border:none;font-size:18px;cursor:pointer;color:#aaa;line-height:1;">✕</button>
     </div>
-    <div style="font-size:11px;color:#6B6A67;margin-bottom:10px;padding:4px 0;border-bottom:0.5px solid #EEEDE9;">${advName}</div>
-    <div style="font-size:13px;line-height:1.7;color:#1a1917;white-space:pre-wrap;max-height:300px;overflow-y:auto;">${logText}</div>`;
+    <div style="font-size:12px;color:#1a1917;font-weight:600;margin-bottom:6px;flex-shrink:0;">${advName}</div>
+    <div style="font-size:13px;line-height:1.7;color:#1a1917;white-space:pre-wrap;overflow-y:auto;padding-right:4px;border-top:0.5px solid #EEEDE9;padding-top:10px;">${logText}</div>`;
 
   const overlay = document.createElement('div');
   overlay.id = 'list-log-overlay';
