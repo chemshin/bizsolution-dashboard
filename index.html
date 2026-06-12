@@ -178,11 +178,13 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI','Helvetica Neue',sa
     <div class="nsl">전체</div>
     <div class="ni on" id="ni-all" onclick="nav('all',this)"><div class="nd" style="background:#185FA5"></div>본부 전체 실적</div>
     <div class="ni" id="ni-list" onclick="nav('list',this)"><div class="nd" style="background:#7F77DD"></div>광고주 리스트</div>
+    <div class="ni" id="ni-status" onclick="nav('status',this)"><div class="nd" style="background:#0F6E56"></div>영업 현황</div>
     <div class="ni" id="ni-comp" onclick="nav('comp',this)"><div class="nd" style="background:#D85A30"></div>경쟁 매체 모니터링</div>
     <div class="ni" id="ni-prod" onclick="nav('prod',this)"><div class="nd" style="background:#1D9E75"></div>상품별 실적</div>
   </div>
-  <div class="nsep"></div>
-  <div class="ns">
+  <!-- 숨김 섹션 (data-hidden-section): 나중에 div의 display를 변경하면 다시 표시됨 -->
+  <div class="nsep" data-hidden-section style="display:none;"></div>
+  <div class="ns" data-hidden-section style="display:none;">
     <div class="ni" id="ni-ms" onclick="navOrToggle('ms','ms-group',this,event)">
       <div class="nd" style="background:#1D9E75"></div>
       <span style="flex:1;">마케팅솔루션국</span>
@@ -198,8 +200,8 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI','Helvetica Neue',sa
       <div class="nc" onclick="nav('msp2',this)">솔루션기획2팀</div>
     </div>
   </div>
-  <div class="nsep"></div>
-  <div class="ns">
+  <div class="nsep" data-hidden-section style="display:none;"></div>
+  <div class="ns" data-hidden-section style="display:none;">
     <div class="ni" id="ni-cs" onclick="navOrToggle('cs','cs-group',this,event)">
       <div class="nd" style="background:#7F77DD"></div>
       <span style="flex:1;">콘텐트사업국</span>
@@ -212,18 +214,19 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI','Helvetica Neue',sa
       <div class="nc" onclick="nav('dev',this)">솔루션개발팀</div>
     </div>
   </div>
-  <div class="nsep"></div>
-  <div class="ns">
+  <div class="nsep" data-hidden-section style="display:none;"></div>
+  <div class="ns" data-hidden-section style="display:none;">
     <div class="nsl">본부 직속</div>
     <div class="ni" onclick="nav('tb',this)"><div class="nd" style="background:#EF9F27"></div>타운보드(사업지원국)</div>
   </div>
-  <div class="nsep"></div>
-  <div class="ns">
+  <div class="nsep" data-hidden-section style="display:none;"></div>
+  <div class="ns" data-hidden-section style="display:none;">
     <div class="nsl">문서</div>
     <div class="ni" id="ni-weekly" onclick="nav('weekly',this)"><div class="nd" style="background:#D85A30"></div>주간업무보고</div>
     <div class="ni" id="ni-reports" onclick="nav('reports',this)"><div class="nd" style="background:#1D9E75"></div>게첨보고서</div>
     <div class="ni" id="ni-intro" onclick="nav('intro',this)"><div class="nd" style="background:#7F77DD"></div>본부 소개서</div>
   </div>
+  <!-- 숨김 섹션 끝 -->
   <div class="nsep"></div>
   <div class="ns">
     <div class="nsl">데이터</div>
@@ -438,6 +441,44 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI','Helvetica Neue',sa
         <div style="text-align:center;color:#aaa;font-size:12px;padding:40px 0;">데이터 불러오는 중...</div>
       </div>
       <div class="sm" id="major-sum"></div>
+    </div>
+  </div>
+
+  <!-- 영업 현황 뷰 -->
+  <div id="vstatus" style="display:none;">
+    <div id="status-load-bar" style="background:#E6F1FB;border:0.5px solid #B8D4F0;border-radius:8px;padding:9px 14px;margin-bottom:14px;font-size:11px;color:#185FA5;display:none;"></div>
+    <div class="card" style="border-top:3px solid #0F6E56;">
+      <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;margin-bottom:12px;">
+        <div>
+          <div style="font-size:13px;font-weight:700;color:#1a1917;">영업 현황</div>
+          <div style="font-size:10px;color:#6B6A67;margin-top:3px;" id="status-subtitle">영업일지누적 + 주간보고누적 통합 · 광고주별 그룹핑</div>
+        </div>
+        <button class="ub" style="padding:5px 12px;font-size:11px;" onclick="loadSalesStatus()">새로고침</button>
+      </div>
+      <!-- 팀 탭 -->
+      <div id="status-tabs" style="display:flex;gap:6px;margin-bottom:14px;flex-wrap:wrap;">
+        <button class="status-tab" data-team="" onclick="setStatusTeam('')" style="padding:7px 14px;font-size:11px;font-weight:600;background:#fff;color:#6B6A67;border:0.5px solid #D5D3CD;border-radius:6px;cursor:pointer;">전체</button>
+        <button class="status-tab" data-team="마케팅솔루션1팀" onclick="setStatusTeam('마케팅솔루션1팀')" style="padding:7px 14px;font-size:11px;font-weight:600;background:#0F6E56;color:#fff;border:none;border-radius:6px;cursor:pointer;">마솔1팀</button>
+        <button class="status-tab" data-team="마케팅솔루션2팀" onclick="setStatusTeam('마케팅솔루션2팀')" style="padding:7px 14px;font-size:11px;font-weight:600;background:#fff;color:#6B6A67;border:0.5px solid #D5D3CD;border-radius:6px;cursor:pointer;">마솔2팀</button>
+        <button class="status-tab" data-team="마케팅솔루션3팀" onclick="setStatusTeam('마케팅솔루션3팀')" style="padding:7px 14px;font-size:11px;font-weight:600;background:#fff;color:#6B6A67;border:0.5px solid #D5D3CD;border-radius:6px;cursor:pointer;">마솔3팀</button>
+        <button class="status-tab" data-team="마케팅솔루션4팀" onclick="setStatusTeam('마케팅솔루션4팀')" style="padding:7px 14px;font-size:11px;font-weight:600;background:#fff;color:#6B6A67;border:0.5px solid #D5D3CD;border-radius:6px;cursor:pointer;">마솔4팀</button>
+      </div>
+      <!-- 검색/필터 -->
+      <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:12px;">
+        <input class="si" id="status-q" style="min-width:200px;" placeholder="광고주·대행사·담당자·내용 검색..." oninput="renderSalesStatus()"/>
+        <select class="fsel" id="status-source" onchange="renderSalesStatus()">
+          <option value="">전체 출처</option>
+          <option value="영업일지">영업일지</option>
+          <option value="주간보고">주간보고</option>
+        </select>
+        <select class="fsel" id="status-person" onchange="renderSalesStatus()"><option value="">전체 담당자</option></select>
+        <button class="ub" style="padding:5px 10px;font-size:11px;background:#fff;color:#6B6A67;border:0.5px solid #D5D3CD;" onclick="expandAllStatus()">모두 펼치기</button>
+        <button class="ub" style="padding:5px 10px;font-size:11px;background:#fff;color:#6B6A67;border:0.5px solid #D5D3CD;" onclick="collapseAllStatus()">모두 접기</button>
+      </div>
+      <div id="status-list" style="min-height:120px;">
+        <div style="text-align:center;color:#aaa;font-size:12px;padding:40px 0;">데이터 불러오는 중...</div>
+      </div>
+      <div class="sm" id="status-sum"></div>
     </div>
   </div>
 
@@ -736,6 +777,29 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI','Helvetica Neue',sa
 
     <div id="vlist" style="display:none;">
     <div id="list-load-bar" style="background:#E6F1FB;border:0.5px solid #B8D4F0;border-radius:8px;padding:9px 14px;margin-bottom:14px;font-size:11px;color:#185FA5;display:none;"></div>
+
+    <!-- ▼ 트리맵 뷰 (디폴트 화면) -->
+    <div id="list-treemap-view">
+      <div class="card" style="border-top:3px solid #7F77DD;">
+        <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;margin-bottom:14px;">
+          <div>
+            <div style="font-size:13px;font-weight:700;color:#1a1917;">업종별 매출 비중</div>
+            <div style="font-size:10px;color:#6B6A67;margin-top:3px;" id="treemap-subtitle">2026년 누적 매출 기준 · 면적 = 매출 비중 · 클릭하면 해당 업종 광고주 리스트로 이동</div>
+          </div>
+          <button class="ub" style="padding:5px 12px;font-size:11px;" onclick="renderListTreemap()">새로고침</button>
+        </div>
+        <div id="list-treemap-container" style="position:relative;width:100%;height:560px;background:#F8F7F3;border:0.5px solid #EEEDE9;border-radius:8px;overflow:hidden;">
+          <div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:#aaa;font-size:12px;">데이터 불러오는 중...</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ▼ 상세 리스트 뷰 (업종 클릭 후) -->
+    <div id="list-detail-view" style="display:none;">
+    <!-- "← 트리맵으로 돌아가기" 버튼 -->
+    <div style="margin-bottom:12px;">
+      <button class="ub" style="padding:6px 14px;font-size:11px;background:#fff;color:#185FA5;border:0.5px solid #B8D4F0;font-weight:600;" onclick="showListTreemap()">← 업종별 매출 비중으로 돌아가기</button>
+    </div>
     <!-- 필터 탭 -->
     <div style="display:flex;flex-direction:column;gap:6px;margin-bottom:14px;">
       <div style="display:flex;align-items:center;gap:5px;flex-wrap:wrap;" id="list-sector-tabs">
@@ -790,7 +854,8 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI','Helvetica Neue',sa
       </div>
       <div class="sm" id="list-sum"></div>
     </div>
-  </div>
+    </div><!-- /list-detail-view -->
+  </div><!-- /vlist -->
   <div id="vpr" style="display:none;">
     <div class="sec-header"><div class="sec-bar" style="background:#1D9E75"></div><span class="sec-title" style="color:#1D9E75">상품별 실적</span></div>
     <div class="ptabs" id="prod-tabs"></div>
@@ -974,7 +1039,7 @@ async function doChangePw(){
 }
 
 
-const PERF_URL = 'https://script.google.com/macros/s/AKfycbwxn05kWc_Go2b0BiheD7-9nOPPXbvJabCfhlm_T02Hj3ClCk6yvEU2d0BLCRUWDs-zlA/exec';
+const PERF_URL = 'https://script.google.com/macros/s/AKfycbwaaNx9GAlbpUQoeoYy4yUq7EDtsk-LMVioxFwPd20zYNY_pEWlVRSNID4YqOVGbDRLSg/exec';
 const OOH_URL  = 'https://script.google.com/macros/s/AKfycbx9APUD9FO0Olo7itgaAz0dOqNH0nIa0EpILuUmWVh4nztGnKiNrnvhdRqPvHTkJwjIMQ/exec';
 const TEAM_URL = 'https://script.google.com/macros/s/AKfycbzU7C8BXIda6aSuLm-jbWGMhwabVPDTHARGrJgaXlZ_vgRpOUBtfGO8j4b1NSaXT_vTOA/exec';
 const ADV_URL  = 'https://script.google.com/macros/s/AKfycbzcm6y3neEroHsOqo1_Ri0fb0IhruS0KoPNQVCnDPUTyghtvSkJK-zayH6ZIbmhXmTY/exec';
@@ -2020,6 +2085,8 @@ async function loadAdv(){
     if(cKey==='list' && advListSheet.length){
       initListFilters();
       renderList();
+      // 트리맵도 다시 렌더 (RAW 데이터 매칭 반영)
+      renderListTreemap();
     }
 
   }catch(e){
@@ -2156,6 +2223,8 @@ async function loadAdvList(sheetName){
 
     initListFilters();
     renderList();
+    // 트리맵도 렌더
+    renderListTreemap();
   }catch(e){
     bar.style.cssText='display:block;background:#FCEBEB;border:0.5px solid #E24B4A;border-radius:8px;padding:9px 14px;margin-bottom:14px;font-size:11px;color:#A32D2D;';
     bar.textContent='로드 실패: '+e.message;
@@ -2199,6 +2268,221 @@ function pillBtn(label, onclick, active=false){
   return `<button class="sec-pill" onclick="${onclick}"
     style="padding:3px 10px;border-radius:20px;border:0.5px solid ${active?'#378ADD':'#E5E4E0'};background:${active?'#E6F1FB':'#fff'};font-size:11px;color:${active?'#185FA5':'#6B6A67'};cursor:pointer;font-weight:${active?'600':'400'};">${label}</button>`;
 }
+
+// ══════════════════════════════════════
+// 광고주 리스트 - 업종별 트리맵
+// ══════════════════════════════════════
+function showListTreemap(){
+  document.getElementById('list-treemap-view').style.display = 'block';
+  document.getElementById('list-detail-view').style.display = 'none';
+  // 필터 초기화
+  curListSector = '';
+  curListPerson = '';
+}
+
+function showListDetail(){
+  document.getElementById('list-treemap-view').style.display = 'none';
+  document.getElementById('list-detail-view').style.display = 'block';
+}
+
+function clickListSector(sectorName){
+  curListSector = sectorName;
+  curListPerson = '';
+  showListDetail();
+  // 업종 필터 셀렉트와 핍 동기화
+  const sel = document.getElementById('list-sector1');
+  if(sel) sel.value = sectorName;
+  // 핍 활성 상태 동기화
+  document.querySelectorAll('#list-sector-tabs .sec-pill').forEach(t=>{
+    const txt = t.textContent.trim();
+    if(txt === sectorName){
+      t.style.cssText = t.style.cssText.replace(/border:0\.5px solid [^;]+;/, 'border:0.5px solid #378ADD;')
+        .replace(/background:[^;]+;/, 'background:#E6F1FB;')
+        .replace(/color:[^;]+;/, 'color:#185FA5;')
+        .replace(/font-weight:[^;]+;/, 'font-weight:600;');
+    }
+  });
+  renderList();
+  // 상단으로 스크롤
+  window.scrollTo({top: 0, behavior: 'smooth'});
+}
+
+// Squarified Treemap 알고리즘
+function squarifyTreemap(items, x, y, w, h){
+  // items: [{name, value, ...}] 내림차순 정렬되어 있어야 함
+  const result = [];
+  if(items.length === 0 || w <= 0 || h <= 0) return result;
+  const totalValue = items.reduce((s,i)=>s+i.value, 0);
+  if(totalValue === 0) return result;
+  const scale = (w * h) / totalValue;
+  const sized = items.map(i=>({...i, area: i.value * scale}));
+  layoutSquarify(sized, x, y, w, h, result);
+  return result;
+}
+
+function layoutSquarify(items, x, y, w, h, result){
+  if(items.length === 0 || w <= 0 || h <= 0) return;
+  const shortSide = Math.min(w, h);
+  let row = [items[0]];
+  let i = 1;
+  while(i < items.length){
+    const rowNext = row.concat([items[i]]);
+    if(worstRatio(rowNext, shortSide) <= worstRatio(row, shortSide)){
+      row.push(items[i]);
+      i++;
+    } else break;
+  }
+  const rowArea = row.reduce((s,it)=>s+it.area, 0);
+  const rowLen = rowArea / shortSide;
+  let offset = 0;
+  if(w >= h){
+    // 세로 strip (왼쪽 채움)
+    row.forEach(it=>{
+      const itH = it.area / rowLen;
+      result.push({...it, _x:x, _y:y+offset, _w:rowLen, _h:itH});
+      offset += itH;
+    });
+    layoutSquarify(items.slice(i), x+rowLen, y, w-rowLen, h, result);
+  } else {
+    // 가로 strip (위쪽 채움)
+    row.forEach(it=>{
+      const itW = it.area / rowLen;
+      result.push({...it, _x:x+offset, _y:y, _w:itW, _h:rowLen});
+      offset += itW;
+    });
+    layoutSquarify(items.slice(i), x, y+rowLen, w, h-rowLen, result);
+  }
+}
+
+function worstRatio(row, shortSide){
+  if(row.length === 0) return Infinity;
+  const rowArea = row.reduce((s,it)=>s+it.area, 0);
+  if(rowArea === 0) return Infinity;
+  const rowLen = rowArea / shortSide;
+  let worst = 0;
+  row.forEach(it=>{
+    if(it.area === 0) return;
+    const r1 = (rowLen * rowLen) / it.area;
+    const r2 = it.area / (rowLen * rowLen);
+    worst = Math.max(worst, r1, r2);
+  });
+  return worst;
+}
+
+function renderListTreemap(){
+  const container = document.getElementById('list-treemap-container');
+  if(!container) return;
+
+  if(!advListSheet || !advListSheet.length){
+    container.innerHTML = '<div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:#aaa;font-size:12px;">광고주 데이터 로딩 중...</div>';
+    return;
+  }
+
+  // 업종별 2026년 누적 매출 집계
+  const rawAmt = buildRawAmounts();
+  const sectorRev = {}; // {업종: te26 합계}
+  const sectorCount = {}; // {업종: 광고주 수}
+  advListSheet.forEach(r=>{
+    const sec = (r['업종1']||'').trim() || '미분류';
+    const name = (r['광고주']||'').trim();
+    const amt = rawAmt[name]||{te26:0};
+    sectorRev[sec] = (sectorRev[sec]||0) + (amt.te26||0);
+    sectorCount[sec] = (sectorCount[sec]||0) + 1;
+  });
+
+  // 매출 0 업종은 제외 (트리맵 면적 계산 불가)
+  const items = Object.entries(sectorRev)
+    .filter(([_,v])=>v > 0)
+    .map(([name, value])=>({name, value, count: sectorCount[name]||0}))
+    .sort((a,b)=>b.value - a.value);
+
+  if(!items.length){
+    container.innerHTML = '<div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:#aaa;font-size:12px;">매출 데이터가 없습니다 · 누적 광고 데이터가 로드되면 자동 표시됩니다</div>';
+    return;
+  }
+
+  // 컨테이너 크기
+  const W = container.clientWidth;
+  const H = container.clientHeight;
+  if(W < 50 || H < 50){
+    setTimeout(renderListTreemap, 100);
+    return;
+  }
+
+  // 트리맵 레이아웃 계산
+  const cells = squarifyTreemap(items, 0, 0, W, H);
+
+  // 매출 총합 및 비중
+  const totalRev = items.reduce((s,i)=>s+i.value, 0);
+  // 트리맵 전용 포매터: 원 단위 → 억 단위, 소수점 1자리
+  const fmtBil = v => (v / 1e8).toFixed(1) + '억';
+
+  // 색상: 매출 큰 순으로 진한 → 연한 (보라 계열 그라디언트)
+  // 가장 큰 항목 = 진한 보라, 가장 작은 = 연한 회색
+  const colorFor = (rank, total)=>{
+    // rank: 0(가장 큼) ~ total-1(가장 작음)
+    const t = total > 1 ? rank / (total - 1) : 0;
+    // 진한 보라(#5A4FBD) → 연한 회색(#D5D3CD)
+    const lerp = (a,b,t)=>Math.round(a+(b-a)*t);
+    const r = lerp(90, 213, t);
+    const g = lerp(79, 211, t);
+    const b = lerp(189, 205, t);
+    return `rgb(${r},${g},${b})`;
+  };
+  // 글자색: 진한 셀은 흰색, 연한 셀은 어두운 색
+  const textColorFor = (rank, total)=>{
+    const t = total > 1 ? rank / (total - 1) : 0;
+    return t < 0.45 ? '#fff' : '#1a1917';
+  };
+
+  // 셀 그리기
+  const html = cells.map((c, idx)=>{
+    const pct = totalRev > 0 ? (c.value / totalRev * 100) : 0;
+    const bgColor = colorFor(idx, cells.length);
+    const txtColor = textColorFor(idx, cells.length);
+    // 셀 크기에 따라 글자 표시 여부 결정
+    const cellArea = c._w * c._h;
+    const showName = c._w >= 50 && c._h >= 30;
+    const showAmt = cellArea >= 4000;
+    const showPct = cellArea >= 2500;
+    // 글자 크기: 셀 크기에 따라
+    const nameSize = Math.min(Math.max(Math.sqrt(cellArea) / 6, 9), 22);
+    const subSize = Math.min(Math.max(nameSize * 0.55, 8), 13);
+
+    const nameEsc = c.name.replace(/</g,'&lt;').replace(/"/g,'&quot;');
+    return `<div onclick="clickListSector('${nameEsc.replace(/'/g, "\\'")}')"
+      title="${nameEsc} · ${fmtBil(c.value)} (${pct.toFixed(1)}%) · ${c.count}개 광고주"
+      style="position:absolute;left:${c._x}px;top:${c._y}px;width:${c._w}px;height:${c._h}px;
+        background:${bgColor};color:${txtColor};
+        border:1px solid rgba(255,255,255,0.6);box-sizing:border-box;
+        display:flex;flex-direction:column;align-items:center;justify-content:center;
+        cursor:pointer;overflow:hidden;padding:6px;text-align:center;
+        transition:filter .15s;font-weight:600;line-height:1.2;"
+      onmouseenter="this.style.filter='brightness(1.08)';this.style.zIndex='10';"
+      onmouseleave="this.style.filter='';this.style.zIndex='';">
+      ${showName?`<div style="font-size:${nameSize}px;font-weight:700;letter-spacing:-0.3px;">${nameEsc}</div>`:''}
+      ${showAmt?`<div style="font-size:${subSize}px;font-weight:600;opacity:0.92;margin-top:2px;">${fmtBil(c.value)}</div>`:''}
+      ${showPct?`<div style="font-size:${subSize*0.85}px;font-weight:500;opacity:0.82;">${pct.toFixed(1)}%</div>`:''}
+    </div>`;
+  }).join('');
+
+  container.innerHTML = html;
+
+  // 부제목 업데이트
+  const sub = document.getElementById('treemap-subtitle');
+  if(sub){
+    sub.textContent = `2026년 누적 매출 ${fmtBil(totalRev)} · 총 ${items.length}개 업종 · 셀 클릭하면 해당 업종 광고주 리스트로 이동`;
+  }
+}
+
+// 컨테이너 크기 변경 시 트리맵 재렌더
+window.addEventListener('resize', ()=>{
+  const v = document.getElementById('list-treemap-view');
+  if(v && v.style.display !== 'none' && advListSheet && advListSheet.length){
+    clearTimeout(window._treemapResizeTimer);
+    window._treemapResizeTimer = setTimeout(renderListTreemap, 200);
+  }
+});
 
 function initListFilters(){
   // 업종별 26년 누적매출 계산
@@ -2795,7 +3079,7 @@ function exportListCSV(){
   a.download='광고주리스트.csv';a.click();
 }
 // ══════════════════════════════════════
-const TITLES={adv:'누적 광고 데이터',sales:'영업사원별 실적',weekly:'주간업무보고',reports:'게첨보고서',major:'(참고용) 국내 주요 광고주',comp:'경쟁 매체 모니터링',intro:'본부 소개서',prod:'상품별 실적',list:'광고주 리스트',all:'본부 전체 실적',ms:'마케팅솔루션국',ms1:'마케팅솔루션1팀',ms2:'마케팅솔루션2팀',ms3:'마케팅솔루션3팀',ms4:'마케팅솔루션4팀',msd:'디지털사업팀',msp1:'솔루션기획1팀',msp2:'솔루션기획2팀',cs:'콘텐트사업국',cst:'콘텐트사업팀',inn:'이노베이션랩',csd:'콘텐트개발팀',dev:'솔루션개발팀',tb:'타운보드(사업지원국)'};
+const TITLES={adv:'누적 광고 데이터',sales:'영업사원별 실적',weekly:'주간업무보고',reports:'게첨보고서',major:'(참고용) 국내 주요 광고주',comp:'경쟁 매체 모니터링',intro:'본부 소개서',prod:'상품별 실적',list:'광고주 리스트',status:'영업 현황',all:'본부 전체 실적',ms:'마케팅솔루션국',ms1:'마케팅솔루션1팀',ms2:'마케팅솔루션2팀',ms3:'마케팅솔루션3팀',ms4:'마케팅솔루션4팀',msd:'디지털사업팀',msp1:'솔루션기획1팀',msp2:'솔루션기획2팀',cs:'콘텐트사업국',cst:'콘텐트사업팀',inn:'이노베이션랩',csd:'콘텐트개발팀',dev:'솔루션개발팀',tb:'타운보드(사업지원국)'};
 function toggleGroup(groupId, caretId){
   const g = document.getElementById(groupId);
   const c = document.getElementById(caretId);
@@ -2820,10 +3104,10 @@ function nav(key,el){
   cKey=key;
   document.querySelectorAll('.ni,.nc').forEach(n=>n.classList.remove('on'));if(el)el.classList.add('on');
   const isA=key==='adv',isP=key==='prod',isL=key==='list',isSales=key==='sales';
-  const isWeekly=key==='weekly',isIntro=key==='intro',isReports=key==='reports',isMajor=key==='major',isComp=key==='comp';
+  const isWeekly=key==='weekly',isIntro=key==='intro',isReports=key==='reports',isMajor=key==='major',isComp=key==='comp',isStatus=key==='status';
   const TEAM_KEYS = ['ms1','ms2','ms3','ms4','msd','inn','cst','csd','dev'];
   const isTeam = TEAM_KEYS.includes(key);
-  const isPerf = !isA&&!isP&&!isL&&!isTeam&&!isSales&&!isWeekly&&!isIntro&&!isReports&&!isMajor&&!isComp;
+  const isPerf = !isA&&!isP&&!isL&&!isTeam&&!isSales&&!isWeekly&&!isIntro&&!isReports&&!isMajor&&!isComp&&!isStatus;
   document.getElementById('vp').style.display=isPerf?'block':'none';
   document.getElementById('va').style.display=isA?'block':'none';
   document.getElementById('vpr').style.display=isP?'block':'none';
@@ -2835,13 +3119,20 @@ function nav(key,el){
   document.getElementById('vreports').style.display=isReports?'block':'none';
   document.getElementById('vmajor').style.display=isMajor?'block':'none';
   document.getElementById('vcomp').style.display=isComp?'block':'none';
+  const vsEl = document.getElementById('vstatus'); if(vsEl) vsEl.style.display=isStatus?'block':'none';
   document.getElementById('perf-ctrl').style.display=(isPerf||isTeam)?'flex':'none';
   document.getElementById('page-title').textContent=TITLES[key]||key;
   if(isA)return;
   if(isP){buildProdTabs();renderProd();return;}
   if(isL){
-    if(!advListSheet.length) loadAdvList(curListTeam);
-    else renderList();
+    // 트리맵 뷰를 디폴트로
+    showListTreemap();
+    if(!advListSheet.length){
+      loadAdvList(curListTeam);
+    } else {
+      renderList();
+      renderListTreemap();
+    }
     // 경쟁매체 데이터도 백그라운드 로드 (없으면)
     if(!compData || !compData.length){
       setTimeout(()=>{
@@ -2855,6 +3146,7 @@ function nav(key,el){
   if(isReports){ loadReports(); return; }
   if(isMajor){ loadMajorAdv(); return; }
   if(isComp){ loadCompetitor(); return; }
+  if(isStatus){ loadSalesStatus(); return; }
   if(isIntro){ return; }
   if(isTeam){ loadTeamDash(key); return; }
   renderPerf(key);
@@ -3848,6 +4140,201 @@ function renderMajorAdv(){
     '<span>표시 <span class="sv">'+rows.length+'개</span></span>'
     +'<span>컨택 있음 <span class="sv">'+matched+'개</span></span>'
     +'<span>미컨택 <span class="sv">'+unmatched+'개</span></span>';
+}
+
+// ══════════════════════════════════════
+// 영업 현황 (영업일지누적 + 주간보고누적 통합)
+// ══════════════════════════════════════
+let statusData = [];
+let statusLoading = false;
+let statusTeam = '마케팅솔루션1팀'; // 디폴트: 1팀
+let statusExpanded = new Set(); // 펼쳐진 광고주명들
+
+function setStatusTeam(team){
+  statusTeam = team;
+  // 탭 활성 스타일 업데이트
+  document.querySelectorAll('#status-tabs .status-tab').forEach(btn=>{
+    if(btn.dataset.team === team){
+      btn.style.cssText = 'padding:7px 14px;font-size:11px;font-weight:600;background:#0F6E56;color:#fff;border:none;border-radius:6px;cursor:pointer;';
+    } else {
+      btn.style.cssText = 'padding:7px 14px;font-size:11px;font-weight:600;background:#fff;color:#6B6A67;border:0.5px solid #D5D3CD;border-radius:6px;cursor:pointer;';
+    }
+  });
+  statusExpanded.clear();
+  renderSalesStatus();
+}
+
+function toggleStatusGroup(advName){
+  if(statusExpanded.has(advName)) statusExpanded.delete(advName);
+  else statusExpanded.add(advName);
+  renderSalesStatus();
+}
+
+function expandAllStatus(){
+  // 현재 화면에 보이는 모든 광고주 펼침
+  document.querySelectorAll('[data-status-adv]').forEach(el=>{
+    statusExpanded.add(el.dataset.statusAdv);
+  });
+  renderSalesStatus();
+}
+
+function collapseAllStatus(){
+  statusExpanded.clear();
+  renderSalesStatus();
+}
+
+async function loadSalesStatus(){
+  if(statusLoading) return;
+  statusLoading = true;
+  const bar = document.getElementById('status-load-bar');
+  bar.style.cssText='display:block;background:#E6F1FB;border:0.5px solid #B8D4F0;border-radius:8px;padding:9px 14px;margin-bottom:14px;font-size:11px;color:#185FA5;';
+  bar.textContent='영업 현황 데이터 불러오는 중...';
+  try {
+    const url = `${PERF_URL}?action=salesstatus&_=${Date.now()}`;
+    const res = await fetch(url);
+    const j = await res.json();
+    if(j.error) throw new Error(j.error);
+    statusData = j.data || [];
+    bar.style.cssText='display:block;background:#E1F5EE;border:0.5px solid #34A853;border-radius:8px;padding:9px 14px;margin-bottom:14px;font-size:11px;color:#0F6E56;';
+    bar.textContent=`✓ ${statusData.length}건 로드 완료`;
+    setTimeout(()=>bar.style.display='none', 2500);
+    initStatusFilters();
+    renderSalesStatus();
+  } catch(e){
+    bar.style.cssText='display:block;background:#FCEBEB;border:0.5px solid #E24B4A;border-radius:8px;padding:9px 14px;margin-bottom:14px;font-size:11px;color:#A32D2D;';
+    bar.textContent='로드 실패: '+e.message;
+    console.error(e);
+  } finally { statusLoading=false; }
+}
+
+function initStatusFilters(){
+  const persons = [...new Set(statusData.map(r=>r['영업담당자']||'').filter(Boolean))].sort((a,b)=>a.localeCompare(b,'ko'));
+  document.getElementById('status-person').innerHTML = '<option value="">전체 담당자</option>'+persons.map(p=>`<option>${p}</option>`).join('');
+}
+
+function renderSalesStatus(){
+  if(!statusData.length) return;
+  const q       = (document.getElementById('status-q').value||'').toLowerCase();
+  const source  = document.getElementById('status-source').value;
+  const person  = document.getElementById('status-person').value;
+  const team    = statusTeam; // 탭에서 가져옴
+
+  // 필터
+  const rows = statusData.filter(r=>{
+    if(team   && r['담당팀']     !== team)   return false;
+    if(source && r._source        !== source) return false;
+    if(person && r['영업담당자']  !== person) return false;
+    if(q){
+      const s = [r['광고주'],r['대행사'],r['영업담당자'],r['광고주담당자'],r['미팅/연락내용'],r['담당팀']].join(' ').toLowerCase();
+      if(!s.includes(q)) return false;
+    }
+    return true;
+  });
+
+  // 광고주별 그룹핑
+  const groupMap = {};
+  rows.forEach(r=>{
+    const k = (r['광고주']||'').trim();
+    if(!k) return;
+    if(!groupMap[k]){
+      groupMap[k] = {
+        adv: k,
+        team: r['담당팀'] || '',
+        items: [],
+        agencies: new Set(),
+        persons:  new Set(),
+        latestDate: '',
+      };
+    }
+    const g = groupMap[k];
+    g.items.push(r);
+    if(r['대행사']) g.agencies.add(r['대행사']);
+    if(r['영업담당자']) g.persons.add(r['영업담당자']);
+    const d = String(r['날짜']||'');
+    if(d > g.latestDate) g.latestDate = d;
+  });
+
+  // 가장 최근 영업일지 일자 내림차순 → 광고주명 가나다순
+  const groups = Object.values(groupMap).sort((a,b)=>{
+    if(a.latestDate !== b.latestDate) return b.latestDate.localeCompare(a.latestDate);
+    return a.adv.localeCompare(b.adv,'ko');
+  });
+
+  // 팀 배지 색상
+  const teamColor = team => {
+    const m = String(team||'').match(/(\d+)/);
+    const n = m ? parseInt(m[1]) : 99;
+    if(n===1) return {bg:'#E6F1FB',fg:'#185FA5'};
+    if(n===2) return {bg:'#E1F5EE',fg:'#0F6E56'};
+    if(n===3) return {bg:'#FAEEDA',fg:'#854F0B'};
+    if(n===4) return {bg:'#F5E1F5',fg:'#8B2A8B'};
+    return {bg:'#F1EFE8',fg:'#6B6A67'};
+  };
+
+  const sourceBadge = src => {
+    if(src === '영업일지') return '<span style="font-size:9px;font-weight:700;background:#E6F1FB;color:#185FA5;padding:2px 6px;border-radius:3px;">영업일지</span>';
+    if(src === '주간보고') return '<span style="font-size:9px;font-weight:700;background:#FAEEDA;color:#854F0B;padding:2px 6px;border-radius:3px;">주간보고</span>';
+    return '';
+  };
+
+  const html = groups.map(g=>{
+    const tc = teamColor(g.team);
+    const teamTxt = g.team ? g.team.replace('마케팅솔루션','마솔') : '';
+    const teamBadge = teamTxt
+      ? `<span style="font-size:9px;font-weight:700;background:${tc.bg};color:${tc.fg};padding:2px 7px;border-radius:3px;">${teamTxt}</span>`
+      : '';
+    const isOpen = statusExpanded.has(g.adv);
+    const advEsc = g.adv.replace(/'/g,"\\'").replace(/"/g,'&quot;');
+    const advAttr = g.adv.replace(/&/g,'&amp;').replace(/"/g,'&quot;');
+
+    // items 일자 내림차순
+    const its = g.items.slice().sort((a,b)=>String(b['날짜']||'').localeCompare(String(a['날짜']||'')));
+    const itemsHtml = isOpen ? its.map(it=>{
+      const date    = it['날짜'] || '';
+      const sales   = it['영업담당자'] || '';
+      const agency  = it['대행사'] || '';
+      const advPic  = it['광고주담당자'] || '';
+      const content = (it['미팅/연락내용']||'').replace(/</g,'&lt;');
+      return `
+        <div style="padding:9px 12px;border-left:2px solid #EEEDE9;margin:0 0 6px 14px;background:#fff;border-radius:0 6px 6px 0;">
+          <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin-bottom:4px;">
+            <span style="font-size:10px;font-weight:700;color:#185FA5;">${date}</span>
+            ${sourceBadge(it._source)}
+            ${sales?'<span style="font-size:10px;color:#6B6A67;">👤 '+sales+'</span>':''}
+            ${agency?'<span style="font-size:10px;color:#6B6A67;">🏢 '+agency+'</span>':''}
+            ${advPic?'<span style="font-size:10px;color:#6B6A67;">· '+advPic+'</span>':''}
+          </div>
+          ${content?'<div style="font-size:12px;color:#1a1917;line-height:1.55;white-space:pre-wrap;">'+content+'</div>':''}
+        </div>`;
+    }).join('') : '';
+
+    return `
+      <div data-status-adv="${advAttr}" style="border:0.5px solid #EEEDE9;border-radius:8px;margin-bottom:8px;background:#F8F7F3;overflow:hidden;">
+        <div onclick="toggleStatusGroup('${advEsc}')"
+          style="padding:10px 14px;background:#fff;border-bottom:${isOpen?'0.5px solid #EEEDE9':'none'};display:flex;align-items:center;gap:8px;flex-wrap:wrap;cursor:pointer;user-select:none;">
+          <span style="font-size:11px;color:#aaa;display:inline-block;width:12px;transition:transform .15s;${isOpen?'transform:rotate(90deg);':''}">▶</span>
+          <span style="font-size:13px;font-weight:700;color:#1a1917;">${g.adv}</span>
+          ${teamBadge}
+          <span style="font-size:10px;color:#aaa;">${g.items.length}건</span>
+          ${g.latestDate?'<span style="font-size:10px;color:#185FA5;font-weight:600;">📅 '+g.latestDate+'</span>':''}
+          ${g.agencies.size > 0 ? '<span style="font-size:10px;color:#6B6A67;">· 대행사: '+[...g.agencies].join(', ')+'</span>' : ''}
+        </div>
+        ${isOpen?'<div style="padding:8px 12px 4px 0;">'+itemsHtml+'</div>':''}
+      </div>`;
+  }).join('');
+
+  document.getElementById('status-list').innerHTML = html || '<div style="text-align:center;color:#aaa;font-size:12px;padding:40px 0;">조건에 맞는 데이터가 없습니다</div>';
+  document.getElementById('status-sum').innerHTML =
+    '<span>광고주 <span class="sv">'+groups.length+'곳</span></span>' +
+    '<span>전체 항목 <span class="sv">'+rows.length+'건</span></span>';
+  // 부제 업데이트
+  const sub = document.getElementById('status-subtitle');
+  if(sub){
+    const srcs = {};
+    statusData.forEach(r=>{ srcs[r._source]=(srcs[r._source]||0)+1; });
+    const teamLabel = team ? team.replace('마케팅솔루션','마솔') : '전체';
+    sub.textContent = `영업일지누적 ${srcs['영업일지']||0}건 + 주간보고누적 ${srcs['주간보고']||0}건 통합 · ${teamLabel} · 광고주 클릭 시 펼침`;
+  }
 }
 
 // ══════════════════════════════════════
