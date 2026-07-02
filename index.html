@@ -857,36 +857,25 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI','Helvetica Neue',sa
     </div><!-- /list-detail-view -->
   </div><!-- /vlist -->
   <div id="vpr" style="display:none;">
-    <div class="sec-header"><div class="sec-bar" style="background:#1D9E75"></div><span class="sec-title" style="color:#1D9E75">상품별 실적</span></div>
+    <div class="sec-header"><div class="sec-bar" style="background:#1D9E75"></div><span class="sec-title" style="color:#1D9E75">상품별 실적</span><span style="font-size:10px;font-weight:400;color:#6B6A67;margin-left:8px;">· 매체별 집행 내역 · RAW 기준</span></div>
+    <div id="prod-load-bar" style="background:#E6F1FB;border:0.5px solid #B8D4F0;border-radius:8px;padding:9px 14px;margin-bottom:14px;font-size:11px;color:#185FA5;display:none;"></div>
     <div class="ptabs" id="prod-tabs"></div>
     <div class="kpi-section" style="border-top:3px solid #1D9E75;"><div class="kg kg3" id="prod-kpi"></div></div>
-    <div class="chart-row">
-      <div class="card" style="border-top:3px solid #1D9E75;">
-        <div style="font-size:12px;font-weight:600;margin-bottom:12px;">소분류별 집행금액 <span style="font-size:10px;font-weight:400;color:#6B6A67;">RAW 기준</span></div>
-        <div id="sub-grid" style="display:grid;grid-template-columns:repeat(2,1fr);gap:8px;min-height:80px;"></div>
-      </div>
-      <div class="card" style="border-top:3px solid #7F77DD;">
-        <div style="font-size:12px;font-weight:600;margin-bottom:12px;">업종별 비중</div>
-        <div class="cw" style="height:150px"><canvas id="chart-pd"></canvas></div>
-        <div id="pd-leg" style="margin-top:8px;"></div>
-      </div>
-    </div>
     <div class="card" style="border-top:3px solid #1D9E75;margin-bottom:16px;">
       <div style="font-size:12px;font-weight:600;margin-bottom:12px;">월별 집행금액
-        <span style="font-size:10px;font-weight:400;color:#6B6A67;" id="prod-monthly-lbl">· RAW 기준</span>
+        <span style="font-size:10px;font-weight:400;color:#6B6A67;" id="prod-monthly-lbl">· 2025 vs 2026</span>
       </div>
       <div style="position:relative;height:240px;"><canvas id="chart-prod-monthly"></canvas></div>
     </div>
     <div class="card" style="border-top:3px solid #888780;">
-      <div style="font-size:12px;font-weight:600;margin-bottom:12px;">광고주별 집행 내역 <span style="font-size:10px;font-weight:400;color:#6B6A67;" id="prod-lbl"></span></div>
-      <div class="tw"><table class="rtbl" style="min-width:640px;">
-        <thead><tr>
-          <th style="width:130px">광고주</th><th style="width:150px">매체</th><th style="width:90px">팀명</th>
-          <th style="width:75px">담당자</th><th style="width:65px">업종</th>
-          <th style="width:62px">시작일</th><th style="width:62px">종료일</th>
-          <th style="width:90px;text-align:right">집행금액</th>
-        </tr></thead><tbody id="prod-body"></tbody>
-      </table></div>
+      <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;margin-bottom:12px;">
+        <div style="font-size:12px;font-weight:600;">광고주별 집행 내역 <span style="font-size:10px;font-weight:400;color:#6B6A67;" id="prod-lbl"></span></div>
+        <div style="display:flex;gap:6px;">
+          <button class="prod-yr-tab" data-yr="2026" onclick="setProdYear('2026',this)" style="padding:5px 14px;font-size:11px;font-weight:600;background:#1D9E75;color:#fff;border:none;border-radius:6px;cursor:pointer;">2026년</button>
+          <button class="prod-yr-tab" data-yr="2025" onclick="setProdYear('2025',this)" style="padding:5px 14px;font-size:11px;font-weight:600;background:#fff;color:#6B6A67;border:0.5px solid #D5D3CD;border-radius:6px;cursor:pointer;">2025년</button>
+        </div>
+      </div>
+      <div id="prod-adv-list" style="min-height:80px;"></div>
       <div class="sm" id="prod-sum"></div>
     </div>
   </div>
@@ -1155,13 +1144,23 @@ const OOH_TREE = [
 let oohOpen = new Set();
 
 const SUBS={all:['ms','cs','tb'],ms:['ms1','ms2','ms3','ms4','msd','msp1','msp2'],cs:['cst','inn','csd']};
+// 상품별 실적: OOH취합 시트의 매체 계층 구조
+// match = 시트의 매체명(B열)에서 이 키워드로 매칭 (대분류 합산행 + 소분류)
+// 상품별 실적: 10개 매체 탭 (RAW advRaw의 '매체' 컬럼 키워드로 매칭)
+// match: 이 키워드 중 하나라도 매체명에 포함되면 해당 탭
 const PRODS=[
-  {id:'tb', n:'타운보드',    c:'#185FA5',subs:['패키지','로컬','타운보드']},
-  {id:'ooh',n:'삼성동OOH',  c:'#1D9E75',subs:['코엑스','파르나스','더그랜드']},
-  {id:'solo',n:'단독매체',  c:'#7F77DD',subs:['어메이징','테헤란','홍대','쎄덱','SB타워','커브드','T204']},
-  {id:'bus',n:'경기버스',   c:'#EF9F27',subs:['광역버스','지선버스','버스']},
-  {id:'art',n:'아트월',     c:'#D85A30',subs:['한남대로','아트월']},
-  {id:'etc',n:'기타사이니지',c:'#888780',subs:['KTS','부산','키아프','기타','DOOH','디지털게시판']},
+  {id:'cpmt', n:'CPMT',        c:'#1D9E75', match:['CMT','PMT'], exclude:['파르나스더그랜드']},
+  {id:'grand',n:'파르나스더그랜드',c:'#2E8B8B', match:['파르나스더그랜드','더그랜드']},
+  {id:'hongdae',n:'홍대커브드월', c:'#7F77DD', match:['커브드월','홍대']},
+  {id:'amazing',n:'어메이징파르나스',c:'#378ADD', match:['어메이징']},
+  {id:'t204', n:'테헤란로T204', c:'#5DCAA5', match:['T204']},
+  {id:'sdc',  n:'쎄덱라이트박스', c:'#EF9F27', match:['세덱','쎄덱','라이트박스']},
+  {id:'sb',   n:'SB타워',       c:'#D85A30', match:['SB타워']},
+  {id:'kts',  n:'KT스퀘어',      c:'#C2410C', match:['KT스퀘어','KTS']},
+  {id:'bus',  n:'경기버스',     c:'#DD8726', match:['광역버스','지선버스','경기버스','버스'], exclude:['부산버스']},
+  {id:'art',  n:'아트월',       c:'#A35DBD', match:['아트월']},
+  {id:'tb',   n:'타운보드',     c:'#185FA5', match:['타운보드']},
+  {id:'etc',  n:'기타사이니지',  c:'#888780', match:['기타사이니지','부산버스','키아프','미러','전광판'], exclude:['KT스퀘어','KTS','파르나스더그랜드','더그랜드']},
 ];
 const TC=['#185FA5','#1D9E75','#7F77DD','#EF9F27','#D85A30','#888780','#378ADD','#5DCAA5'];
 const CM={'마케팅솔루션국':'#185FA5','마케팅솔루션1팀':'#378ADD','마케팅솔루션2팀':'#1D9E75','마케팅솔루션3팀':'#5DCAA5','마케팅솔루션4팀':'#9FE1CB','디지털사업팀':'#EF9F27','솔루션기획1팀':'#FAC775','솔루션기획2팀':'#FAEEDA','콘텐트사업국':'#7F77DD','콘텐트사업팀':'#AFA9EC','이노베이션랩':'#CECBF6','콘텐트개발팀':'#EEEDFE','타운보드(사업지원국)':'#EF9F27'};
@@ -2095,91 +2094,169 @@ async function loadAdv(){
     console.error(e);
   }
 }
+// ══════════════════════════════════════
+// PRODUCT (매체별 집행 내역)
+// ══════════════════════════════════════
+let prodYear = '2026';       // 광고주별 집행 내역 연도
+let prodExpanded = new Set(); // 펼쳐진 광고주
 
-// ══════════════════════════════════════
-// PRODUCT
-// ══════════════════════════════════════
 function buildProdTabs(){
   document.getElementById('prod-tabs').innerHTML=PRODS.map(p=>
     `<button class="ptab${p.id===cProd.id?' on':''}" onclick="swProd('${p.id}',this)" style="${p.id===cProd.id?'background:'+p.c+';border-color:'+p.c+';color:#fff;font-weight:600':''}">${p.n}</button>`
   ).join('');
 }
-function swProd(id,el){cProd=PRODS.find(p=>p.id===id);document.querySelectorAll('.ptab').forEach(t=>{t.classList.remove('on');t.style.cssText='';});if(el){el.classList.add('on');el.style.background=cProd.c;el.style.borderColor=cProd.c;el.style.color='#fff';el.style.fontWeight='600';}renderProd();}
-function getProdRows(p){return advRaw.filter(r=>{const m=(r['매체']||'').toLowerCase();return p.subs.some(s=>m.includes(s.toLowerCase()));});}
-function renderProd(){
-  const p=cProd,rows=getProdRows(p);
-  const te=rows.reduce((s,r)=>s+(r['집행금액']||0),0);
-  const as=new Set(rows.map(r=>r['광고주']).filter(Boolean));
-  document.getElementById('prod-kpi').innerHTML=[
-    {l:'총 집행금액',v:fmtW(te),b:`<span class="badge bt">${rows.length}건</span>`},
-    {l:'광고주 수',v:as.size+'사',b:`<span class="badge bn">집행 중</span>`},
-    {l:'매체 수',v:[...new Set(rows.map(r=>r['매체']).filter(Boolean))].length+'개',b:`<span class="badge bn">매체 종류</span>`},
-  ].map(k=>`<div class="kpi"><div class="kl">${k.l}</div><div class="kv">${k.v}</div><div class="km">${k.b}</div></div>`).join('');
-  const sm={};rows.forEach(r=>{const m=r['매체']||'기타';sm[m]=(sm[m]||0)+(r['집행금액']||0);});
-  const se=Object.entries(sm).sort((a,b)=>b[1]-a[1]);const mx=se[0]?se[0][1]:1;
-  document.getElementById('sub-grid').innerHTML=se.slice(0,6).map(([n,v])=>
-    `<div class="sub-card"><div class="sub-name">${n}</div><div class="sub-val" style="color:${p.c}">${fmtW(v)}</div><div class="sub-bar-wrap"><div class="sub-bar" style="width:${Math.round(v/mx*100)}%;background:${p.c}"></div></div></div>`
-  ).join('')||'<div style="font-size:12px;color:#aaa;padding:16px 0">데이터 불러오는 중...</div>';
-  const im={};rows.forEach(r=>{const i=r['업종']||'기타';im[i]=(im[i]||0)+(r['집행금액']||0);});
-  const ie=Object.entries(im).sort((a,b)=>b[1]-a[1]).slice(0,6);
-  const cpd=document.getElementById('chart-pd');if(pdC){pdC.destroy();pdC=null;}
-  if(cpd&&ie.length){pdC=new Chart(cpd,{type:'doughnut',data:{labels:ie.map(e=>e[0]),datasets:[{data:ie.map(e=>e[1]),backgroundColor:TC.slice(0,ie.length),borderWidth:0}]},options:{responsive:true,maintainAspectRatio:false,cutout:'65%',plugins:{legend:{display:false}}}});document.getElementById('pd-leg').innerHTML=ie.map((e,i)=>`<div class="leg-item"><div class="leg-sq" style="background:${TC[i]}"></div><span style="flex:1;color:#6B6A67">${e[0]}</span><span style="font-weight:600">${fmtW(e[1])}</span></div>`).join('');}
-  document.getElementById('prod-lbl').textContent=p.n+' '+rows.length+'건';
-  document.getElementById('prod-body').innerHTML=rows.slice(0,200).map(r=>
-    `<tr class="dr"><td style="font-weight:600">${r['광고주']||''}</td><td style="color:#6B6A67">${r['매체']||''}</td><td style="color:#6B6A67">${sn(r['팀명']||'')}</td><td>${r['매출담당자']||''}</td><td style="color:#6B6A67">${r['업종']||''}</td><td>${fmtD(r['시작일'])}</td><td>${fmtD(r['종료일'])}</td><td style="text-align:right;font-weight:600">${fmtW(r['집행금액']||0)}</td></tr>`
-  ).join('');
-  document.getElementById('prod-sum').innerHTML=`<span>표시 ${Math.min(rows.length,200)}건 / 전체 <span class="sv">${rows.length}건</span></span><span>집행금액 <span class="sv">${fmtW(te)}</span></span>`;
+function swProd(id,el){
+  cProd=PRODS.find(p=>p.id===id);
+  document.querySelectorAll('.ptab').forEach(t=>{t.classList.remove('on');t.style.cssText='';});
+  if(el){el.classList.add('on');el.style.background=cProd.c;el.style.borderColor=cProd.c;el.style.color='#fff';el.style.fontWeight='600';}
+  prodExpanded.clear();
+  renderProd();
+}
+function setProdYear(yr, el){
+  prodYear = yr;
+  document.querySelectorAll('.prod-yr-tab').forEach(t=>{
+    if(t.dataset.yr===yr){ t.style.cssText='padding:5px 14px;font-size:11px;font-weight:600;background:'+cProd.c+';color:#fff;border:none;border-radius:6px;cursor:pointer;'; }
+    else { t.style.cssText='padding:5px 14px;font-size:11px;font-weight:600;background:#fff;color:#6B6A67;border:0.5px solid #D5D3CD;border-radius:6px;cursor:pointer;'; }
+  });
+  prodExpanded.clear();
+  renderProdAdvList();
+}
 
-  // ── 월별 막대그래프 ──
-  const MONS = ['1월','2월','3월','4월','5월','6월','7월','8월','9월','10월','11월','12월'];
-  const monData26 = Array(12).fill(0);
-  const monData25 = Array(12).fill(0);
-  rows.forEach(r=>{
-    const yr = getYr(r);
-    if(yr!==2026 && yr!==2025) return;
-    // 월 파싱
-    let mon = null;
-    const em = r['집행월'];
+// 현재 탭 매체에 해당하는 RAW 행 필터
+function getProdMediaRows(){
+  const p=cProd;
+  return advRaw.filter(r=>{
+    const m=String(r['매체']||'').trim();
+    if(!m) return false;
+    if(p.exclude && p.exclude.some(ex=>m.indexOf(ex)>=0)) return false;
+    return p.match.some(k=>m.indexOf(k)>=0);
+  });
+}
+
+function toggleProdAdv(key){
+  if(prodExpanded.has(key)) prodExpanded.delete(key);
+  else prodExpanded.add(key);
+  renderProdAdvList();
+}
+
+function renderProd(){
+  const p=cProd;
+  if(!advRaw.length){
+    document.getElementById('prod-kpi').innerHTML='<div style="padding:20px;color:#aaa;font-size:12px;">광고 데이터 로딩 중...</div>';
+    return;
+  }
+  const rows = getProdMediaRows();
+
+  // ── KPI (2026 기준) ──
+  const rows26 = rows.filter(r=>getYr(r)===2026);
+  const rows25 = rows.filter(r=>getYr(r)===2025);
+  const sum26 = rows26.reduce((s,r)=>s+(r['집행금액']||0),0);
+  const sum25 = rows25.reduce((s,r)=>s+(r['집행금액']||0),0);
+  const adv26 = new Set(rows26.map(r=>r['광고주']).filter(Boolean));
+  const yoy = sum25>0 ? ((sum26-sum25)/sum25*100) : null;
+  const yoyTxt = yoy===null ? '-' : (yoy>=0?'▲ ':'▼ ')+Math.abs(yoy).toFixed(1)+'%';
+  const yoyColor = yoy===null?'#aaa':yoy>=0?'#0F6E56':'#A32D2D';
+  document.getElementById('prod-kpi').innerHTML=[
+    {l:'2026 집행금액',v:fmtW(sum26),b:`<span class="badge bt">${rows26.length}건</span>`},
+    {l:'광고주 수',v:adv26.size+'사',b:`<span class="badge bn">2026년</span>`},
+    {l:'전년 대비',v:`<span style="color:${yoyColor}">${yoyTxt}</span>`,b:`<span class="badge bn">2025: ${fmtW(sum25)}</span>`},
+  ].map(k=>`<div class="kpi"><div class="kl">${k.l}</div><div class="kv">${k.v}</div><div class="km">${k.b}</div></div>`).join('');
+
+  // ── 월별 25/26 비교 차트 ──
+  const MONS=['1월','2월','3월','4월','5월','6월','7월','8월','9월','10월','11월','12월'];
+  const md26=Array(12).fill(0), md25=Array(12).fill(0);
+  const monOf = r=>{
+    const em=r['집행월'];
     if(em!==undefined&&em!==null&&em!==''){
       const s=String(em).trim(), m=s.match(/(\d{2,4})[.\-\/](\d{1,2})/);
-      if(m) mon=parseInt(m[2]);
-      else { const mo=parseInt(s); if(!isNaN(mo)&&mo>=1&&mo<=12) mon=mo; }
+      if(m) return parseInt(m[2]);
+      const mo=parseInt(s); if(!isNaN(mo)&&mo>=1&&mo<=12) return mo;
     }
-    if(!mon){ try{ const d=new Date(r['시작일']); if(!isNaN(d.getTime())) mon=d.getMonth()+1; }catch(e){} }
+    try{ const d=new Date(r['시작일']); if(!isNaN(d.getTime())) return d.getMonth()+1; }catch(e){}
+    return null;
+  };
+  rows.forEach(r=>{
+    const yr=getYr(r), mon=monOf(r);
     if(!mon||mon<1||mon>12) return;
-    const amt = (r['집행금액']||0)/1e8; // 억 단위
-    if(yr===2026) monData26[mon-1]+=amt;
-    if(yr===2025) monData25[mon-1]+=amt;
+    const amt=(r['집행금액']||0)/1e8;
+    if(yr===2026) md26[mon-1]+=amt;
+    else if(yr===2025) md25[mon-1]+=amt;
   });
-
-  const cpm = document.getElementById('chart-prod-monthly');
-  if(prodMonthlyChart){ prodMonthlyChart.destroy(); prodMonthlyChart=null; }
+  const cpm=document.getElementById('chart-prod-monthly');
+  if(prodMonthlyChart){prodMonthlyChart.destroy();prodMonthlyChart=null;}
   if(cpm){
-    prodMonthlyChart = new Chart(cpm, {
-      type:'bar',
-      data:{
-        labels: MONS,
-        datasets:[
-          { label:'2025년', data:monData25, backgroundColor:p.c+'44', borderColor:p.c+'88', borderWidth:1, borderRadius:3 },
-          { label:'2026년', data:monData26, backgroundColor:p.c+'CC', borderColor:p.c, borderWidth:1, borderRadius:3 },
-        ]
-      },
-      options:{
-        responsive:true, maintainAspectRatio:false,
-        interaction:{ mode:'index', intersect:false },
-        plugins:{
-          legend:{ display:true, position:'top', labels:{ font:{size:11}, boxWidth:12, padding:12 } },
-          tooltip:{ callbacks:{ label: ctx=>' '+ctx.dataset.label+': '+ctx.parsed.y.toFixed(2)+'억' } }
-        },
-        scales:{
-          x:{ grid:{ display:false }, ticks:{ font:{size:11} } },
-          y:{ grid:{ color:'#F2F1ED' }, ticks:{ font:{size:11}, callback: v=>v.toFixed(1)+'억' }, beginAtZero:true }
-        }
-      }
-    });
+    const has25=md25.some(v=>v>0);
+    const ds=[];
+    if(has25) ds.push({label:'2025년',data:md25,backgroundColor:p.c+'44',borderColor:p.c+'88',borderWidth:1,borderRadius:3});
+    ds.push({label:'2026년',data:md26,backgroundColor:p.c+'CC',borderColor:p.c,borderWidth:1,borderRadius:3});
+    prodMonthlyChart=new Chart(cpm,{type:'bar',data:{labels:MONS,datasets:ds},options:{responsive:true,maintainAspectRatio:false,interaction:{mode:'index',intersect:false},plugins:{legend:{display:true,position:'top',labels:{font:{size:11},boxWidth:12,padding:12}},tooltip:{callbacks:{label:ctx=>' '+ctx.dataset.label+': '+ctx.parsed.y.toFixed(2)+'억'}}},scales:{x:{grid:{display:false},ticks:{font:{size:11}}},y:{grid:{color:'#F2F1ED'},ticks:{font:{size:11},callback:v=>v.toFixed(1)+'억'},beginAtZero:true}}}});
   }
-  document.getElementById('prod-monthly-lbl').textContent = '· '+p.n+' · 2025/2026 비교 · RAW 기준';
+  document.getElementById('prod-monthly-lbl').textContent='· '+p.n+' · 2025 vs 2026';
+
+  // ── 광고주별 집행 내역 ──
+  renderProdAdvList();
 }
+
+function renderProdAdvList(){
+  const p=cProd;
+  const yr=parseInt(prodYear);
+  const rows=getProdMediaRows().filter(r=>getYr(r)===yr);
+
+  // 광고주별 그룹
+  const gmap={};
+  rows.forEach(r=>{
+    const adv=(r['광고주']||'(미상)').trim();
+    if(!gmap[adv]) gmap[adv]={adv, total:0, items:[]};
+    gmap[adv].total+=(r['집행금액']||0);
+    gmap[adv].items.push(r);
+  });
+  // 집행금액순 정렬
+  const groups=Object.values(gmap).sort((a,b)=>b.total-a.total);
+  const totalSum=groups.reduce((s,g)=>s+g.total,0);
+
+  const html=groups.map(g=>{
+    const key=g.adv;
+    const isOpen=prodExpanded.has(key);
+    const advEsc=key.replace(/'/g,"\\'").replace(/"/g,'&quot;');
+    // 개별 RAW 내역 (펼침 시)
+    const its=g.items.slice().sort((a,b)=>(b['집행금액']||0)-(a['집행금액']||0));
+    const itemsHtml=isOpen?`
+      <div style="padding:2px 0 8px 0;">
+        <table class="rtbl" style="width:100%;min-width:0;">
+          <thead><tr>
+            <th style="width:110px">매체</th><th style="width:90px">담당자</th>
+            <th style="width:70px">업종</th><th style="width:60px">시작</th>
+            <th style="width:60px">종료</th><th style="width:100px;text-align:right">집행금액</th>
+          </tr></thead>
+          <tbody>${its.map(r=>`<tr class="dr">
+            <td style="color:#6B6A67">${r['매체']||''}</td>
+            <td>${r['매출담당자']||''}</td>
+            <td style="color:#6B6A67">${r['업종']||''}</td>
+            <td style="color:#888">${fmtD(r['시작일'])}</td>
+            <td style="color:#888">${fmtD(r['종료일'])}</td>
+            <td style="text-align:right;font-weight:600">${fmtW(r['집행금액']||0)}</td>
+          </tr>`).join('')}</tbody>
+        </table>
+      </div>`:'';
+    const pctBar=totalSum>0?(g.total/totalSum*100):0;
+    return `
+      <div style="border:0.5px solid #EEEDE9;border-radius:8px;margin-bottom:6px;background:#F8F7F3;overflow:hidden;">
+        <div onclick="toggleProdAdv('${advEsc}')" style="padding:9px 14px;background:#fff;display:flex;align-items:center;gap:8px;cursor:pointer;user-select:none;${isOpen?'border-bottom:0.5px solid #EEEDE9;':''}">
+          <span style="font-size:11px;color:#aaa;width:12px;display:inline-block;${isOpen?'transform:rotate(90deg);':''}transition:transform .15s;">▶</span>
+          <span style="font-size:12px;font-weight:700;color:#1a1917;flex:1;">${g.adv}</span>
+          <span style="font-size:10px;color:#aaa;">${g.items.length}건</span>
+          <span style="font-size:12px;font-weight:700;color:${p.c};min-width:70px;text-align:right;">${fmtW(g.total)}</span>
+          <span style="font-size:10px;color:#888;min-width:42px;text-align:right;">${pctBar.toFixed(1)}%</span>
+        </div>
+        ${itemsHtml}
+      </div>`;
+  }).join('');
+
+  document.getElementById('prod-adv-list').innerHTML = html || '<div style="text-align:center;color:#aaa;font-size:12px;padding:40px 0;">'+yr+'년 집행 내역이 없습니다</div>';
+  document.getElementById('prod-lbl').textContent='· '+p.n+' · '+prodYear+'년';
+  document.getElementById('prod-sum').innerHTML=`<span>광고주 <span class="sv">${groups.length}사</span></span><span>${prodYear}년 집행 <span class="sv">${fmtW(totalSum)}</span></span>`;
+}
+
 
 // ══════════════════════════════════════
 // 광고주 리스트 (시트 기반)
@@ -3123,7 +3200,12 @@ function nav(key,el){
   document.getElementById('perf-ctrl').style.display=(isPerf||isTeam)?'flex':'none';
   document.getElementById('page-title').textContent=TITLES[key]||key;
   if(isA)return;
-  if(isP){buildProdTabs();renderProd();return;}
+  if(isP){
+    buildProdTabs();
+    if(!advRaw.length){ loadAdv().then(()=>{ if(cKey==='prod') renderProd(); }).catch(console.error); }
+    else renderProd();
+    return;
+  }
   if(isL){
     // 트리맵 뷰를 디폴트로
     showListTreemap();
