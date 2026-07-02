@@ -823,7 +823,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI','Helvetica Neue',sa
             <option value="마케팅솔루션3팀">마솔3팀</option>
             <option value="마케팅솔루션4팀">마솔4팀</option>
           </select>
-          <select class="fsel" id="list-sector1" onchange="renderList()"><option value="">전체 업종</option></select>
+          <select class="fsel" id="list-sector1" onchange="curListSector=this.value;renderList()"><option value="">전체 업종</option></select>
           <select class="fsel" id="list-sort" onchange="renderList()">
             <option value="te26_desc">2026금액↓</option>
             <option value="te26_asc">2026금액↑</option>
@@ -1320,9 +1320,9 @@ async function fetchPerf(){
 
     // OOH 데이터 순차 로드 (월 변경 시 캐시 무효화 후 새로 fetch)
     oohApiData = null; // 캐시 초기화 → 반드시 새 월 데이터로 재로드
-    setTimeout(()=>loadOohData(mon).then(()=>{ if(cKey==='all'||cKey==='tb') buildOohTbl(); }).catch(console.error), 300);
+    setTimeout(()=>loadOohData(mon).then(()=>{ if(cKey==='all'||cKey==='tb') buildOohTbl(); }).catch(console.error), 100);
     // 연간 차트 데이터 로드 (캐시 없을 때만)
-    if(!annualData) setTimeout(()=>loadAnnualData(), 600);
+    if(!annualData) setTimeout(()=>loadAnnualData(), 200);
   }catch(e){
     console.warn('[fetchPerf] 실패:', e.message);
     document.getElementById('chip-txt').textContent = `2026년 ${mon}월 (로컬 데이터)`;
@@ -2065,12 +2065,26 @@ function clearMergeData(){
 async function loadAdv(){
   // adv-status-bar는 해당 탭 안에 있어서 null일 수 있으므로 안전하게 처리
   const setSb=(css,txt)=>{const sb=document.getElementById('adv-status-bar');if(sb){sb.style.cssText=css;sb.textContent=txt;}};
-  setSb('display:block;background:#E6F1FB;border:0.5px solid #B8D4F0;border-radius:8px;padding:9px 14px;margin-bottom:14px;font-size:11px;color:#185FA5;','광고주 데이터 불러오는 중...');
-  // 사이드바 상태 표시
-  document.getElementById('gs-txt').textContent='광고 데이터 로딩 중...';
+  const bluecss='display:block;background:#E6F1FB;border:0.5px solid #B8D4F0;border-radius:8px;padding:9px 14px;margin-bottom:14px;font-size:11px;color:#185FA5;';
+  const setPct=(p)=>{
+    setSb(bluecss, `광고 데이터 불러오는 중... ${p}%`);
+    const gs=document.getElementById('gs-txt'); if(gs) gs.textContent=`광고 데이터 로딩 중... ${p}%`;
+  };
+  // 가짜 진행 애니메이션 (실제 완료 전까지 90%까지 서서히 증가)
+  let fakePct = 0;
+  setPct(0);
+  const timer = setInterval(()=>{
+    fakePct = Math.min(90, fakePct + Math.max(1, Math.round((90-fakePct)*0.15)));
+    setPct(fakePct);
+  }, 200);
   try{
-    const r=await fetch(ADV_URL);if(!r.ok)throw new Error('HTTP '+r.status);
-    const d=await r.json();if(!d.data||!Array.isArray(d.data))throw new Error('data 없음');
+    // 단순 fetch (Apps Script 리다이렉트 자동 처리)
+    const r=await fetch(ADV_URL);
+    if(!r.ok)throw new Error('HTTP '+r.status);
+    const d=await r.json();
+    clearInterval(timer);
+    setPct(100);
+    if(!d.data||!Array.isArray(d.data))throw new Error('data 없음');
     advRaw=d.data.filter(r=>r['광고주']||r['집행금액']);
     setSb('display:block;background:#E1F5EE;border:0.5px solid #34A853;border-radius:8px;padding:9px 14px;margin-bottom:14px;font-size:11px;color:#0F6E56;',`✓ 광고 데이터 ${advRaw.length}건 로드 완료`);
     setTimeout(()=>{const sb=document.getElementById('adv-status-bar');if(sb)sb.style.display='none';},3000);
@@ -2089,6 +2103,7 @@ async function loadAdv(){
     }
 
   }catch(e){
+    clearInterval(timer);
     setSb('display:block;background:#FCEBEB;border:0.5px solid #E24B4A;border-radius:8px;padding:9px 14px;margin-bottom:14px;font-size:11px;color:#A32D2D;','광고 데이터 로드 실패: '+e.message);
     document.getElementById('gs-txt').textContent='광고 데이터 로드 실패';
     console.error(e);
@@ -2197,6 +2212,18 @@ function renderProd(){
   renderProdAdvList();
 }
 
+// 구좌수 추출: 여러 컬럼명 후보 대응
+function getSlot(r){
+  const cands=['구좌수','구좌','수량','구좌 수','슬롯','좌수','노출수량','수'];
+  for(const c of cands){
+    if(r[c]!==undefined && r[c]!==null && String(r[c]).trim()!==''){
+      const v=String(r[c]).trim();
+      return v;
+    }
+  }
+  return '-';
+}
+
 function renderProdAdvList(){
   const p=cProd;
   const yr=parseInt(prodYear);
@@ -2224,14 +2251,16 @@ function renderProdAdvList(){
       <div style="padding:2px 0 8px 0;">
         <table class="rtbl" style="width:100%;min-width:0;">
           <thead><tr>
-            <th style="width:110px">매체</th><th style="width:90px">담당자</th>
-            <th style="width:70px">업종</th><th style="width:60px">시작</th>
-            <th style="width:60px">종료</th><th style="width:100px;text-align:right">집행금액</th>
+            <th style="width:100px">매체</th><th style="width:80px">담당자</th>
+            <th style="width:60px">업종</th><th style="width:52px;text-align:right">구좌수</th>
+            <th style="width:56px">시작</th><th style="width:56px">종료</th>
+            <th style="width:96px;text-align:right">집행금액</th>
           </tr></thead>
           <tbody>${its.map(r=>`<tr class="dr">
             <td style="color:#6B6A67">${r['매체']||''}</td>
             <td>${r['매출담당자']||''}</td>
             <td style="color:#6B6A67">${r['업종']||''}</td>
+            <td style="text-align:right;color:#6B6A67">${getSlot(r)}</td>
             <td style="color:#888">${fmtD(r['시작일'])}</td>
             <td style="color:#888">${fmtD(r['종료일'])}</td>
             <td style="text-align:right;font-weight:600">${fmtW(r['집행금액']||0)}</td>
@@ -2324,6 +2353,9 @@ function switchListTeam(sheetName, el){
 
 function switchListSector(sec, el){
   curListSector = sec;
+  // 셀렉트박스도 동기화 (중복 필터 충돌 방지)
+  const sel = document.getElementById('list-sector1');
+  if(sel) sel.value = sec;
   document.querySelectorAll('#list-sector-tabs .sec-pill').forEach(t=>{
     t.style.background = '#fff';
     t.style.color = '#6B6A67';
@@ -2731,7 +2763,6 @@ function renderList(){
     if(teamFilter && v._team !== teamFilter) return false;
     if(curListSector && v.sector1 !== curListSector) return false;
     if(curListPerson && v.person !== curListPerson) return false;
-    if(sec && v.sector1 !== sec) return false;
     if(q && ![v.name,v.person,v.sector1,v.grade,v.status,v._team].some(s=>s&&String(s).toLowerCase().includes(q))) return false;
     return true;
   });
@@ -2879,9 +2910,10 @@ function buildListDetailRow(advName){
     <th style="padding:5px 5px 5px 32px;text-align:left;font-size:10px;color:#6B6A67;font-weight:500;min-width:90px;">시작일</th>
     <th colspan="2" style="text-align:left;font-size:10px;color:#6B6A67;font-weight:500;">매체</th>
     <th colspan="2" style="text-align:left;font-size:10px;color:#6B6A67;font-weight:500;">팀/담당자</th>
+    <th style="text-align:right;font-size:10px;color:#6B6A67;font-weight:500;">구좌수</th>
     <th colspan="2" style="text-align:right;font-size:10px;color:#6B6A67;font-weight:500;">집행금액</th>
     <th style="text-align:left;font-size:10px;color:#6B6A67;font-weight:500;">종료일</th>
-    <th colspan="3" style="text-align:left;font-size:10px;color:#6B6A67;font-weight:500;">업종</th>
+    <th colspan="2" style="text-align:left;font-size:10px;color:#6B6A67;font-weight:500;">업종</th>
   </tr></thead>`;
 
   let bodyHtml = '';
@@ -2900,9 +2932,10 @@ function buildListDetailRow(advName){
         <td style="padding-left:32px;font-size:11px;color:#6B6A67;">${fmtDY(r['시작일'])}</td>
         <td colspan="2" style="font-size:11px;">${r['매체']||'-'}</td>
         <td colspan="2" style="font-size:11px;color:#6B6A67;">${sn(r['팀명']||'')} ${r['매출담당자']?'· '+r['매출담당자']:''}</td>
+        <td style="text-align:right;font-size:11px;color:#6B6A67;">${getSlot(r)}</td>
         <td colspan="2" style="text-align:right;font-size:11px;font-weight:600;">${fmtW(amt)}</td>
         <td style="font-size:10px;color:#aaa;">${fmtDY(r['종료일'])}</td>
-        <td colspan="3" style="font-size:10px;color:#aaa;">${r['업종']||''}</td>
+        <td colspan="2" style="font-size:10px;color:#aaa;">${r['업종']||''}</td>
       </tr>`;
     });
   });
@@ -4966,9 +4999,12 @@ renderHead();
   if(stored && stored.id){
     CURRENT_USER = stored;
     showApp();
+    window._appLoaded = true;
     nav('all', document.getElementById('ni-all'));
+    // 실적(첫화면) 먼저 로드 완료 후 광고데이터 백그라운드 로드
+    // (Apps Script 동시요청 충돌 방지 + 첫 화면 우선)
     fetchPerf().catch(console.error).finally(()=>{
-      setTimeout(()=>loadAdv().catch(console.error), 800);
+      loadAdv().catch(console.error);
     });
   } else {
     // 로그인 화면 그대로 표시. 로그인 성공 후 데이터 로드
@@ -4986,7 +5022,7 @@ showApp = function(){
     window._appLoaded = true;
     nav('all', document.getElementById('ni-all'));
     fetchPerf().catch(console.error).finally(()=>{
-      setTimeout(()=>loadAdv().catch(console.error), 800);
+      loadAdv().catch(console.error);
     });
   }
 };
