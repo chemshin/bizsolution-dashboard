@@ -2704,17 +2704,27 @@ async function loadCalendar(){
   bar.style.display='block';
   bar.textContent='영업캘린더 데이터 불러오는 중...';
   try{
-    // 정적 JSON 직접 로드 (Apps Script 왕복 없음 → 빠름)
-    // GitHub Pages의 index.html과 같은 폴더에 salescalendar.json 위치
+    // ① 정적 JSON 로드 (2025 자사 금액포함 + 경쟁사) — Apps Script 왕복 없음
     const r = await fetch(`salescalendar.json?_=${Date.now()}`);
     if(!r.ok) throw new Error('HTTP '+r.status);
     const j = await r.json();
     if(j.error) throw new Error(j.error);
-    // 짧은 키(y/m/mo/a/u/d) → 원래 키로 변환
+    // 짧은 키(y/m/mo/a/u/d/amt) → 원래 키로 변환
+    const own2025 = (j.own||[]).map(o=>({연도:o.y, 매체:o.m, 집행월:o.mo, 광고주:o.a, 업종:o.u||'', 담당자:o.d||'', 금액:o.amt||0}));
+    const comp = (j.comp||[]).map(c=>({연도:c.y, 매체:c.m, 집행월:c.mo, 광고주:c.a, 업종:c.u||''}));
+
+    // ② 2026 자사 실시간 (이미 로드된 advRaw에서 변환)
+    bar.textContent='2026년 실시간 데이터 반영 중...';
+    if(!advRaw.length){ await loadAdv().catch(()=>{}); }
+    const own2026 = buildOwn2026FromAdvRaw();
+
+    // ③ 합치기
+    const ownAll = own2025.concat(own2026);
+    const ownMediaSet = new Set([...(j.ownMedia||[]), ...own2026.map(o=>o.매체)]);
     calData = {
-      own: (j.own||[]).map(o=>({연도:o.y, 매체:o.m, 집행월:o.mo, 광고주:o.a, 업종:o.u||'', 담당자:o.d||''})),
-      comp: (j.comp||[]).map(c=>({연도:c.y, 매체:c.m, 집행월:c.mo, 광고주:c.a, 업종:c.u||''})),
-      ownMedia: j.ownMedia||[],
+      own: ownAll,
+      comp: comp,
+      ownMedia: [...ownMediaSet].sort(),
       compMedia: j.compMedia||[]
     };
     bar.style.display='none';
@@ -2724,6 +2734,40 @@ async function loadCalendar(){
     bar.textContent='로드 실패: '+e.message+' (salescalendar.json 파일이 있는지 확인하세요)';
     console.error(e);
   }
+}
+
+// advRaw의 2026 자사 데이터를 영업캘린더 형식으로 변환 (실시간)
+function buildOwn2026FromAdvRaw(){
+  if(!advRaw || !advRaw.length) return [];
+  const cleanMedia = m => {
+    m = String(m||'').trim().replace(/\(\d+초\)/g,'').trim();
+    if(m.indexOf('타운보드')>=0) return '타운보드';
+    return m;
+  };
+  const monthOf = r => {
+    const em=r['집행월'];
+    if(em!==undefined&&em!==null&&em!==''){
+      const s=String(em).trim(), mm=s.match(/[.\-\/](\d{1,2})$/);
+      if(mm) return parseInt(mm[1]);
+    }
+    try{ const d=new Date(r['시작일']); if(!isNaN(d.getTime())) return d.getMonth()+1; }catch(e){}
+    return 0;
+  };
+  const out=[];
+  advRaw.forEach(r=>{
+    if(getYr(r)!==2026) return;
+    const media=cleanMedia(r['매체']);
+    // 비OOH 제외
+    if(media==='I랩'||media==='쿠킹'||media==='브랜디드콘텐츠') return;
+    const adv=String(r['광고주']||'').trim();
+    if(!adv) return;
+    out.push({
+      연도:2026, 매체:media, 집행월:monthOf(r), 광고주:adv,
+      업종:String(r['업종']||'').trim(), 담당자:String(r['매출담당자']||'').trim(),
+      금액: r['집행금액']||0
+    });
+  });
+  return out;
 }
 
 // 매체를 4개 파트로 분류
@@ -2826,15 +2870,20 @@ function groupCalByAdv(rows, isComp){
   const map={};
   rows.forEach(r=>{
     const a=r.광고주;
-    if(!map[a]) map[a]={광고주:a, 업종:r.업종||'', media:{}, months:new Set(), count:0, damdang:new Set()};
+    if(!map[a]) map[a]={광고주:a, 업종:r.업종||'', media:{}, months:new Set(), count:0, damdang:new Set(), amt:0};
     map[a].count++;
     map[a].months.add(r.집행월);
     if(r.매체) map[a].media[r.매체]=(map[a].media[r.매체]||0)+1;
     if(r.업종 && !map[a].업종) map[a].업종=r.업종;
     if(!isComp && r.담당자) map[a].damdang.add(r.담당자);
+    if(!isComp && r.금액) map[a].amt += (r.금액||0);
     if(isComp && r.연도) { (map[a].years=map[a].years||new Set()).add(r.연도); }
   });
-  return Object.values(map).sort((x,y)=>y.count-x.count);
+  const arr = Object.values(map);
+  // 자사는 금액순, 경쟁사는 건수순
+  if(!isComp) arr.sort((x,y)=> (y.amt-x.amt) || (y.count-x.count));
+  else arr.sort((x,y)=>y.count-x.count);
+  return arr;
 }
 
 function renderCalOwn(rows){
@@ -2842,15 +2891,19 @@ function renderCalOwn(rows){
   const el=document.getElementById('cal-own-result');
   if(!groups.length){ el.innerHTML='<div style="text-align:center;color:#aaa;font-size:11px;padding:30px 0;">선택 조건에 맞는 자사 집행이 없습니다</div>';
     document.getElementById('cal-own-sum').textContent=''; return; }
+  // 금액 억원 표시 헬퍼
+  const won2uk = v => v>=1e8 ? (v/1e8).toFixed(2)+'억' : v>=1e4 ? Math.round(v/1e4)+'만' : (v>0?v+'원':'');
   el.innerHTML=groups.map(g=>{
     const mediaList=Object.keys(g.media).sort((a,b)=>g.media[b]-g.media[a]);
     const months=[...g.months].sort((a,b)=>a-b).map(m=>m+'월').join(',');
     const dam=[...g.damdang].filter(Boolean).join(', ');
+    const amtTxt = g.amt>0 ? won2uk(g.amt) : '';
     return `<div style="padding:8px 10px;border-bottom:0.5px solid #F0EFEB;">
       <div style="display:flex;align-items:center;gap:6px;">
         <span style="font-size:12px;font-weight:700;color:#1a1917;flex:1;">${g.광고주}</span>
         ${g.업종?`<span style="font-size:9px;color:#888;background:#F2F1ED;padding:1px 6px;border-radius:8px;">${g.업종}</span>`:''}
-        <span style="font-size:10px;color:#185FA5;font-weight:600;">${g.count}건</span>
+        ${amtTxt?`<span style="font-size:11px;color:#0F6E56;font-weight:700;">${amtTxt}</span>`:''}
+        <span style="font-size:10px;color:#185FA5;font-weight:600;min-width:28px;text-align:right;">${g.count}건</span>
       </div>
       <div style="font-size:10px;color:#6B6A67;margin-top:3px;">
         <span style="color:#185FA5;">${mediaList.join(' · ')}</span>
@@ -2858,7 +2911,9 @@ function renderCalOwn(rows){
       </div>
     </div>`;
   }).join('');
-  document.getElementById('cal-own-sum').textContent=`${groups.length}사 · ${rows.length}건`;
+  const totAmt = groups.reduce((s,g)=>s+(g.amt||0),0);
+  const amtSum = totAmt>0 ? ' · '+won2uk(totAmt) : '';
+  document.getElementById('cal-own-sum').textContent=`${groups.length}사 · ${rows.length}건${amtSum}`;
 }
 
 function renderCalComp(rows){
