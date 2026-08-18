@@ -180,7 +180,8 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI','Helvetica Neue',sa
     <div class="ni" id="ni-list" onclick="nav('list',this)"><div class="nd" style="background:#7F77DD"></div>광고주 리스트</div>
     <div class="ni" id="ni-status" onclick="nav('status',this)"><div class="nd" style="background:#0F6E56"></div>영업 현황</div>
     <div class="ni" id="ni-comp" onclick="nav('comp',this)"><div class="nd" style="background:#D85A30"></div>경쟁 매체 모니터링</div>
-    <div class="ni" id="ni-prod" onclick="nav('prod',this)"><div class="nd" style="background:#1D9E75"></div>상품별 실적</div>
+    <div class="ni" id="ni-prod" onclick="nav('prod',this)"><div class="nd" style="background:#1D9E75"></div>매체별 실적 현황</div>
+    <div class="ni" id="ni-cal" onclick="nav('cal',this)"><div class="nd" style="background:#C2410C"></div>영업캘린더</div>
   </div>
   <!-- 숨김 섹션 (data-hidden-section): 나중에 div의 display를 변경하면 다시 표시됨 -->
   <div class="nsep" data-hidden-section style="display:none;"></div>
@@ -857,29 +858,171 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI','Helvetica Neue',sa
     </div><!-- /list-detail-view -->
   </div><!-- /vlist -->
   <div id="vpr" style="display:none;">
-    <div class="sec-header"><div class="sec-bar" style="background:#1D9E75"></div><span class="sec-title" style="color:#1D9E75">상품별 실적</span><span style="font-size:10px;font-weight:400;color:#6B6A67;margin-left:8px;">· 매체별 집행 내역 · RAW 기준</span></div>
-    <div id="prod-load-bar" style="background:#E6F1FB;border:0.5px solid #B8D4F0;border-radius:8px;padding:9px 14px;margin-bottom:14px;font-size:11px;color:#185FA5;display:none;"></div>
-    <div class="ptabs" id="prod-tabs"></div>
-    <div class="kpi-section" style="border-top:3px solid #1D9E75;"><div class="kg kg3" id="prod-kpi"></div></div>
-    <div class="card" style="border-top:3px solid #1D9E75;margin-bottom:16px;">
-      <div style="font-size:12px;font-weight:600;margin-bottom:12px;">월별 집행금액
-        <span style="font-size:10px;font-weight:400;color:#6B6A67;" id="prod-monthly-lbl">· 2025 vs 2026</span>
-      </div>
-      <div style="position:relative;height:240px;"><canvas id="chart-prod-monthly"></canvas></div>
+    <div class="sec-header"><div class="sec-bar" style="background:#1D9E75"></div><span class="sec-title" style="color:#1D9E75">매체별 실적 현황</span><span style="font-size:10px;font-weight:400;color:#6B6A67;margin-left:8px;" id="prod-sub-lbl">· 요약</span></div>
+
+    <!-- 요약/세부 전환 -->
+    <div style="display:flex;gap:8px;margin-bottom:16px;">
+      <button id="prod-mode-summary" onclick="setProdMode('summary')" style="padding:7px 20px;font-size:12px;font-weight:700;background:#1D9E75;color:#fff;border:none;border-radius:7px;cursor:pointer;">📊 요약</button>
+      <button id="prod-mode-detail" onclick="setProdMode('detail')" style="padding:7px 20px;font-size:12px;font-weight:700;background:#fff;color:#6B6A67;border:0.5px solid #D5D3CD;border-radius:7px;cursor:pointer;">📋 매체별 세부</button>
     </div>
-    <div class="card" style="border-top:3px solid #888780;">
-      <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;margin-bottom:12px;">
-        <div style="font-size:12px;font-weight:600;">광고주별 집행 내역 <span style="font-size:10px;font-weight:400;color:#6B6A67;" id="prod-lbl"></span></div>
-        <div style="display:flex;gap:6px;">
-          <button class="prod-yr-tab" data-yr="2026" onclick="setProdYear('2026',this)" style="padding:5px 14px;font-size:11px;font-weight:600;background:#1D9E75;color:#fff;border:none;border-radius:6px;cursor:pointer;">2026년</button>
-          <button class="prod-yr-tab" data-yr="2025" onclick="setProdYear('2025',this)" style="padding:5px 14px;font-size:11px;font-weight:600;background:#fff;color:#6B6A67;border:0.5px solid #D5D3CD;border-radius:6px;cursor:pointer;">2025년</button>
-        </div>
+
+    <!-- ═══ 요약 뷰 ═══ -->
+    <div id="prod-summary">
+      <div id="prod-sum-load" style="background:#E6F1FB;border:0.5px solid #B8D4F0;border-radius:8px;padding:9px 14px;margin-bottom:14px;font-size:11px;color:#185FA5;display:none;">매체별 실적 불러오는 중...</div>
+
+      <!-- KPI 요약 -->
+      <div class="kpi-section" style="border-top:3px solid #1D9E75;"><div class="kg kg3" id="prod-sum-kpi"></div></div>
+
+      <!-- 3대 분류 그룹 집계 -->
+      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:16px;" id="prod-sum-groups"></div>
+
+      <!-- 목표 vs 실적 막대그래프 -->
+      <div class="card" style="border-top:3px solid #1D9E75;margin-bottom:16px;">
+        <div style="font-size:12px;font-weight:600;margin-bottom:4px;">매체별 누적 목표 vs 실적 <span style="font-size:10px;font-weight:400;color:#6B6A67;" id="prod-sum-chart-lbl">· 1~8월 누적 · 억원</span></div>
+        <div style="position:relative;height:520px;"><canvas id="chart-prod-summary"></canvas></div>
       </div>
-      <div id="prod-adv-list" style="min-height:80px;"></div>
-      <div class="sm" id="prod-sum"></div>
+
+      <!-- 매체별 매출/순매출 표 -->
+      <div class="card" style="border-top:3px solid #185FA5;">
+        <div style="font-size:12px;font-weight:600;margin-bottom:12px;">매체별 26년 매출·순매출 현황 <span style="font-size:10px;font-weight:400;color:#6B6A67;" id="prod-sum-tbl-lbl"></span></div>
+        <div class="tw"><table class="rtbl" style="min-width:640px;">
+          <thead><tr>
+            <th style="width:150px">매체</th>
+            <th style="width:90px;text-align:right">누적 매출</th>
+            <th style="width:90px;text-align:right">누적 목표</th>
+            <th style="width:80px;text-align:right">목표比</th>
+            <th style="width:70px;text-align:right">달성률</th>
+            <th style="width:90px;text-align:right">순매출</th>
+            <th style="width:90px;text-align:right">순매출 목표</th>
+          </tr></thead>
+          <tbody id="prod-sum-tbody"></tbody>
+        </table></div>
+        <div class="sm" id="prod-sum-foot"></div>
+      </div>
+    </div>
+
+    <!-- ═══ 세부 뷰 ═══ -->
+    <div id="prod-detail" style="display:none;">
+      <div id="prod-load-bar" style="background:#E6F1FB;border:0.5px solid #B8D4F0;border-radius:8px;padding:9px 14px;margin-bottom:14px;font-size:11px;color:#185FA5;display:none;"></div>
+      <div class="ptabs" id="prod-tabs"></div>
+      <div class="kpi-section" style="border-top:3px solid #1D9E75;"><div class="kg kg3" id="prod-kpi"></div></div>
+      <div class="card" style="border-top:3px solid #1D9E75;margin-bottom:16px;">
+        <div style="font-size:12px;font-weight:600;margin-bottom:12px;">월별 집행금액
+          <span style="font-size:10px;font-weight:400;color:#6B6A67;" id="prod-monthly-lbl">· 2025 vs 2026</span>
+        </div>
+        <div style="position:relative;height:240px;"><canvas id="chart-prod-monthly"></canvas></div>
+      </div>
+      <div class="card" style="border-top:3px solid #888780;">
+        <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;margin-bottom:12px;">
+          <div style="font-size:12px;font-weight:600;">광고주별 집행 내역 <span style="font-size:10px;font-weight:400;color:#6B6A67;" id="prod-lbl"></span></div>
+          <div style="display:flex;gap:6px;">
+            <button class="prod-yr-tab" data-yr="2026" onclick="setProdYear('2026',this)" style="padding:5px 14px;font-size:11px;font-weight:600;background:#1D9E75;color:#fff;border:none;border-radius:6px;cursor:pointer;">2026년</button>
+            <button class="prod-yr-tab" data-yr="2025" onclick="setProdYear('2025',this)" style="padding:5px 14px;font-size:11px;font-weight:600;background:#fff;color:#6B6A67;border:0.5px solid #D5D3CD;border-radius:6px;cursor:pointer;">2025년</button>
+          </div>
+        </div>
+        <div id="prod-adv-list" style="min-height:80px;"></div>
+        <div class="sm" id="prod-sum"></div>
+      </div>
     </div>
   </div>
 
+  </div>
+
+  <!-- 영업캘린더 뷰 -->
+  <div id="vcal" style="display:none;">
+    <div class="sec-header"><div class="sec-bar" style="background:#C2410C"></div><span class="sec-title" style="color:#C2410C">영업캘린더</span><span style="font-size:10px;font-weight:400;color:#6B6A67;margin-left:8px;">· 작년 이맘때 집행 이력으로 공략 대상 찾기</span></div>
+    <div id="cal-load-bar" style="background:#FDF0E9;border:0.5px solid #F5C6A8;border-radius:8px;padding:9px 14px;margin-bottom:14px;font-size:11px;color:#C2410C;display:none;"></div>
+
+    <!-- 검색 조건 -->
+    <div class="card" style="border-top:3px solid #C2410C;margin-bottom:16px;">
+      <!-- 기간 선택 (맨 위) -->
+      <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;padding-bottom:12px;margin-bottom:12px;border-bottom:0.5px solid #EEEDE9;">
+        <span style="font-size:11px;font-weight:700;color:#6B6A67;">📅 기간</span>
+        <div style="display:flex;align-items:center;gap:4px;">
+          <select id="cal-yr-from" class="fsel" style="padding:5px 8px;font-size:11px;"></select>
+          <select id="cal-mon-from" class="fsel" style="padding:5px 8px;font-size:11px;"></select>
+        </div>
+        <span style="font-size:11px;color:#aaa;">~</span>
+        <div style="display:flex;align-items:center;gap:4px;">
+          <select id="cal-yr-to" class="fsel" style="padding:5px 8px;font-size:11px;"></select>
+          <select id="cal-mon-to" class="fsel" style="padding:5px 8px;font-size:11px;"></select>
+        </div>
+        <button onclick="runCalendar()" style="padding:7px 24px;font-size:12px;font-weight:700;background:#C2410C;color:#fff;border:none;border-radius:7px;cursor:pointer;margin-left:auto;">조회</button>
+      </div>
+
+      <!-- 매체 4개 파트 -->
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;">
+        <!-- 1. 중앙OOH -->
+        <div style="background:#F4F8FD;border:0.5px solid #D8E6F5;border-radius:8px;padding:10px 12px;">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;">
+            <span style="font-size:11px;font-weight:700;color:#185FA5;">📘 중앙OOH <span style="font-weight:400;color:#aaa;font-size:9px;">자사</span></span>
+            <span style="display:flex;gap:4px;">
+              <button onclick="calSelectPart('joongang',true)" style="padding:2px 7px;font-size:9px;background:#fff;color:#185FA5;border:0.5px solid #C5DAF0;border-radius:4px;cursor:pointer;">전체</button>
+              <button onclick="calSelectPart('joongang',false)" style="padding:2px 7px;font-size:9px;background:#fff;color:#999;border:0.5px solid #E0E0E0;border-radius:4px;cursor:pointer;">해제</button>
+            </span>
+          </div>
+          <div id="cal-media-joongang" style="display:flex;flex-wrap:wrap;gap:4px;max-height:110px;overflow-y:auto;"></div>
+        </div>
+        <!-- 2. 타운보드 -->
+        <div style="background:#F4F8FD;border:0.5px solid #D8E6F5;border-radius:8px;padding:10px 12px;">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;">
+            <span style="font-size:11px;font-weight:700;color:#185FA5;">📘 타운보드 <span style="font-weight:400;color:#aaa;font-size:9px;">자사</span></span>
+            <span style="display:flex;gap:4px;">
+              <button onclick="calSelectPart('townboard',true)" style="padding:2px 7px;font-size:9px;background:#fff;color:#185FA5;border:0.5px solid #C5DAF0;border-radius:4px;cursor:pointer;">전체</button>
+              <button onclick="calSelectPart('townboard',false)" style="padding:2px 7px;font-size:9px;background:#fff;color:#999;border:0.5px solid #E0E0E0;border-radius:4px;cursor:pointer;">해제</button>
+            </span>
+          </div>
+          <div id="cal-media-townboard" style="display:flex;flex-wrap:wrap;gap:4px;max-height:110px;overflow-y:auto;"></div>
+        </div>
+        <!-- 3. 타 OOH -->
+        <div style="background:#FDF4EF;border:0.5px solid #F5D5C0;border-radius:8px;padding:10px 12px;">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;">
+            <span style="font-size:11px;font-weight:700;color:#C2410C;">📙 타 OOH <span style="font-weight:400;color:#aaa;font-size:9px;">경쟁</span></span>
+            <span style="display:flex;gap:4px;">
+              <button onclick="calSelectPart('otherooh',true)" style="padding:2px 7px;font-size:9px;background:#fff;color:#C2410C;border:0.5px solid #F5C6A8;border-radius:4px;cursor:pointer;">전체</button>
+              <button onclick="calSelectPart('otherooh',false)" style="padding:2px 7px;font-size:9px;background:#fff;color:#999;border:0.5px solid #E0E0E0;border-radius:4px;cursor:pointer;">해제</button>
+            </span>
+          </div>
+          <div id="cal-media-otherooh" style="display:flex;flex-wrap:wrap;gap:4px;max-height:110px;overflow-y:auto;"></div>
+        </div>
+        <!-- 4. 포커스미디어 -->
+        <div style="background:#FDF4EF;border:0.5px solid #F5D5C0;border-radius:8px;padding:10px 12px;">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;">
+            <span style="font-size:11px;font-weight:700;color:#C2410C;">📙 포커스미디어 <span style="font-weight:400;color:#aaa;font-size:9px;">경쟁</span></span>
+            <span style="display:flex;gap:4px;">
+              <button onclick="calSelectPart('focus',true)" style="padding:2px 7px;font-size:9px;background:#fff;color:#C2410C;border:0.5px solid #F5C6A8;border-radius:4px;cursor:pointer;">전체</button>
+              <button onclick="calSelectPart('focus',false)" style="padding:2px 7px;font-size:9px;background:#fff;color:#999;border:0.5px solid #E0E0E0;border-radius:4px;cursor:pointer;">해제</button>
+            </span>
+          </div>
+          <div id="cal-media-focus" style="display:flex;flex-wrap:wrap;gap:4px;max-height:110px;overflow-y:auto;"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 공략 인사이트 -->
+    <div class="card" id="cal-insight" style="border-top:3px solid #E24B4A;margin-bottom:16px;display:none;">
+      <div style="font-size:12px;font-weight:700;color:#A32D2D;margin-bottom:4px;">⭐ 공략 인사이트</div>
+      <div style="font-size:10px;color:#6B6A67;margin-bottom:12px;">타 매체엔 집행했지만 우리 매체엔 집행 안 한 광고주 — 뺏어올 대상입니다</div>
+      <div id="cal-insight-list" style="display:flex;flex-wrap:wrap;gap:6px;"></div>
+    </div>
+
+    <!-- 결과 2단 -->
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
+      <div class="card" style="border-top:3px solid #185FA5;">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
+          <div style="font-size:12px;font-weight:700;color:#185FA5;">📘 자사 집행</div>
+          <span class="sm" id="cal-own-sum" style="margin:0;"></span>
+        </div>
+        <div id="cal-own-result" style="min-height:60px;"></div>
+      </div>
+      <div class="card" style="border-top:3px solid #C2410C;">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
+          <div style="font-size:12px;font-weight:700;color:#C2410C;">📙 타 매체 집행</div>
+          <span class="sm" id="cal-comp-sum" style="margin:0;"></span>
+        </div>
+        <div id="cal-comp-result" style="min-height:60px;"></div>
+      </div>
+    </div>
   </div>
 
   <!-- 팀별 대시보드 뷰 -->
@@ -2113,6 +2256,9 @@ async function loadAdv(){
 // PRODUCT (매체별 집행 내역)
 // ══════════════════════════════════════
 let prodYear = '2026';       // 광고주별 집행 내역 연도
+let prodMode = 'summary';    // 'summary' | 'detail'
+let prodSummaryChart = null; // 요약 목표vs실적 차트
+let prodSummaryData = null;  // OOH 요약 데이터 캐시
 let prodExpanded = new Set(); // 펼쳐진 광고주
 
 function buildProdTabs(){
@@ -2284,6 +2430,485 @@ function renderProdAdvList(){
   document.getElementById('prod-adv-list').innerHTML = html || '<div style="text-align:center;color:#aaa;font-size:12px;padding:40px 0;">'+yr+'년 집행 내역이 없습니다</div>';
   document.getElementById('prod-lbl').textContent='· '+p.n+' · '+prodYear+'년';
   document.getElementById('prod-sum').innerHTML=`<span>광고주 <span class="sv">${groups.length}사</span></span><span>${prodYear}년 집행 <span class="sv">${fmtW(totalSum)}</span></span>`;
+}
+
+
+// ══════════════════════════════════════
+// 매체별 실적 현황 - 요약 뷰
+// ══════════════════════════════════════
+function setProdMode(mode){
+  prodMode = mode;
+  const isSum = mode==='summary';
+  document.getElementById('prod-summary').style.display = isSum?'block':'none';
+  document.getElementById('prod-detail').style.display = isSum?'none':'block';
+  document.getElementById('prod-sub-lbl').textContent = isSum?'· 요약':'· 매체별 세부';
+  // 버튼 스타일
+  const bs=document.getElementById('prod-mode-summary'), bd=document.getElementById('prod-mode-detail');
+  if(isSum){
+    bs.style.cssText='padding:7px 20px;font-size:12px;font-weight:700;background:#1D9E75;color:#fff;border:none;border-radius:7px;cursor:pointer;';
+    bd.style.cssText='padding:7px 20px;font-size:12px;font-weight:700;background:#fff;color:#6B6A67;border:0.5px solid #D5D3CD;border-radius:7px;cursor:pointer;';
+  } else {
+    bd.style.cssText='padding:7px 20px;font-size:12px;font-weight:700;background:#1D9E75;color:#fff;border:none;border-radius:7px;cursor:pointer;';
+    bs.style.cssText='padding:7px 20px;font-size:12px;font-weight:700;background:#fff;color:#6B6A67;border:0.5px solid #D5D3CD;border-radius:7px;cursor:pointer;';
+  }
+  if(isSum){
+    renderProdSummary();
+  } else {
+    // 세부: advRaw 필요
+    if(!advRaw.length){ loadAdv().then(()=>{ if(cKey==='prod'&&prodMode==='detail') renderProd(); }).catch(console.error); }
+    else renderProd();
+  }
+}
+
+// OOH 데이터를 요약용으로 로드 (본부전체실적과 같은 소스)
+async function renderProdSummary(){
+  // oohApiData가 이미 로드돼 있으면 사용, 없으면 로드
+  const bar=document.getElementById('prod-sum-load');
+  if(!oohApiData || !oohApiData.length){
+    bar.style.display='block';
+    await loadOohData(CUR_MON);
+    bar.style.display='none';
+  }
+  buildProdSummary();
+}
+
+function buildProdSummary(){
+  const mon = CUR_MON;
+  // OOH_TREE 리프 노드(15채널) 기준으로 매체별 목표/실적 구성
+  // oohApiData: [{name, mon, monPlan, acc, accPlan, yoy, yoyAcc}]
+  if(!oohApiData || !oohApiData.length){
+    document.getElementById('prod-sum-tbody').innerHTML='<tr><td colspan="6" style="text-align:center;color:#aaa;padding:30px;">데이터 로딩 실패</td></tr>';
+    return;
+  }
+
+  // 15채널 정의 (OOH_TREE의 leaf + solo, 표시명)
+  const CH = [];
+  OOH_TREE.forEach(n=>{
+    if(n.type==='parent' && n.children){
+      n.children.forEach(c=>CH.push({id:c.id, name:c.n}));
+    } else {
+      CH.push({id:n.id, name:n.n});
+    }
+  });
+
+  // oohApiData를 노드id로 매핑
+  const byNode = {};
+  oohApiData.forEach(row=>{
+    const nid = OOH_ROW_MATCH[row.name];
+    if(nid) byNode[nid] = row;
+  });
+
+  // 각 채널 데이터
+  const rows = CH.map(ch=>{
+    const d = byNode[ch.id] || {};
+    return {
+      name: ch.name,
+      acc: n2f(d.acc),        // 누적 매출 실적
+      accPlan: n2f(d.accPlan) // 누적 매출 목표
+    };
+  });
+
+  // ── KPI ──
+  const totAcc = rows.reduce((s,r)=>s+r.acc,0);
+  const totPlan = rows.reduce((s,r)=>s+r.accPlan,0);
+  const rate = totPlan>0?(totAcc/totPlan*100):0;
+  const rateColor = rate>=100?'#0F6E56':rate>=80?'#185FA5':rate>=50?'#C2410C':'#A32D2D';
+  document.getElementById('prod-sum-kpi').innerHTML=[
+    {l:`누적 매출 (1~${mon}월)`, v:fmtA2(totAcc), b:`<span class="badge bt">15개 채널</span>`},
+    {l:`누적 목표 (1~${mon}월)`, v:fmtA2(totPlan), b:`<span class="badge bn">계획 합산</span>`},
+    {l:`목표 달성률`, v:`<span style="color:${rateColor}">${rate.toFixed(1)}%</span>`, b:`<span class="badge bn">매출 기준</span>`},
+  ].map(k=>`<div class="kpi"><div class="kl">${k.l}</div><div class="kv">${k.v}</div><div class="km">${k.b}</div></div>`).join('');
+
+  // ── 3대 분류 그룹 집계 ──
+  // 타운보드: 패키지/로컬 / 더중앙OOH: 지정 채널 / 기타: 나머지
+  const G_TOWNBOARD = ['패키지(타운보드)','로컬(타운보드)'];
+  const G_JOONGANG = ['코엑스미디어타워','파르나스미디어타워','더그랜드','어메이징파르나스','테헤란로T204','홍대커브드월','광역버스','지선버스'];
+  const groupOf = (name)=>{
+    if(G_TOWNBOARD.includes(name)) return 'tb';
+    if(G_JOONGANG.includes(name)) return 'jg';
+    return 'etc';
+  };
+  const grpAgg = { tb:{acc:0,plan:0}, jg:{acc:0,plan:0}, etc:{acc:0,plan:0} };
+  rows.forEach(r=>{
+    const g=groupOf(r.name);
+    grpAgg[g].acc += r.acc;
+    grpAgg[g].plan += r.accPlan;
+  });
+  const grpMeta = [
+    {key:'tb', name:'타운보드',    color:'#185FA5', desc:'패키지 · 로컬'},
+    {key:'jg', name:'더중앙OOH',   color:'#1D9E75', desc:'삼성동·단독매체·경기버스'},
+    {key:'etc',name:'기타/나머지', color:'#888780', desc:'쎄덱·SB타워·아트월·KTS 등'},
+  ];
+  document.getElementById('prod-sum-groups').innerHTML = grpMeta.map(g=>{
+    const a=grpAgg[g.key];
+    const rt = a.plan>0?(a.acc/a.plan*100):0;
+    const rtColor = rt>=100?'#0F6E56':rt>=80?'#185FA5':rt>=50?'#C2410C':'#A32D2D';
+    const diff = (a.acc-a.plan)/100;
+    const diffColor = diff>=0?'#0F6E56':'#A32D2D';
+    return `<div class="card" style="border-top:3px solid ${g.color};margin:0;padding:14px 16px;">
+      <div style="font-size:12px;font-weight:700;color:${g.color};margin-bottom:2px;">${g.name}</div>
+      <div style="font-size:9px;color:#aaa;margin-bottom:10px;">${g.desc}</div>
+      <div style="display:flex;align-items:baseline;gap:6px;margin-bottom:8px;">
+        <span style="font-size:22px;font-weight:700;color:#1a1917;">${fmtA2(a.acc)}</span>
+        <span style="font-size:11px;color:${rtColor};font-weight:700;">${rt.toFixed(0)}%</span>
+      </div>
+      <div style="display:flex;justify-content:space-between;font-size:10px;color:#6B6A67;border-top:0.5px solid #EEEDE9;padding-top:8px;">
+        <span>목표 <b style="color:#4A4945;">${fmtA2(a.plan)}</b></span>
+        <span style="color:${diffColor};font-weight:600;">${diff>=0?'+':''}${diff.toFixed(1)}억</span>
+      </div>
+    </div>`;
+  }).join('');
+
+  // ── 막대그래프 (가로형 · 목표 100% 기준 달성률 %) ──
+  const cvs=document.getElementById('chart-prod-summary');
+  if(prodSummaryChart){prodSummaryChart.destroy();prodSummaryChart=null;}
+  if(cvs){
+    // 각 채널 달성률 % (목표=100%)
+    const rateData = rows.map(r=> r.accPlan>0 ? +(r.acc/r.accPlan*100).toFixed(1) : 0);
+    // 막대 색: 달성률에 따라
+    const barColors = rateData.map(v=> v>=100?'#1D9E75': v>=80?'#378ADD': v>=50?'#EF9F27':'#E24B4A');
+    // 막대 안에 표기할 텍스트 (실제 매출 억원 + 달성률%)
+    const inBarText = rows.map((r,i)=> `${(r.acc/100).toFixed(1)}억 (${rateData[i].toFixed(0)}%)`);
+
+    // 막대 안/옆 숫자 커스텀 플러그인
+    const inBarLabelPlugin = {
+      id: 'inBarLabel',
+      afterDatasetsDraw(chart){
+        const {ctx} = chart;
+        const meta = chart.getDatasetMeta(0);
+        ctx.save();
+        ctx.font = '700 10px "Malgun Gothic", sans-serif';
+        ctx.textBaseline = 'middle';
+        meta.data.forEach((bar, i)=>{
+          const txt = inBarText[i];
+          const val = rateData[i];
+          const tw = ctx.measureText(txt).width;
+          const barW = bar.x - bar.base; // 막대 길이
+          if(barW > tw + 12){
+            // 막대 안 (오른쪽 끝, 흰색)
+            ctx.fillStyle = '#fff';
+            ctx.textAlign = 'right';
+            ctx.fillText(txt, bar.x - 6, bar.y);
+          } else {
+            // 막대 밖 (막대 오른쪽, 진한색)
+            ctx.fillStyle = '#4A4945';
+            ctx.textAlign = 'left';
+            ctx.fillText(txt, bar.x + 6, bar.y);
+          }
+        });
+        ctx.restore();
+      }
+    };
+
+    prodSummaryChart=new Chart(cvs,{type:'bar',
+      data:{
+        labels:rows.map(r=>r.name),
+        datasets:[{
+          label:'달성률', data:rateData,
+          backgroundColor:barColors, borderColor:barColors, borderWidth:0, borderRadius:3,
+          barPercentage:0.72, categoryPercentage:0.82
+        }]
+      },
+      options:{
+        indexAxis:'y',  // 가로형
+        responsive:true, maintainAspectRatio:false,
+        layout:{padding:{right:56}},
+        plugins:{
+          legend:{display:false},
+          tooltip:{callbacks:{label:ctx=>{
+            const r=rows[ctx.dataIndex];
+            return [' 달성률: '+ctx.parsed.x.toFixed(1)+'%',
+                    ' 실적: '+(r.acc/100).toFixed(2)+'억',
+                    ' 목표: '+(r.accPlan/100).toFixed(2)+'억'];
+          }}}
+        },
+        scales:{
+          x:{grid:{color:'#F2F1ED'}, ticks:{font:{size:10},callback:v=>v+'%'}, beginAtZero:true,
+             // 100% 기준선이 보이도록 최대값 여유
+             suggestedMax: Math.max(120, Math.ceil(Math.max(...rateData)/20)*20)},
+          y:{grid:{display:false}, ticks:{font:{size:10.5}}}
+        }
+      },
+      plugins:[inBarLabelPlugin]
+    });
+    // 100% 기준선 그리기용 플러그인 (별도)
+    const hundredLine = {
+      id:'hundredLine',
+      afterDraw(chart){
+        const xScale=chart.scales.x, ya=chart.chartArea;
+        if(!xScale) return;
+        const x100=xScale.getPixelForValue(100);
+        if(x100>ya.left && x100<ya.right){
+          const ctx=chart.ctx; ctx.save();
+          ctx.strokeStyle='#A32D2D'; ctx.lineWidth=1; ctx.setLineDash([4,3]);
+          ctx.beginPath(); ctx.moveTo(x100,ya.top); ctx.lineTo(x100,ya.bottom); ctx.stroke();
+          ctx.setLineDash([]);
+          ctx.fillStyle='#A32D2D'; ctx.font='700 9px sans-serif'; ctx.textAlign='center';
+          ctx.fillText('목표 100%', x100, ya.top-3);
+          ctx.restore();
+        }
+      }
+    };
+    prodSummaryChart.config.plugins.push(hundredLine);
+    prodSummaryChart.update();
+  }
+  document.getElementById('prod-sum-chart-lbl').textContent=`· 1~${mon}월 누적 · 목표 100% 기준 달성률 · 막대 안 = 실제 매출`;
+
+  // ── 표 (매출/순매출) ──
+  const tbody=document.getElementById('prod-sum-tbody');
+  tbody.innerHTML=rows.map(r=>{
+    const rt = r.accPlan>0?(r.acc/r.accPlan*100):0;
+    const rtColor = rt>=100?'#0F6E56':rt>=80?'#185FA5':rt>=50?'#C2410C':'#A32D2D';
+    const diff = (r.acc - r.accPlan)/100; // 목표比 차액 (억)
+    const diffColor = diff>=0?'#0F6E56':'#A32D2D';
+    const diffTxt = (diff>=0?'+':'')+diff.toFixed(1)+'억';
+    return `<tr class="dr">
+      <td style="font-weight:600">${r.name}</td>
+      <td style="text-align:right;font-weight:600">${fmtA2(r.acc)}</td>
+      <td style="text-align:right;color:#6B6A67">${fmtA2(r.accPlan)}</td>
+      <td style="text-align:right;color:${diffColor};font-weight:600">${diffTxt}</td>
+      <td style="text-align:right;color:${rtColor};font-weight:600">${rt.toFixed(0)}%</td>
+      <td style="text-align:right;color:#ccc">-</td>
+      <td style="text-align:right;color:#ccc">-</td>
+    </tr>`;
+  }).join('');
+  // 합계행
+  const totDiff = (totAcc - totPlan)/100;
+  const totDiffColor = totDiff>=0?'#0F6E56':'#A32D2D';
+  tbody.innerHTML+=`<tr style="background:#F0EFE9;border-top:1.5px solid #D5D3CD;">
+    <td style="font-weight:700">합계</td>
+    <td style="text-align:right;font-weight:700;color:#185FA5">${fmtA2(totAcc)}</td>
+    <td style="text-align:right;font-weight:700">${fmtA2(totPlan)}</td>
+    <td style="text-align:right;font-weight:700;color:${totDiffColor}">${(totDiff>=0?'+':'')+totDiff.toFixed(1)}억</td>
+    <td style="text-align:right;font-weight:700;color:${rateColor}">${rate.toFixed(0)}%</td>
+    <td style="text-align:right;color:#ccc">-</td>
+    <td style="text-align:right;color:#ccc">-</td>
+  </tr>`;
+  document.getElementById('prod-sum-tbl-lbl').textContent=`· 1~${mon}월 누적 · 억원 · 순매출은 추후 입력`;
+  document.getElementById('prod-sum-foot').innerHTML=`<span>목표比 = 실적 − 목표 · 매출은 실적 시트 매체별 합산 · 순매출은 미입력 상태입니다</span>`;
+}
+
+// 억원 표시 헬퍼 (백만원→억원)
+function fmtA2(v){ return (v/100).toFixed(1)+'억'; }
+
+
+// ══════════════════════════════════════
+// 영업캘린더 (2025 자사/경쟁사 집행 이력)
+// ══════════════════════════════════════
+let calData = null;         // {own:[], comp:[], ownMedia:[], compMedia:[]}
+let calSel = { joongang:new Set(), townboard:new Set(), otherooh:new Set(), focus:new Set() };
+let calMaxYm = {year:2026, month:7};  // 데이터상 최근 연월 (동적 계산)
+
+async function loadCalendar(){
+  const bar = document.getElementById('cal-load-bar');
+  bar.style.display='block';
+  bar.textContent='영업캘린더 데이터 불러오는 중...';
+  try{
+    // 정적 JSON 직접 로드 (Apps Script 왕복 없음 → 빠름)
+    // GitHub Pages의 index.html과 같은 폴더에 salescalendar.json 위치
+    const r = await fetch(`salescalendar.json?_=${Date.now()}`);
+    if(!r.ok) throw new Error('HTTP '+r.status);
+    const j = await r.json();
+    if(j.error) throw new Error(j.error);
+    // 짧은 키(y/m/mo/a/u/d) → 원래 키로 변환
+    calData = {
+      own: (j.own||[]).map(o=>({연도:o.y, 매체:o.m, 집행월:o.mo, 광고주:o.a, 업종:o.u||'', 담당자:o.d||''})),
+      comp: (j.comp||[]).map(c=>({연도:c.y, 매체:c.m, 집행월:c.mo, 광고주:c.a, 업종:c.u||''})),
+      ownMedia: j.ownMedia||[],
+      compMedia: j.compMedia||[]
+    };
+    bar.style.display='none';
+    buildCalControls();
+  }catch(e){
+    bar.style.cssText='display:block;background:#FCEBEB;border:0.5px solid #E24B4A;border-radius:8px;padding:9px 14px;margin-bottom:14px;font-size:11px;color:#A32D2D;';
+    bar.textContent='로드 실패: '+e.message+' (salescalendar.json 파일이 있는지 확인하세요)';
+    console.error(e);
+  }
+}
+
+// 매체를 4개 파트로 분류
+function calMediaPart(source, media){
+  // source: 'own' or 'comp'
+  if(source==='own'){
+    return media==='타운보드' ? 'townboard' : 'joongang';
+  } else {
+    return media==='포커스미디어' ? 'focus' : 'otherooh';
+  }
+}
+
+function buildCalControls(){
+  if(!calData) return;
+
+  // ── 데이터상 최근 연월 계산 (자사+경쟁사 모두 고려, 2026 포함) ──
+  let maxY=2025, maxM=1;
+  const scanYm = (y,m)=>{ if(y>maxY || (y===maxY && m>maxM)){ maxY=y; maxM=m; } };
+  (calData.comp||[]).forEach(c=> scanYm(c.연도||2025, c.집행월||1));
+  (calData.own||[]).forEach(o=> scanYm(o.연도||2025, o.집행월||1));
+  calMaxYm={year:maxY, month:maxM};
+
+  // ── 기간 셀렉트 (연도: 2025~maxY, 월: 1~12) ──
+  const yf=document.getElementById('cal-yr-from'), yt=document.getElementById('cal-yr-to');
+  const mf=document.getElementById('cal-mon-from'), mt=document.getElementById('cal-mon-to');
+  if(yf.options.length===0){
+    for(let y=2025;y<=maxY;y++){ yf.add(new Option(y+'년', y)); yt.add(new Option(y+'년', y)); }
+    for(let m=1;m<=12;m++){ mf.add(new Option(m+'월', m)); mt.add(new Option(m+'월', m)); }
+    // 기본: 2025년 1월 ~ 최근 연월
+    yf.value=2025; mf.value=1;
+    yt.value=maxY; mt.value=maxM;
+  }
+
+  // ── 매체 4개 파트 칩 ──
+  const parts = {
+    joongang: { source:'own', color:'185FA5', bg:'#EAF2FC', bd:'#C5DAF0', list:[] },
+    townboard:{ source:'own', color:'185FA5', bg:'#EAF2FC', bd:'#C5DAF0', list:[] },
+    otherooh: { source:'comp', color:'C2410C', bg:'#FCEEE6', bd:'#F5C6A8', list:[] },
+    focus:    { source:'comp', color:'C2410C', bg:'#FCEEE6', bd:'#F5C6A8', list:[] },
+  };
+  (calData.ownMedia||[]).forEach(m=>{ parts[calMediaPart('own',m)].list.push(m); });
+  (calData.compMedia||[]).forEach(m=>{ parts[calMediaPart('comp',m)].list.push(m); });
+
+  Object.keys(parts).forEach(pk=>{
+    const p=parts[pk];
+    const el=document.getElementById('cal-media-'+pk);
+    if(!el) return;
+    if(!p.list.length){ el.innerHTML='<span style="font-size:9px;color:#bbb;">해당 매체 없음</span>'; return; }
+    el.innerHTML=p.list.sort().map(m=>
+      `<label style="display:inline-flex;align-items:center;gap:3px;padding:3px 8px;font-size:10px;background:${p.bg};border:0.5px solid ${p.bd};border-radius:11px;cursor:pointer;user-select:none;">
+        <input type="checkbox" value="${m.replace(/"/g,'&quot;')}" onchange="toggleCalMedia('${pk}',this.value,this.checked,this)" style="margin:0;cursor:pointer;">${m}</label>`
+    ).join('');
+  });
+
+  // 기본 전체선택
+  ['joongang','townboard','otherooh','focus'].forEach(pk=>calSelectPart(pk,true));
+}
+
+function toggleCalMedia(part, val, checked, el){
+  const set=calSel[part];
+  if(checked){ set.add(val); el.parentElement.style.fontWeight='700'; }
+  else{ set.delete(val); el.parentElement.style.fontWeight='400'; }
+}
+
+function calSelectPart(part, select){
+  calSel[part].clear();
+  document.querySelectorAll('#cal-media-'+part+' input[type=checkbox]').forEach(cb=>{
+    cb.checked=select; cb.parentElement.style.fontWeight=select?'700':'400';
+    if(select) calSel[part].add(cb.value);
+  });
+}
+
+function runCalendar(){
+  if(!calData){ loadCalendar(); return; }
+  const yFrom=parseInt(document.getElementById('cal-yr-from').value);
+  const mFrom=parseInt(document.getElementById('cal-mon-from').value);
+  const yTo=parseInt(document.getElementById('cal-yr-to').value);
+  const mTo=parseInt(document.getElementById('cal-mon-to').value);
+  // 연월을 하나의 숫자로 (202501 형태)
+  let fromYm=yFrom*100+mFrom, toYm=yTo*100+mTo;
+  if(fromYm>toYm){ const t=fromYm; fromYm=toYm; toYm=t; }
+  const inRange = (y,m) => { const ym=y*100+m; return ym>=fromYm && ym<=toYm; };
+
+  // 선택된 자사 매체 = joongang + townboard, 타사 = otherooh + focus
+  const ownSel = new Set([...calSel.joongang, ...calSel.townboard]);
+  const compSel = new Set([...calSel.otherooh, ...calSel.focus]);
+
+  // 자사는 연도 컬럼 사용 (2025/2026)
+  const ownRows = calData.own.filter(o=> ownSel.has(o.매체) && inRange(o.연도||2025, o.집행월));
+  // 타사는 연도 있음
+  const compRows = calData.comp.filter(c=> compSel.has(c.매체) && inRange(c.연도||2025, c.집행월));
+
+  renderCalOwn(ownRows);
+  renderCalComp(compRows);
+  renderCalInsight(ownRows, compRows);
+}
+
+// 광고주별 그룹핑 (매체·월 집계)
+function groupCalByAdv(rows, isComp){
+  const map={};
+  rows.forEach(r=>{
+    const a=r.광고주;
+    if(!map[a]) map[a]={광고주:a, 업종:r.업종||'', media:{}, months:new Set(), count:0, damdang:new Set()};
+    map[a].count++;
+    map[a].months.add(r.집행월);
+    if(r.매체) map[a].media[r.매체]=(map[a].media[r.매체]||0)+1;
+    if(r.업종 && !map[a].업종) map[a].업종=r.업종;
+    if(!isComp && r.담당자) map[a].damdang.add(r.담당자);
+    if(isComp && r.연도) { (map[a].years=map[a].years||new Set()).add(r.연도); }
+  });
+  return Object.values(map).sort((x,y)=>y.count-x.count);
+}
+
+function renderCalOwn(rows){
+  const groups=groupCalByAdv(rows, false);
+  const el=document.getElementById('cal-own-result');
+  if(!groups.length){ el.innerHTML='<div style="text-align:center;color:#aaa;font-size:11px;padding:30px 0;">선택 조건에 맞는 자사 집행이 없습니다</div>';
+    document.getElementById('cal-own-sum').textContent=''; return; }
+  el.innerHTML=groups.map(g=>{
+    const mediaList=Object.keys(g.media).sort((a,b)=>g.media[b]-g.media[a]);
+    const months=[...g.months].sort((a,b)=>a-b).map(m=>m+'월').join(',');
+    const dam=[...g.damdang].filter(Boolean).join(', ');
+    return `<div style="padding:8px 10px;border-bottom:0.5px solid #F0EFEB;">
+      <div style="display:flex;align-items:center;gap:6px;">
+        <span style="font-size:12px;font-weight:700;color:#1a1917;flex:1;">${g.광고주}</span>
+        ${g.업종?`<span style="font-size:9px;color:#888;background:#F2F1ED;padding:1px 6px;border-radius:8px;">${g.업종}</span>`:''}
+        <span style="font-size:10px;color:#185FA5;font-weight:600;">${g.count}건</span>
+      </div>
+      <div style="font-size:10px;color:#6B6A67;margin-top:3px;">
+        <span style="color:#185FA5;">${mediaList.join(' · ')}</span>
+        <span style="color:#aaa;"> | ${months}${dam?' | '+dam:''}</span>
+      </div>
+    </div>`;
+  }).join('');
+  document.getElementById('cal-own-sum').textContent=`${groups.length}사 · ${rows.length}건`;
+}
+
+function renderCalComp(rows){
+  const groups=groupCalByAdv(rows, true);
+  const el=document.getElementById('cal-comp-result');
+  if(!groups.length){ el.innerHTML='<div style="text-align:center;color:#aaa;font-size:11px;padding:30px 0;">선택 조건에 맞는 타 매체 집행이 없습니다</div>';
+    document.getElementById('cal-comp-sum').textContent=''; return; }
+  el.innerHTML=groups.map(g=>{
+    const mediaList=Object.keys(g.media).sort((a,b)=>g.media[b]-g.media[a]);
+    const months=[...g.months].sort((a,b)=>a-b).map(m=>m+'월').join(',');
+    const years=g.years?[...g.years].sort().join('/'):'';
+    return `<div style="padding:8px 10px;border-bottom:0.5px solid #F0EFEB;">
+      <div style="display:flex;align-items:center;gap:6px;">
+        <span style="font-size:12px;font-weight:700;color:#1a1917;flex:1;">${g.광고주}</span>
+        ${g.업종?`<span style="font-size:9px;color:#888;background:#F2F1ED;padding:1px 6px;border-radius:8px;">${g.업종}</span>`:''}
+        <span style="font-size:10px;color:#C2410C;font-weight:600;">${g.count}건</span>
+      </div>
+      <div style="font-size:10px;color:#6B6A67;margin-top:3px;">
+        <span style="color:#C2410C;">${mediaList.join(' · ')}</span>
+        <span style="color:#aaa;"> | ${years?years+'년 ':''}${months}</span>
+      </div>
+    </div>`;
+  }).join('');
+  document.getElementById('cal-comp-sum').textContent=`${groups.length}사 · ${rows.length}건`;
+}
+
+// 공략 인사이트: 타사O 자사X 광고주
+function renderCalInsight(ownRows, compRows){
+  const ownAdv=new Set(ownRows.map(r=>normCalAdv(r.광고주)));
+  const compGroups=groupCalByAdv(compRows, true);
+  // 타사에 있지만 자사에 없는 광고주
+  const targets=compGroups.filter(g=>!ownAdv.has(normCalAdv(g.광고주)));
+  const card=document.getElementById('cal-insight');
+  const list=document.getElementById('cal-insight-list');
+  if(!targets.length){ card.style.display='none'; return; }
+  card.style.display='block';
+  list.innerHTML=targets.slice(0,60).map(g=>{
+    const mediaList=Object.keys(g.media).sort((a,b)=>g.media[b]-g.media[a]);
+    const tip=mediaList.slice(0,2).join('·');
+    return `<span title="${tip} | ${g.count}건" style="display:inline-flex;align-items:center;gap:4px;padding:4px 10px;font-size:11px;background:#FDECEC;border:0.5px solid #F1B0AF;border-radius:12px;color:#A32D2D;font-weight:600;cursor:default;">
+      ${g.광고주}<span style="font-size:9px;color:#C77;font-weight:400;">${tip}</span></span>`;
+  }).join('');
+  const more=targets.length>60?`<span style="font-size:10px;color:#aaa;padding:4px;">외 ${targets.length-60}개</span>`:'';
+  list.innerHTML+=more;
+}
+
+// 광고주명 정규화 (자사/타사 매칭용)
+function normCalAdv(s){
+  return String(s||'').toLowerCase().replace(/[\s\(\)（）\[\]_\-\.·,&/]+/g,'')
+    .replace(/주식회사|㈜/g,'');
 }
 
 
@@ -3189,7 +3814,7 @@ function exportListCSV(){
   a.download='광고주리스트.csv';a.click();
 }
 // ══════════════════════════════════════
-const TITLES={adv:'누적 광고 데이터',sales:'영업사원별 실적',weekly:'주간업무보고',reports:'게첨보고서',major:'(참고용) 국내 주요 광고주',comp:'경쟁 매체 모니터링',intro:'본부 소개서',prod:'상품별 실적',list:'광고주 리스트',status:'영업 현황',all:'본부 전체 실적',ms:'마케팅솔루션국',ms1:'마케팅솔루션1팀',ms2:'마케팅솔루션2팀',ms3:'마케팅솔루션3팀',ms4:'마케팅솔루션4팀',msd:'디지털사업팀',msp1:'솔루션기획1팀',msp2:'솔루션기획2팀',cs:'콘텐트사업국',cst:'콘텐트사업팀',inn:'이노베이션랩',csd:'콘텐트개발팀',dev:'솔루션개발팀',tb:'타운보드(사업지원국)'};
+const TITLES={adv:'누적 광고 데이터',sales:'영업사원별 실적',weekly:'주간업무보고',reports:'게첨보고서',major:'(참고용) 국내 주요 광고주',comp:'경쟁 매체 모니터링',intro:'본부 소개서',prod:'매체별 실적 현황',cal:'영업캘린더',list:'광고주 리스트',status:'영업 현황',all:'본부 전체 실적',ms:'마케팅솔루션국',ms1:'마케팅솔루션1팀',ms2:'마케팅솔루션2팀',ms3:'마케팅솔루션3팀',ms4:'마케팅솔루션4팀',msd:'디지털사업팀',msp1:'솔루션기획1팀',msp2:'솔루션기획2팀',cs:'콘텐트사업국',cst:'콘텐트사업팀',inn:'이노베이션랩',csd:'콘텐트개발팀',dev:'솔루션개발팀',tb:'타운보드(사업지원국)'};
 function toggleGroup(groupId, caretId){
   const g = document.getElementById(groupId);
   const c = document.getElementById(caretId);
@@ -3215,12 +3840,14 @@ function nav(key,el){
   document.querySelectorAll('.ni,.nc').forEach(n=>n.classList.remove('on'));if(el)el.classList.add('on');
   const isA=key==='adv',isP=key==='prod',isL=key==='list',isSales=key==='sales';
   const isWeekly=key==='weekly',isIntro=key==='intro',isReports=key==='reports',isMajor=key==='major',isComp=key==='comp',isStatus=key==='status';
+  const isCal=key==='cal';
   const TEAM_KEYS = ['ms1','ms2','ms3','ms4','msd','inn','cst','csd','dev'];
   const isTeam = TEAM_KEYS.includes(key);
-  const isPerf = !isA&&!isP&&!isL&&!isTeam&&!isSales&&!isWeekly&&!isIntro&&!isReports&&!isMajor&&!isComp&&!isStatus;
+  const isPerf = !isA&&!isP&&!isL&&!isTeam&&!isSales&&!isWeekly&&!isIntro&&!isReports&&!isMajor&&!isComp&&!isStatus&&!isCal;
   document.getElementById('vp').style.display=isPerf?'block':'none';
   document.getElementById('va').style.display=isA?'block':'none';
   document.getElementById('vpr').style.display=isP?'block':'none';
+  document.getElementById('vcal').style.display=isCal?'block':'none';
   document.getElementById('vlist').style.display=isL?'block':'none';
   document.getElementById('vteam').style.display=isTeam?'block':'none';
   document.getElementById('vsales').style.display=isSales?'block':'none';
@@ -3235,8 +3862,12 @@ function nav(key,el){
   if(isA)return;
   if(isP){
     buildProdTabs();
-    if(!advRaw.length){ loadAdv().then(()=>{ if(cKey==='prod') renderProd(); }).catch(console.error); }
-    else renderProd();
+    // 기본은 요약 모드
+    setProdMode(prodMode || 'summary');
+    return;
+  }
+  if(isCal){
+    if(!calData) loadCalendar();
     return;
   }
   if(isL){
