@@ -999,11 +999,18 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI','Helvetica Neue',sa
       </div>
     </div>
 
-    <!-- 공략 인사이트 -->
-    <div class="card" id="cal-insight" style="border-top:3px solid #E24B4A;margin-bottom:16px;display:none;">
-      <div style="font-size:12px;font-weight:700;color:#A32D2D;margin-bottom:4px;">⭐ 공략 인사이트</div>
-      <div style="font-size:10px;color:#6B6A67;margin-bottom:12px;">타 매체엔 집행했지만 우리 매체엔 집행 안 한 광고주 — 뺏어올 대상입니다</div>
-      <div id="cal-insight-list" style="display:flex;flex-wrap:wrap;gap:6px;"></div>
+    <!-- 공략 인사이트 (2종) -->
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px;">
+      <div class="card" id="cal-insight" style="border-top:3px solid #E24B4A;margin:0;display:none;">
+        <div style="font-size:12px;font-weight:700;color:#A32D2D;margin-bottom:4px;">⭐ 공략 대상 <span style="font-size:10px;font-weight:400;color:#aaa;" id="cal-insight-cnt"></span></div>
+        <div style="font-size:10px;color:#6B6A67;margin-bottom:12px;">타 매체엔 집행했지만, 우리 매체엔 <b>집행 이력이 전혀 없는</b> 광고주 — 뺏어올 대상</div>
+        <div id="cal-insight-list" style="display:flex;flex-wrap:wrap;gap:6px;"></div>
+      </div>
+      <div class="card" id="cal-defend" style="border-top:3px solid #185FA5;margin:0;display:none;">
+        <div style="font-size:12px;font-weight:700;color:#185FA5;margin-bottom:4px;">🛡️ 지킴 대상 <span style="font-size:10px;font-weight:400;color:#aaa;" id="cal-defend-cnt"></span></div>
+        <div style="font-size:10px;color:#6B6A67;margin-bottom:12px;">우리 매체에만 집행하고, 타 매체엔 <b>집행 이력이 전혀 없는</b> 광고주 — 지켜야 할 대상</div>
+        <div id="cal-defend-list" style="display:flex;flex-wrap:wrap;gap:6px;"></div>
+      </div>
     </div>
 
     <!-- 결과 2단 -->
@@ -2942,28 +2949,79 @@ function renderCalComp(rows){
 
 // 공략 인사이트: 타사O 자사X 광고주
 function renderCalInsight(ownRows, compRows){
-  const ownAdv=new Set(ownRows.map(r=>normCalAdv(r.광고주)));
+  // ── 핵심: 선택 조건과 무관하게 "전체 이력"으로 자사/타사 집행 여부 판단 ──
+  // calData.own / calData.comp 전체를 기준으로 각 광고주의 자사/타사 집행 여부 확인
+  const ownEverSet = new Set((calData.own||[]).map(r=>normCalAdv(r.광고주)));
+  const compEverSet = new Set((calData.comp||[]).map(r=>normCalAdv(r.광고주)));
+
+  // ── ⭐ 공략 대상: 현재 선택된 타사 결과 중, 자사 전체이력에 없는 광고주 ──
   const compGroups=groupCalByAdv(compRows, true);
-  // 타사에 있지만 자사에 없는 광고주
-  const targets=compGroups.filter(g=>!ownAdv.has(normCalAdv(g.광고주)));
+  const targets=compGroups.filter(g=>!ownEverSet.has(normCalAdv(g.광고주)));
   const card=document.getElementById('cal-insight');
   const list=document.getElementById('cal-insight-list');
-  if(!targets.length){ card.style.display='none'; return; }
-  card.style.display='block';
-  list.innerHTML=targets.slice(0,60).map(g=>{
-    const mediaList=Object.keys(g.media).sort((a,b)=>g.media[b]-g.media[a]);
-    const tip=mediaList.slice(0,2).join('·');
-    return `<span title="${tip} | ${g.count}건" style="display:inline-flex;align-items:center;gap:4px;padding:4px 10px;font-size:11px;background:#FDECEC;border:0.5px solid #F1B0AF;border-radius:12px;color:#A32D2D;font-weight:600;cursor:default;">
-      ${g.광고주}<span style="font-size:9px;color:#C77;font-weight:400;">${tip}</span></span>`;
-  }).join('');
-  const more=targets.length>60?`<span style="font-size:10px;color:#aaa;padding:4px;">외 ${targets.length-60}개</span>`:'';
-  list.innerHTML+=more;
+  document.getElementById('cal-insight-cnt').textContent = targets.length?`${targets.length}개`:'';
+  if(!targets.length){ card.style.display='none'; }
+  else {
+    card.style.display='block';
+    list.innerHTML=targets.slice(0,60).map(g=>{
+      const mediaList=Object.keys(g.media).sort((a,b)=>g.media[b]-g.media[a]);
+      const tip=mediaList.slice(0,2).join('·');
+      return `<span title="${tip} | ${g.count}건" style="display:inline-flex;align-items:center;gap:4px;padding:4px 10px;font-size:11px;background:#FDECEC;border:0.5px solid #F1B0AF;border-radius:12px;color:#A32D2D;font-weight:600;cursor:default;">
+        ${g.광고주}<span style="font-size:9px;color:#C77;font-weight:400;">${tip}</span></span>`;
+    }).join('');
+    if(targets.length>60) list.innerHTML+=`<span style="font-size:10px;color:#aaa;padding:4px;">외 ${targets.length-60}개</span>`;
+  }
+
+  // ── 🛡️ 지킴 대상: 현재 선택된 자사 결과 중, 타사 전체이력에 없는 광고주 ──
+  const ownGroups=groupCalByAdv(ownRows, false);
+  const defends=ownGroups.filter(g=>!compEverSet.has(normCalAdv(g.광고주)));
+  const dcard=document.getElementById('cal-defend');
+  const dlist=document.getElementById('cal-defend-list');
+  document.getElementById('cal-defend-cnt').textContent = defends.length?`${defends.length}개`:'';
+  if(!defends.length){ dcard.style.display='none'; }
+  else {
+    dcard.style.display='block';
+    dlist.innerHTML=defends.slice(0,60).map(g=>{
+      const mediaList=Object.keys(g.media).sort((a,b)=>g.media[b]-g.media[a]);
+      const tip=mediaList.slice(0,2).join('·');
+      return `<span title="${tip} | ${g.count}건" style="display:inline-flex;align-items:center;gap:4px;padding:4px 10px;font-size:11px;background:#EAF2FC;border:0.5px solid #B8D4F0;border-radius:12px;color:#185FA5;font-weight:600;cursor:default;">
+        ${g.광고주}<span style="font-size:9px;color:#7AACD6;font-weight:400;">${tip}</span></span>`;
+    }).join('');
+    if(defends.length>60) dlist.innerHTML+=`<span style="font-size:10px;color:#aaa;padding:4px;">외 ${defends.length-60}개</span>`;
+  }
 }
 
-// 광고주명 정규화 (자사/타사 매칭용)
+// 광고주명 별칭 맵 (같은 광고주 다른 표기 통일) — 정규화 후 키 기준
+const CAL_ALIAS = {
+  // 자사 표기 → 통일명 (정규화된 형태로 비교)
+  '부스터즈르무통2차':'르무통',
+  '부스터즈르무통':'르무통',
+  '우주텍르무통':'르무통',
+  '우주텍':'르무통',
+};
+
+// 광고주명 정규화 (자사/타사 매칭용) + 괄호 안 브랜드 추출 + 별칭
 function normCalAdv(s){
-  return String(s||'').toLowerCase().replace(/[\s\(\)（）\[\]_\-\.·,&/]+/g,'')
-    .replace(/주식회사|㈜/g,'');
+  let raw = String(s||'').trim();
+  // 1) 괄호 안에 브랜드가 있는 패턴 "회사(브랜드)" → 괄호 안 우선 시도
+  //    단, (주)/(재)/(사) 같은 법인격 표기는 제외
+  const m = raw.match(/^(.+?)[\(（]([^)）]+)[\)）]/);
+  if(m){
+    const inside = m[2].trim();
+    // 괄호 안이 법인격/차수/연월이 아니고, 실제 브랜드로 보이면 그걸 사용
+    if(!/^(주|재|사|주식회사|㈜|\d+차|\d+월|20\d{2}|교환광고)/.test(inside) && inside.length>=2){
+      raw = inside;
+    }
+  }
+  // 2) 기본 정규화
+  let n = raw.toLowerCase().replace(/[\s\(\)（）\[\]_\-\.·,&/]+/g,'').replace(/주식회사|㈜/g,'');
+  // 3) 별칭 맵 적용
+  if(CAL_ALIAS[n]) return normCalAdv2(CAL_ALIAS[n]);
+  return n;
+}
+// 별칭 통일명 자체 정규화 (재귀 방지용 단순 버전)
+function normCalAdv2(s){
+  return String(s||'').toLowerCase().replace(/[\s\(\)（）\[\]_\-\.·,&/]+/g,'').replace(/주식회사|㈜/g,'');
 }
 
 
