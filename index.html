@@ -173,7 +173,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI','Helvetica Neue',sa
 
 <div class="app">
 <div class="sb">
-  <div class="sbh"><div class="sbh-b">비즈솔루션본부 영.관.씨</div><div class="sbh-s">영업관리시스템 · 실시간 연동</div></div>
+  <div class="sbh"><div class="sbh-b">비즈솔루션본부 영.관.씨</div><div class="sbh-s">영업관리시스템 · 실시간 연동</div><div style="font-size:9.5px;color:rgba(255,255,255,0.5);margin-top:3px;">(업데이트: 8월 19일)</div></div>
   <div class="ns">
     <div class="nsl">전체</div>
     <div class="ni on" id="ni-all" onclick="nav('all',this)"><div class="nd" style="background:#185FA5"></div>본부 전체 실적</div>
@@ -237,7 +237,6 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI','Helvetica Neue',sa
   </div>
   <div style="flex:1"></div>
   <div class="gs-bar"><div class="gs-dot"></div><span id="gs-txt">연동 중...</span></div>
-  <div style="padding:8px 14px 4px;font-size:9.5px;color:rgba(255,255,255,0.45);text-align:center;letter-spacing:0.2px;">v2026.08.19 업데이트</div>
 </div>
 
 <div class="main">
@@ -1452,11 +1451,47 @@ function parsePerf(rows, mon){
 // ══════════════════════════════════════
 // FETCH PERF
 // ══════════════════════════════════════
+// ══ localStorage 스냅샷 캐시 (Apps Script 응답 즉시 표시용) ══
+function ygcGet(key){ try{ const c=JSON.parse(localStorage.getItem('ygc_'+key)||'null'); return c&&c.v!==undefined?c.v:null; }catch(e){ return null; } }
+function ygcSet(key,v){ try{ localStorage.setItem('ygc_'+key, JSON.stringify({v:v,t:Date.now()})); }catch(e){} }
+
 async function fetchPerf(){
   const mon = parseInt(document.getElementById('month-sel').value);
   CUR_MON = mon;
-  document.getElementById('chip-txt').textContent = `${mon}월 불러오는 중...`;
+  const TEAM_KEYS = ['ms1','ms2','ms3','ms4','msd','inn','cst','csd','dev'];
+  const doRender = ()=>{ if(TEAM_KEYS.includes(cKey)) loadTeamDash(cKey); else renderPerf(cKey); };
 
+  document.getElementById('kpi-sub').textContent = `달성률 = 실적 ÷ 1~${mon}월 누적목표(월별계획 합산)`;
+  const sub=document.getElementById('top-adv-sub');
+  if(sub) sub.textContent=`2026년 ${mon}월 집행 기준 상위 20개 · RAW 데이터 연동`;
+
+  // ── ① 캐시 스냅샷 즉시 표시 (이전 방문 데이터, 0.1초) ──
+  const ckPerf = 'perf_'+SHEET+'_'+mon;
+  const cachedPerf = ygcGet(ckPerf);
+  if(cachedPerf && Array.isArray(cachedPerf) && cachedPerf.length){
+    lastPerfRows = cachedPerf;
+    parsePerf(cachedPerf, mon);
+    document.getElementById('chip-txt').textContent = `억원 단위 · 2026년 ${mon}월 (최신화 중...)`;
+    document.getElementById('gs-txt').textContent = `${mon}월 캐시 표시 · 최신화 중...`;
+    doRender();
+  } else {
+    document.getElementById('chip-txt').textContent = `${mon}월 불러오는 중...`;
+  }
+  // OOH 캐시 즉시 반영
+  if(!oohApiData){
+    const co = ygcGet('ooh_'+mon);
+    if(co){ oohApiData = co; if(cKey==='all'||cKey==='tb') buildOohTbl(); }
+  }
+  // 연간 캐시 즉시 반영
+  if(!annualData){
+    const ca = ygcGet('annual_'+SHEET);
+    if(ca){
+      annualData = ca; renderAnnualChart(cKey);
+      const st=document.getElementById('annual-status'); if(st) st.style.display='none';
+    }
+  }
+
+  // ── ② 실시간 최신화 (Apps Script) ──
   try{
     const url = `${PERF_URL}?sheet=${encodeURIComponent(SHEET)}&month=${mon}&_=${Date.now()}`;
     const res = await fetch(url);
@@ -1466,29 +1501,26 @@ async function fetchPerf(){
     console.log(`[fetchPerf] ${json.data.length}행 수신`);
     lastPerfRows = json.data;
     parsePerf(json.data, mon);
+    ygcSet(ckPerf, json.data);
     document.getElementById('chip-txt').textContent = `억원 단위 · 2026년 ${mon}월 (실시간)`;
     document.getElementById('gs-txt').textContent = `${mon}월 연동 완료`;
 
     // OOH 데이터 순차 로드 (월 변경 시 캐시 무효화 후 새로 fetch)
     oohApiData = null; // 캐시 초기화 → 반드시 새 월 데이터로 재로드
-    setTimeout(()=>loadOohData(mon).then(()=>{ if(cKey==='all'||cKey==='tb') buildOohTbl(); }).catch(console.error), 100);
-    // 연간 차트 데이터 로드 (캐시 없을 때만)
-    if(!annualData) setTimeout(()=>loadAnnualData(), 200);
+    setTimeout(()=>loadOohData(mon).then(()=>{ if(cKey==='all'||cKey==='tb') buildOohTbl(); if(cKey==='prod'&&prodMode==='summary') buildProdSummary(); }).catch(console.error), 100);
+    // 연간 차트 데이터 로드 (실시간 최신본 미수신 시)
+    if(!window._annualLive) setTimeout(()=>loadAnnualData(), 200);
+    doRender();
   }catch(e){
     console.warn('[fetchPerf] 실패:', e.message);
-    document.getElementById('chip-txt').textContent = `2026년 ${mon}월 (로컬 데이터)`;
-    document.getElementById('gs-txt').textContent = '연동 실패 - 로컬 데이터';
-  }
-
-  document.getElementById('kpi-sub').textContent = `달성률 = 실적 ÷ 1~${mon}월 누적목표(월별계획 합산)`;
-  const sub=document.getElementById('top-adv-sub');
-  if(sub) sub.textContent=`2026년 ${mon}월 집행 기준 상위 20개 · RAW 데이터 연동`;
-
-  const TEAM_KEYS = ['ms1','ms2','ms3','ms4','msd','inn','cst','csd','dev'];
-  if(TEAM_KEYS.includes(cKey)){
-    loadTeamDash(cKey);
-  } else {
-    renderPerf(cKey);
+    if(cachedPerf){
+      document.getElementById('chip-txt').textContent = `2026년 ${mon}월 (캐시 데이터)`;
+      document.getElementById('gs-txt').textContent = '실시간 연동 실패 - 캐시 표시 중';
+    } else {
+      document.getElementById('chip-txt').textContent = `2026년 ${mon}월 (로컬 데이터)`;
+      document.getElementById('gs-txt').textContent = '연동 실패 - 로컬 데이터';
+      doRender();
+    }
   }
 }
 
@@ -1665,7 +1697,7 @@ async function loadOohData(mon){
     const url = `${OOH_URL}?action=ooh&month=${m}&_=${Date.now()}`;
     const res = await fetch(url);
     const j = await res.json();
-    if(j.data) oohApiData = j.data;
+    if(j.data){ oohApiData = j.data; ygcSet('ooh_'+m, j.data); }
   } catch(e){ console.warn('OOH fetch 실패', e); }
 }
 
@@ -4651,17 +4683,20 @@ function setSalesYear(y, el){
 // ══════════════════════════════════════
 async function loadAnnualData(){
   const st = document.getElementById('annual-status');
-  if(st){ st.style.display='block'; st.textContent='연간 데이터 불러오는 중...'; }
+  // 캐시 표시 중이면 로딩 문구 생략 (조용히 최신화)
+  if(st && !annualData){ st.style.display='block'; st.textContent='연간 데이터 불러오는 중...'; }
   try{
     const url = `${PERF_URL}?action=annual&sheet=${encodeURIComponent(SHEET)}&_=${Date.now()}`;
     const res = await fetch(url);
     const j = await res.json();
     if(j.error) throw new Error(j.error);
     annualData = j.data;
+    ygcSet('annual_'+SHEET, j.data);
+    window._annualLive = true;
     renderAnnualChart(cKey);
     if(st) st.style.display='none';
   }catch(e){
-    if(st){ st.textContent='연간 데이터 로드 실패: '+e.message; }
+    if(st && !annualData){ st.textContent='연간 데이터 로드 실패: '+e.message; }
     console.warn('[annual]', e);
   }
 }
