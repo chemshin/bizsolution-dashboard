@@ -173,7 +173,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI','Helvetica Neue',sa
 
 <div class="app">
 <div class="sb">
-  <div class="sbh"><div class="sbh-b">비즈솔루션본부 영.관.씨</div><div class="sbh-s">영업관리시스템 · 실시간 연동</div><div style="font-size:9.5px;color:rgba(255,255,255,0.5);margin-top:3px;">(업데이트: 9월 30일)</div></div>
+  <div class="sbh"><div class="sbh-b">비즈솔루션본부 영.관.씨</div><div class="sbh-s">영업관리시스템 · 실시간 연동</div><div style="font-size:9.5px;color:rgba(255,255,255,0.5);margin-top:3px;">(업데이트: 10월 30일)</div></div>
   <div class="ns">
     <div class="nsl">전체</div>
     <div class="ni on" id="ni-all" onclick="nav('all',this)"><div class="nd" style="background:#185FA5"></div>본부 전체 실적</div>
@@ -181,6 +181,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI','Helvetica Neue',sa
     <div class="ni" id="ni-status" onclick="nav('status',this)"><div class="nd" style="background:#0F6E56"></div>영업 현황</div>
     <div class="ni" id="ni-comp" onclick="nav('comp',this)"><div class="nd" style="background:#D85A30"></div>경쟁 매체 모니터링</div>
     <div class="ni" id="ni-prod" onclick="nav('prod',this)"><div class="nd" style="background:#1D9E75"></div>매체별 실적 현황</div>
+    <div class="ni" id="ni-biz" onclick="nav('biz',this)"><div class="nd" style="background:#0F6E56"></div>사업별 매출 현황</div>
     <div class="ni" id="ni-cal" onclick="nav('cal',this)"><div class="nd" style="background:#C2410C"></div>영업캘린더</div>
   </div>
   <!-- 숨김 섹션 (data-hidden-section): 나중에 div의 display를 변경하면 다시 표시됨 -->
@@ -926,6 +927,22 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI','Helvetica Neue',sa
     </div>
   </div>
 
+  </div>
+
+  <!-- 사업별 매출 현황 뷰 -->
+  <div id="vbiz" style="display:none;">
+    <div class="sec-header"><div class="sec-bar" style="background:#0F6E56"></div><span class="sec-title" style="color:#0F6E56">사업별 매출 현황</span><span style="font-size:10px;font-weight:400;color:#6B6A67;margin-left:8px;" id="biz-sub-lbl">· 본부 실적 시트 기준 · 억원</span></div>
+    <div id="biz-load-bar" style="background:#E6F1FB;border:0.5px solid #B8D4F0;border-radius:8px;padding:9px 14px;margin-bottom:14px;font-size:11px;color:#185FA5;display:none;"></div>
+
+    <!-- 월 선택 -->
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:16px;">
+      <span style="font-size:11px;font-weight:700;color:#6B6A67;">기준 월</span>
+      <select id="biz-mon-sel" class="fsel" style="padding:5px 10px;font-size:11px;" onchange="renderBiz()"></select>
+      <span style="font-size:10px;color:#aaa;">· 누적 = 1월~기준월 합산 · 계획比 = 실적 − 계획</span>
+    </div>
+
+    <!-- 3개 국 섹션 -->
+    <div id="biz-sections"></div>
   </div>
 
   <!-- 영업캘린더 뷰 -->
@@ -2752,6 +2769,289 @@ function fmtA2(v){ return (v/100).toFixed(1)+'억'; }
 
 
 // ══════════════════════════════════════
+// 사업별 매출 현황
+// ══════════════════════════════════════
+let bizData = null; // {sheets: {시트명: [{n, a:[12], p:[12]}]}}
+let bizOpen = new Set(); // 펼침 상태 ('t:팀키' / 'c:팀키:카테고리명')
+
+// 항목 정의. rows: {t:'item'} 단일 항목 | {t:'cat'} 접을 수 있는 카테고리
+// m=시트 행 이름(trim 일치), prefix=앞부분 일치, d=표시명
+const BIZ_DEF = [
+  { guk:'마케팅솔루션국', color:'#185FA5', teams:[
+    { team:'OOH (솔루션기획1팀 취합)', key:'ooh', sheet:'솔루션기획1팀_OOH취합', rows:[
+      { t:'cat', cat:'타운보드', items:[
+        {m:'로컬(타운보드_광고_로컬)', d:'타운보드 (로컬)'},
+        {m:'패키지(타운보드_광고_패키지)', d:'타운보드 (패키지)'},
+      ]},
+      { t:'cat', cat:'중앙 OOH', items:[
+        {m:'코엑스미디어타워(OOH_CMT)', d:'코엑스 미디어타워'},
+        {m:'파르나스미디어타워(OOH_PMT)', d:'파르나스 미디어타워'},
+        {m:'더그랜드(OOH_더그랜드)', d:'더그랜드'},
+        {m:'어메이징파르나스(OOH_어메이징파르나스)', d:'어메이징파르나스'},
+        {m:'테헤란로T204(OOH_T204)', d:'테헤란로 T204'},
+        {m:'홍대커브드월(OOH_홍대커브드월)', d:'홍대커브드월'},
+        {m:'쎄덱라이트박스(OOH_쎄덱라이트박스)', d:'쎄덱 라이트박스'},
+        {m:'SB타워(OOH_SB타워)', d:'SB타워'},
+        {m:'광역버스(OOH_KD버스)', d:'광역버스'},
+        {m:'지선버스(OOH_KD버스)', d:'지선버스'},
+        {m:'한남대로아트월(OOH_아트월)', d:'한남대로아트월'},
+        {m:'기타아트월(OOH_아트월)', d:'기타아트월'},
+        {m:'KTS(OOH_기타)', d:'KTS'},
+        {m:'부산버스(OOH_기타)', d:'부산버스'},
+        {m:'기타(외부전광판,미러)(OOH_기타)', d:'기타 (외부전광판·미러)'},
+        {m:'키아프(OOH_기타)', d:'키아프'},
+      ]},
+    ]},
+    { team:'디지털사업팀', key:'dgt', sheet:'디지털사업팀', rows:[
+      { t:'item', m:'중앙', d:'중앙'},
+      { t:'item', m:'애드플래닝', d:'애드플래닝'},
+      { t:'item', m:'기타_IMP 유지보수료', d:'기타_IMP 유지보수료', prefix:true},
+      { t:'item', m:'신규프로젝트', d:'신규프로젝트'},
+      { t:'item', m:'일본어판', d:'일본어판'},
+    ]},
+  ]},
+  { guk:'콘텐트사업국', color:'#7F77DD', teams:[
+    { team:'이노베이션랩', key:'inn', sheet:'이노베이션랩', rows:[
+      { t:'item', m:'Native.AD_계약', d:'NativeAd_계약 (네이티브애드·비크닉)', prefix:true},
+      { t:'item', m:'브랜디드_더하이엔드', d:'브랜디드_더하이엔드'},
+      { t:'item', m:'브랜디드_더오래', d:'브랜디드_더오래'},
+      { t:'item', m:'비크닉+신규', d:'비크닉+신규'},
+    ]},
+    { team:'콘텐트사업팀', key:'cst', sheet:'콘텐트사업팀', rows:[
+      { t:'item', m:'매출(브랜디드)', d:'매출(브랜디드)'},
+      { t:'cat', cat:'콘텐트 유통', items:[
+        {m:'국내매/중앙(텍스트)_네이버', d:'국내매/중앙(텍스트)_네이버'},
+        {m:'국내매/중앙(텍스트)_카카오', d:'국내매/중앙(텍스트)_카카오'},
+        {m:'국내매/중앙(텍스트)_PDF', d:'국내매/중앙(텍스트)_PDF'},
+        {m:'국내매/중앙(텍스트)_기타', d:'국내매/중앙(텍스트)_기타'},
+        {m:'국내매/일보S(잡지-신문군)_네이버', d:'국내매/일보S(잡지-신문군)_네이버'},
+        {m:'국내매/일보S(잡지-신문군)_카카오', d:'국내매/일보S(잡지-신문군)_카카오'},
+        {m:'국내매/일보S(잡지-신문군)_PDF', d:'국내매/일보S(잡지-신문군)_PDF'},
+        {m:'국내매/일보S(잡지-신문군)_기타', d:'국내매/일보S(잡지-신문군)_기타'},
+        {m:'국내매/HLL(잡지)_카카오', d:'국내매/HLL(잡지)_카카오'},
+        {m:'국내매/코리아중앙데일리_네이버', d:'국내매/코리아중앙데일리_네이버'},
+        {m:'국내매/코리아중앙데일리_카카오', d:'국내매/코리아중앙데일리_카카오'},
+        {m:'국내매/코리아중앙데일리_PDF', d:'국내매/코리아중앙데일리_PDF'},
+        {m:'국내매/코리아중앙데일리_기타', d:'국내매/코리아중앙데일리_기타'},
+        {m:'국내매/JTBC', d:'국내매/JTBC'},
+        {m:'외부매체', d:'외부매체'},
+        {m:'외부매체/기타 (신규대행)', d:'외부매체/기타 (신규대행)'},
+      ]},
+      { t:'item', m:'네이버 공동사업', d:'네이버 공동사업'},
+      { t:'item', m:'인물정보', d:'인물정보'},
+      { t:'item', m:'보도자료', d:'보도자료'},
+    ]},
+    { team:'콘텐트개발팀', key:'csd', sheet:'콘텐트개발팀', rows:[
+      { t:'item', m:'지글지글클럽', d:'지글지글클럽'},
+      { t:'item', m:'브랜디드', d:'브랜디드'},
+      { t:'item', m:'신규아이템(타운보드커머스)', d:'신규아이템 (타운보드커머스)'},
+      { t:'item', m:'밀키트', d:'밀키트'},
+    ]},
+  ]},
+  { guk:'사업지원국', color:'#EF9F27', teams:[
+    { team:'매체사업팀', key:'tbm', sheet:'매체사업팀_TB', rows:[
+      { t:'item', m:'타운보드_광고_디지털게시판', d:'타운보드광고_디지털게시판'},
+      { t:'item', m:'타운보드광고_구축사업', d:'타운보드광고_구축사업'},
+      { t:'item', m:'타운보드광고_기타', d:'타운보드광고_기타'},
+    ]},
+    { team:'운영지원팀', key:'tbo', sheet:'운영지원팀_TB', rows:[
+      { t:'item', m:'개통매출', d:'개통매출'},
+    ]},
+  ]},
+];
+
+async function loadBizData(){
+  const bar=document.getElementById('biz-load-bar');
+  bar.style.display='block';
+  bar.textContent='사업별 매출 데이터 불러오는 중...';
+
+  // ① 캐시 즉시 표시
+  const cached = (typeof ygcGet==='function') ? ygcGet('bizrev') : null;
+  if(cached && cached.sheets){
+    bizData = cached;
+    renderBiz();
+    bar.textContent='캐시 표시 중 · 최신화...';
+  }
+
+  // ② 실시간 (재시도 2회)
+  try{
+    let j=null, lastErr=null;
+    for(let t=1;t<=2;t++){
+      try{
+        const r=await fetch(`${PERF_URL}?action=bizrev&_=${Date.now()}`);
+        if(!r.ok) throw new Error('HTTP '+r.status);
+        j=await r.json();
+        if(j.error) throw new Error(j.error);
+        lastErr=null; break;
+      }catch(e){ lastErr=e; if(t<2) await new Promise(res=>setTimeout(res,1500)); }
+    }
+    if(lastErr) throw lastErr;
+    bizData=j;
+    if(typeof ygcSet==='function') ygcSet('bizrev', j);
+    bar.style.display='none';
+    renderBiz();
+  }catch(e){
+    if(bizData){ bar.style.display='none'; console.warn('[bizrev] 실시간 실패, 캐시 유지:', e.message); }
+    else {
+      bar.style.cssText='display:block;background:#FCEBEB;border:0.5px solid #E24B4A;border-radius:8px;padding:9px 14px;margin-bottom:14px;font-size:11px;color:#A32D2D;';
+      bar.textContent='로드 실패: '+e.message+' (Apps Script에 bizrev 액션이 배포됐는지 확인하세요)';
+    }
+  }
+}
+
+// 시트 행에서 항목 찾기 (trim 정확일치 → prefix)
+function bizFindRow(sheetRows, item){
+  if(!sheetRows) return null;
+  for(const r of sheetRows){
+    const n=String(r.n||'').trim();
+    if(item.prefix ? n.indexOf(item.m)===0 : n===item.m) return r;
+  }
+  return null;
+}
+
+function bizTog(key){
+  if(bizOpen.has(key)) bizOpen.delete(key); else bizOpen.add(key);
+  renderBiz();
+}
+
+function renderBiz(){
+  if(!bizData || !bizData.sheets) return;
+  // 월 셀렉트 초기화
+  const sel=document.getElementById('biz-mon-sel');
+  if(sel.options.length===0){
+    for(let m=1;m<=12;m++) sel.add(new Option(m+'월', m));
+    sel.value = CUR_MON;
+  }
+  const mon=parseInt(sel.value);
+  const mi=mon-1;
+  const sum=(arr,n)=>{let s=0;for(let i=0;i<n;i++)s+=arr[i]||0;return s;};
+  const NUM='text-align:right;font-size:13px;font-variant-numeric:tabular-nums;'; // 숫자 셀 공통 (정렬·폰트)
+  const f=v=>(v/100).toFixed(1); // 소수점 1자리 통일
+  const diffCell=(act,plan,bold)=>{
+    const d=(act-plan)/100;
+    const c=d>=0?'#0F6E56':'#A32D2D';
+    const t=(d>=0?'+':'')+d.toFixed(1);
+    return `<td style="${NUM}color:${c};font-weight:${bold?700:600};">${t}</td>`;
+  };
+  const rateCell=(act,plan,bold)=>{
+    if(!(plan>0)) return `<td style="${NUM}color:#bbb;">-</td>`;
+    const r=act/plan*100;
+    const c=r>=100?'#0F6E56':r>=80?'#185FA5':r>=50?'#C2410C':'#A32D2D';
+    return `<td style="${NUM}color:${c};font-weight:${bold?700:600};">${r.toFixed(1)}%</td>`;
+  };
+  // 열 순서: 계획 | 매출 | 계획比 | 달성률
+  const numCells=(monP,monA,accP,accA,bold)=>{
+    const w=bold?700:600;
+    return `<td style="${NUM}color:#6B6A67;font-weight:${bold?600:400};">${f(monP)}</td>
+      <td style="${NUM}font-weight:${w};">${f(monA)}</td>
+      ${diffCell(monA,monP,bold)}
+      ${rateCell(monA,monP,bold)}
+      <td style="${NUM}color:#6B6A67;font-weight:${bold?600:400};border-left:0.5px solid #E5E4E0;">${f(accP)}</td>
+      <td style="${NUM}font-weight:${w};">${f(accA)}</td>
+      ${diffCell(accA,accP,bold)}
+      ${rateCell(accA,accP,bold)}`;
+  };
+  // 항목 값 계산
+  const calc=(sheetRows,it)=>{
+    const row=bizFindRow(sheetRows,it);
+    return {
+      monA:row?(row.a[mi]||0):0, monP:row?(row.p[mi]||0):0,
+      accA:row?sum(row.a,mon):0, accP:row?sum(row.p,mon):0,
+      found:!!row
+    };
+  };
+
+  let html='';
+  BIZ_DEF.forEach(guk=>{
+    let gAccA=0,gAccP=0;
+    let teamsHtml='';
+    guk.teams.forEach(tm=>{
+      const sheetRows=bizData.sheets[tm.sheet];
+      const tKey='t:'+tm.key;
+      const tOpen=bizOpen.has(tKey);
+      let tMonA=0,tMonP=0,tAccA=0,tAccP=0;
+      let bodyHtml='';
+      tm.rows.forEach((rw,ri)=>{
+        if(rw.t==='item'){
+          const v=calc(sheetRows,rw);
+          tMonA+=v.monA; tMonP+=v.monP; tAccA+=v.accA; tAccP+=v.accP;
+          if(tOpen){
+            const missing=!v.found?' <span style="font-size:10px;color:#E24B4A;">(행없음)</span>':'';
+            bodyHtml+=`<tr class="dr">
+              <td style="padding-left:26px;">${rw.d}${missing}</td>
+              ${numCells(v.monP,v.monA,v.accP,v.accA,false)}
+            </tr>`;
+          }
+        } else {
+          // 카테고리
+          const cKey='c:'+tm.key+':'+ri;
+          const cOpen=bizOpen.has(cKey);
+          let cMonA=0,cMonP=0,cAccA=0,cAccP=0;
+          let itemsHtml='';
+          rw.items.forEach(it=>{
+            const v=calc(sheetRows,it);
+            cMonA+=v.monA; cMonP+=v.monP; cAccA+=v.accA; cAccP+=v.accP;
+            if(tOpen && cOpen){
+              const missing=!v.found?' <span style="font-size:10px;color:#E24B4A;">(행없음)</span>':'';
+              itemsHtml+=`<tr class="dr">
+                <td style="padding-left:44px;color:#4A4945;">${it.d}${missing}</td>
+                ${numCells(v.monP,v.monA,v.accP,v.accA,false)}
+              </tr>`;
+            }
+          });
+          tMonA+=cMonA; tMonP+=cMonP; tAccA+=cAccA; tAccP+=cAccP;
+          if(tOpen){
+            bodyHtml+=`<tr style="background:#FAF9F6;cursor:pointer;" onclick="bizTog('${cKey}')">
+              <td style="padding-left:24px;font-weight:700;color:#4A4945;"><span style="display:inline-block;width:14px;font-size:10px;color:#999;transform:rotate(${cOpen?90:0}deg);">▶</span>${rw.cat} <span style="font-size:10.5px;font-weight:400;color:#aaa;">(${rw.items.length})</span></td>
+              ${numCells(cMonP,cMonA,cAccP,cAccA,true)}
+            </tr>`+itemsHtml;
+          }
+        }
+      });
+      gAccA+=tAccA; gAccP+=tAccP;
+      teamsHtml+=`<tr style="background:#F2F1EC;cursor:pointer;" onclick="bizTog('${tKey}')">
+        <td style="font-weight:700;color:${guk.color};font-size:13px;"><span style="display:inline-block;width:16px;font-size:11px;color:#888;transform:rotate(${tOpen?90:0}deg);">▶</span>${tm.team}</td>
+        ${numCells(tMonP,tMonA,tAccP,tAccA,true)}
+      </tr>`+bodyHtml;
+    });
+    const gRate = gAccP>0 ? (gAccA/gAccP*100) : 0;
+    const gRateColor = gRate>=100?'#0F6E56':gRate>=80?'#185FA5':'#C2410C';
+    const gDiff=(gAccA-gAccP)/100;
+    html+=`<div class="card" style="border-top:3px solid ${guk.color};margin-bottom:16px;">
+      <div style="display:flex;align-items:baseline;gap:12px;flex-wrap:wrap;margin-bottom:12px;">
+        <span style="font-size:14px;font-weight:700;color:${guk.color};">${guk.guk}</span>
+        <span style="font-size:12px;color:#6B6A67;">누적 <b style="color:#1a1917;">${f(gAccA)}억</b> / 계획 ${f(gAccP)}억</span>
+        <span style="font-size:12px;font-weight:700;color:${gDiff>=0?'#0F6E56':'#A32D2D'};">${gDiff>=0?'+':''}${f(gAccA-gAccP)}억</span>
+        <span style="font-size:12px;font-weight:700;color:${gRateColor};">달성률 ${gRate.toFixed(1)}%</span>
+      </div>
+      <div class="tw"><table class="rtbl" style="min-width:960px;font-size:12.5px;">
+        <thead>
+          <tr>
+            <th rowspan="2" style="width:240px;font-size:12px;">항목 <span style="font-weight:400;color:#aaa;font-size:10.5px;">· 행 클릭으로 펼침/접기</span></th>
+            <th colspan="4" style="text-align:center;border-bottom:0.5px solid #E5E4E0;font-size:12px;">${mon}월 (당월)</th>
+            <th colspan="4" style="text-align:center;border-left:0.5px solid #E5E4E0;border-bottom:0.5px solid #E5E4E0;font-size:12px;">1~${mon}월 (누적)</th>
+          </tr>
+          <tr>
+            <th style="text-align:right;width:82px;font-size:11.5px;">계획</th>
+            <th style="text-align:right;width:82px;font-size:11.5px;">매출</th>
+            <th style="text-align:right;width:82px;font-size:11.5px;">계획比</th>
+            <th style="text-align:right;width:76px;font-size:11.5px;">달성률</th>
+            <th style="text-align:right;width:86px;border-left:0.5px solid #E5E4E0;font-size:11.5px;">계획</th>
+            <th style="text-align:right;width:86px;font-size:11.5px;">매출</th>
+            <th style="text-align:right;width:86px;font-size:11.5px;">계획比</th>
+            <th style="text-align:right;width:76px;font-size:11.5px;">달성률</th>
+          </tr>
+        </thead>
+        <tbody>${teamsHtml}</tbody>
+      </table></div>
+    </div>`;
+  });
+  document.getElementById('biz-sections').innerHTML=html;
+  document.getElementById('biz-sub-lbl').textContent=`· 본부 실적 시트 기준 · 억원 · ${mon}월`;
+}
+
+
+// ══════════════════════════════════════
 // 영업캘린더 (2025 자사/경쟁사 집행 이력)
 // ══════════════════════════════════════
 let calData = null;         // {own:[], comp:[], ownMedia:[], compMedia:[]}
@@ -4014,7 +4314,7 @@ function exportListCSV(){
   a.download='광고주리스트.csv';a.click();
 }
 // ══════════════════════════════════════
-const TITLES={adv:'누적 광고 데이터',sales:'영업사원별 실적',weekly:'주간업무보고',reports:'게첨보고서',major:'(참고용) 국내 주요 광고주',comp:'경쟁 매체 모니터링',intro:'본부 소개서',prod:'매체별 실적 현황',cal:'영업캘린더',list:'광고주 리스트',status:'영업 현황',all:'본부 전체 실적',ms:'마케팅솔루션국',ms1:'마케팅솔루션1팀',ms2:'마케팅솔루션2팀',ms3:'마케팅솔루션3팀',ms4:'마케팅솔루션4팀',msd:'디지털사업팀',msp1:'솔루션기획1팀',msp2:'솔루션기획2팀',cs:'콘텐트사업국',cst:'콘텐트사업팀',inn:'이노베이션랩',csd:'콘텐트개발팀',dev:'솔루션개발팀',tb:'타운보드(사업지원국)'};
+const TITLES={adv:'누적 광고 데이터',sales:'영업사원별 실적',weekly:'주간업무보고',reports:'게첨보고서',major:'(참고용) 국내 주요 광고주',comp:'경쟁 매체 모니터링',intro:'본부 소개서',prod:'매체별 실적 현황',biz:'사업별 매출 현황',cal:'영업캘린더',list:'광고주 리스트',status:'영업 현황',all:'본부 전체 실적',ms:'마케팅솔루션국',ms1:'마케팅솔루션1팀',ms2:'마케팅솔루션2팀',ms3:'마케팅솔루션3팀',ms4:'마케팅솔루션4팀',msd:'디지털사업팀',msp1:'솔루션기획1팀',msp2:'솔루션기획2팀',cs:'콘텐트사업국',cst:'콘텐트사업팀',inn:'이노베이션랩',csd:'콘텐트개발팀',dev:'솔루션개발팀',tb:'타운보드(사업지원국)'};
 function toggleGroup(groupId, caretId){
   const g = document.getElementById(groupId);
   const c = document.getElementById(caretId);
@@ -4041,13 +4341,15 @@ function nav(key,el){
   const isA=key==='adv',isP=key==='prod',isL=key==='list',isSales=key==='sales';
   const isWeekly=key==='weekly',isIntro=key==='intro',isReports=key==='reports',isMajor=key==='major',isComp=key==='comp',isStatus=key==='status';
   const isCal=key==='cal';
+  const isBiz=key==='biz';
   const TEAM_KEYS = ['ms1','ms2','ms3','ms4','msd','inn','cst','csd','dev'];
   const isTeam = TEAM_KEYS.includes(key);
-  const isPerf = !isA&&!isP&&!isL&&!isTeam&&!isSales&&!isWeekly&&!isIntro&&!isReports&&!isMajor&&!isComp&&!isStatus&&!isCal;
+  const isPerf = !isA&&!isP&&!isL&&!isTeam&&!isSales&&!isWeekly&&!isIntro&&!isReports&&!isMajor&&!isComp&&!isStatus&&!isCal&&!isBiz;
   document.getElementById('vp').style.display=isPerf?'block':'none';
   document.getElementById('va').style.display=isA?'block':'none';
   document.getElementById('vpr').style.display=isP?'block':'none';
   document.getElementById('vcal').style.display=isCal?'block':'none';
+  document.getElementById('vbiz').style.display=isBiz?'block':'none';
   document.getElementById('vlist').style.display=isL?'block':'none';
   document.getElementById('vteam').style.display=isTeam?'block':'none';
   document.getElementById('vsales').style.display=isSales?'block':'none';
@@ -4064,6 +4366,11 @@ function nav(key,el){
     buildProdTabs();
     // 기본은 요약 모드
     setProdMode(prodMode || 'summary');
+    return;
+  }
+  if(isBiz){
+    if(!bizData) loadBizData();
+    else renderBiz();
     return;
   }
   if(isCal){
