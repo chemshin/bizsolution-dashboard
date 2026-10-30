@@ -934,15 +934,22 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI','Helvetica Neue',sa
     <div class="sec-header"><div class="sec-bar" style="background:#0F6E56"></div><span class="sec-title" style="color:#0F6E56">사업별 매출 현황</span><span style="font-size:10px;font-weight:400;color:#6B6A67;margin-left:8px;" id="biz-sub-lbl">· 본부 실적 시트 기준 · 억원</span></div>
     <div id="biz-load-bar" style="background:#E6F1FB;border:0.5px solid #B8D4F0;border-radius:8px;padding:9px 14px;margin-bottom:14px;font-size:11px;color:#185FA5;display:none;"></div>
 
-    <!-- 월 선택 -->
-    <div style="display:flex;align-items:center;gap:10px;margin-bottom:16px;">
+    <!-- 모드 탭 + 월 선택 -->
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:16px;flex-wrap:wrap;">
+      <div style="display:flex;gap:6px;">
+        <button id="biz-mode-table" onclick="setBizMode('table')" style="padding:7px 18px;font-size:12px;font-weight:700;background:#0F6E56;color:#fff;border:none;border-radius:7px;cursor:pointer;">📋 상세 표</button>
+        <button id="biz-mode-pie" onclick="setBizMode('pie')" style="padding:7px 18px;font-size:12px;font-weight:700;background:#fff;color:#6B6A67;border:0.5px solid #D5D3CD;border-radius:7px;cursor:pointer;">🥧 비중 분석</button>
+      </div>
+      <span style="width:1px;height:18px;background:#E0DFDA;"></span>
       <span style="font-size:11px;font-weight:700;color:#6B6A67;">기준 월</span>
-      <select id="biz-mon-sel" class="fsel" style="padding:5px 10px;font-size:11px;" onchange="renderBiz()"></select>
+      <select id="biz-mon-sel" class="fsel" style="padding:5px 10px;font-size:11px;" onchange="bizRerender()"></select>
       <span style="font-size:10px;color:#aaa;">· 누적 = 1월~기준월 합산 · 계획比 = 실적 − 계획</span>
     </div>
 
-    <!-- 3개 국 섹션 -->
+    <!-- 상세 표 (3개 국 섹션) -->
     <div id="biz-sections"></div>
+    <!-- 비중 분석 (도넛 차트) -->
+    <div id="biz-pies" style="display:none;"></div>
   </div>
 
   <!-- 영업캘린더 뷰 -->
@@ -3048,6 +3055,195 @@ function renderBiz(){
   });
   document.getElementById('biz-sections').innerHTML=html;
   document.getElementById('biz-sub-lbl').textContent=`· 본부 실적 시트 기준 · 억원 · ${mon}월`;
+}
+
+// ── 비중 분석 (도넛 차트) ──
+let bizMode = 'table';
+let bizPieCharts = [];
+
+function setBizMode(mode){
+  bizMode = mode;
+  const isPie = mode==='pie';
+  document.getElementById('biz-sections').style.display = isPie?'none':'block';
+  document.getElementById('biz-pies').style.display = isPie?'block':'none';
+  const bt=document.getElementById('biz-mode-table'), bp=document.getElementById('biz-mode-pie');
+  const on='padding:7px 18px;font-size:12px;font-weight:700;background:#0F6E56;color:#fff;border:none;border-radius:7px;cursor:pointer;';
+  const off='padding:7px 18px;font-size:12px;font-weight:700;background:#fff;color:#6B6A67;border:0.5px solid #D5D3CD;border-radius:7px;cursor:pointer;';
+  bt.style.cssText=isPie?off:on; bp.style.cssText=isPie?on:off;
+  bizRerender();
+}
+
+function bizRerender(){
+  if(bizMode==='pie') renderBizPies();
+  else renderBiz();
+}
+
+function renderBizPies(){
+  if(!bizData || !bizData.sheets) return;
+  const sel=document.getElementById('biz-mon-sel');
+  if(sel.options.length===0){
+    for(let m=1;m<=12;m++) sel.add(new Option(m+'월', m));
+    sel.value = CUR_MON;
+  }
+  const mon=parseInt(sel.value);
+  const sum=(arr,n)=>{let s=0;for(let i=0;i<n;i++)s+=arr[i]||0;return s;};
+  // 누적(1~mon) 기준 실적값
+  const itemA=(sheet,it)=>{
+    const row=bizFindRow(bizData.sheets[sheet],it);
+    return row?sum(row.a,mon):0;
+  };
+  const manyA=(sheet,ms)=>ms.reduce((s,m)=>s+itemA(sheet,{m:m}),0); // 여러 행 합산
+  const rowsTotalA=(tm)=>{
+    let v=0;
+    tm.rows.forEach(rw=>{
+      if(rw.t==='item') v+=itemA(tm.sheet,rw);
+      else rw.items.forEach(it=>{ v+=itemA(tm.sheet,it); });
+    });
+    return v;
+  };
+  const catTotalA=(tm,catName)=>{
+    let v=0;
+    tm.rows.forEach(rw=>{ if(rw.t==='cat'&&rw.cat===catName) rw.items.forEach(it=>{ v+=itemA(tm.sheet,it); }); });
+    return v;
+  };
+  const T={};
+  BIZ_DEF.forEach(g=>g.teams.forEach(tm=>{ T[tm.key]=tm; }));
+  const OOH_SHEET=T['ooh'].sheet;
+
+  // 섹션 정의: slices = [{label, v}] (실적만)
+  const sections=[];
+  // 1. 본부 전체 (3개 국)
+  sections.push({ title:'본부 전체', sub:'국별 비중', slices: BIZ_DEF.map(g=>{
+    let v=0; g.teams.forEach(tm=>{ v+=rowsTotalA(tm); });
+    return {label:g.guk, v};
+  })});
+  // 2. OOH (그룹핑)
+  sections.push({ title:'OOH (솔루션기획1팀)', sub:'매체 그룹별 비중', slices:[
+    {label:'타운보드', v: manyA(OOH_SHEET,['로컬(타운보드_광고_로컬)','패키지(타운보드_광고_패키지)'])},
+    {label:'삼성동OOH', v: manyA(OOH_SHEET,['코엑스미디어타워(OOH_CMT)','파르나스미디어타워(OOH_PMT)','더그랜드(OOH_더그랜드)'])},
+    {label:'어메이징파르나스', v: manyA(OOH_SHEET,['어메이징파르나스(OOH_어메이징파르나스)'])},
+    {label:'T204', v: manyA(OOH_SHEET,['테헤란로T204(OOH_T204)'])},
+    {label:'홍대커브드월', v: manyA(OOH_SHEET,['홍대커브드월(OOH_홍대커브드월)'])},
+    {label:'쎄덱라이트박스', v: manyA(OOH_SHEET,['쎄덱라이트박스(OOH_쎄덱라이트박스)'])},
+    {label:'SB타워', v: manyA(OOH_SHEET,['SB타워(OOH_SB타워)'])},
+    {label:'경기버스', v: manyA(OOH_SHEET,['광역버스(OOH_KD버스)','지선버스(OOH_KD버스)'])},
+    {label:'아트월', v: manyA(OOH_SHEET,['한남대로아트월(OOH_아트월)','기타아트월(OOH_아트월)'])},
+    {label:'기타', v: manyA(OOH_SHEET,['KTS(OOH_기타)','부산버스(OOH_기타)','기타(외부전광판,미러)(OOH_기타)','키아프(OOH_기타)'])},
+  ]});
+  // 3. 콘텐트사업국 (3팀)
+  sections.push({ title:'콘텐트사업국', sub:'팀별 비중', slices:[
+    {label:'이노베이션랩', v:rowsTotalA(T['inn'])},
+    {label:'콘텐트사업팀', v:rowsTotalA(T['cst'])},
+    {label:'콘텐트개발팀', v:rowsTotalA(T['csd'])},
+  ]});
+  // 4. 이노베이션랩
+  sections.push({ title:'이노베이션랩', sub:'항목별 비중', slices:
+    T['inn'].rows.filter(r=>r.t==='item').map(r=>({label:r.d, v:itemA(T['inn'].sheet,r)})) });
+  // 5. 콘텐트사업팀
+  {
+    const tm=T['cst'];
+    const pick=m=>tm.rows.find(r=>r.t==='item'&&r.m===m);
+    sections.push({ title:'콘텐트사업팀', sub:'부문별 비중', slices:[
+      {label:'매출(브랜디드)', v:itemA(tm.sheet,pick('매출(브랜디드)'))},
+      {label:'콘텐트 유통', v:catTotalA(tm,'콘텐트 유통')},
+      {label:'인물정보', v:itemA(tm.sheet,pick('인물정보'))},
+      {label:'보도자료', v:itemA(tm.sheet,pick('보도자료'))},
+    ]});
+  }
+  // 6. 콘텐트개발팀
+  {
+    const tm=T['csd'];
+    const pick=m=>tm.rows.find(r=>r.t==='item'&&r.m===m);
+    sections.push({ title:'콘텐트개발팀', sub:'항목별 비중', slices:[
+      {label:'지글지글클럽', v:itemA(tm.sheet,pick('지글지글클럽'))},
+      {label:'브랜디드', v:itemA(tm.sheet,pick('브랜디드'))},
+    ]});
+  }
+  // 7. 매체사업팀
+  sections.push({ title:'매체사업팀', sub:'항목별 비중', slices:
+    T['tbm'].rows.map(r=>({label:r.d, v:itemA(T['tbm'].sheet,r)})) });
+
+  // ── 렌더 (실적 원형그래프 1개씩, 2열 그리드) ──
+  bizPieCharts.forEach(c=>{try{c.destroy();}catch(e){}});
+  bizPieCharts=[];
+  const PAL=['#185FA5','#1D9E75','#EF9F27','#7F77DD','#D85A30','#5DCAA5','#378ADD','#C2410C','#A35DBD','#888780','#2E8B8B','#DD8726'];
+  const f1=v=>(v/100).toFixed(1);
+  let html='<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(460px,1fr));gap:14px;">';
+  sections.forEach((sec,si)=>{
+    const totA=sec.slices.reduce((s,x)=>s+x.v,0);
+    html+=`<div class="card" style="border-top:3px solid #0F6E56;margin:0;">
+      <div style="display:flex;align-items:baseline;gap:8px;margin-bottom:4px;flex-wrap:wrap;">
+        <span style="font-size:13.5px;font-weight:700;color:#0F6E56;">${si+1}. ${sec.title}</span>
+        <span style="font-size:11px;color:#6B6A67;">${sec.sub}</span>
+        <span style="font-size:12px;font-weight:700;color:#1a1917;margin-left:auto;">실적 ${f1(totA)}억 <span style="font-size:10px;font-weight:400;color:#aaa;">· 1~${mon}월 누적</span></span>
+      </div>
+      <div style="position:relative;height:300px;"><canvas id="biz-pie-${si}"></canvas></div>
+    </div>`;
+  });
+  html+='</div>';
+  document.getElementById('biz-pies').innerHTML=html;
+
+  // 조각 안 라벨 플러그인 (항목명 + 금액, 비중 4% 이상만)
+  const makeLabelPlugin=(tot)=>({
+    id:'pieInLabel',
+    afterDatasetsDraw(chart){
+      const {ctx}=chart;
+      const meta=chart.getDatasetMeta(0);
+      ctx.save();
+      ctx.textAlign='center'; ctx.textBaseline='middle';
+      meta.data.forEach((arc,i)=>{
+        const v=chart.data.datasets[0].data[i];
+        if(!v || tot<=0) return;
+        const pct=v/tot*100;
+        if(pct<4) return; // 작은 조각은 범례로
+        const ang=(arc.startAngle+arc.endAngle)/2;
+        const r=arc.outerRadius*0.66;
+        const x=arc.x+Math.cos(ang)*r, y=arc.y+Math.sin(ang)*r;
+        const label=chart.data.labels[i];
+        ctx.font='700 11px "Malgun Gothic", sans-serif';
+        ctx.fillStyle='#fff';
+        ctx.shadowColor='rgba(0,0,0,0.35)'; ctx.shadowBlur=3;
+        ctx.fillText(label, x, y-7);
+        ctx.font='600 10.5px "Malgun Gothic", sans-serif';
+        ctx.fillText(v.toFixed(1)+'억 ('+pct.toFixed(0)+'%)', x, y+7);
+        ctx.shadowBlur=0;
+      });
+      ctx.restore();
+    }
+  });
+
+  sections.forEach((sec,si)=>{
+    const cvs=document.getElementById(`biz-pie-${si}`);
+    if(!cvs) return;
+    const labels=sec.slices.map(x=>x.label);
+    const colors=sec.slices.map((_,i)=>PAL[i%PAL.length]);
+    const vals=sec.slices.map(x=>Math.max(0,x.v)/100);
+    const tot=vals.reduce((s,v)=>s+v,0);
+    const ch=new Chart(cvs,{type:'pie',
+      data:{labels, datasets:[{data:vals.map(v=>+v.toFixed(2)), backgroundColor:colors, borderColor:'#fff', borderWidth:1.5}]},
+      options:{responsive:true,maintainAspectRatio:false,
+        layout:{padding:6},
+        plugins:{
+          legend:{position:'right',labels:{font:{size:11},boxWidth:11,padding:7,
+            generateLabels:(chart)=>{
+              const d=chart.data;
+              return d.labels.map((l,i)=>{
+                const v=d.datasets[0].data[i];
+                const pct=tot>0?(v/tot*100):0;
+                return {text:`${l} ${v.toFixed(1)}억 (${pct.toFixed(1)}%)`, fillStyle:d.datasets[0].backgroundColor[i], strokeStyle:'#fff', lineWidth:0, index:i, hidden:false};
+              });
+            }}},
+          tooltip:{callbacks:{label:(ctx)=>{
+            const v=ctx.parsed; const pct=tot>0?(v/tot*100):0;
+            return ` ${ctx.label}: ${v.toFixed(1)}억 (${pct.toFixed(1)}%)`;
+          }}}
+        }
+      },
+      plugins:[makeLabelPlugin(tot)]
+    });
+    bizPieCharts.push(ch);
+  });
+  document.getElementById('biz-sub-lbl').textContent=`· 본부 실적 시트 기준 · 억원 · ${mon}월 · 비중 분석`;
 }
 
 
